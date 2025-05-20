@@ -408,7 +408,6 @@ const StudentDashboard = () => {
         <Link href="/student/tasks">
           <Button variant="link" className="mt-4 text-secondary hover:text-secondary-dark text-sm flex items-center p-0">
             <span>View All Tasks</span>
-            <ChevronRightIcon className="h-4 w-4 ml-1" />
           </Button>
         </Link>
       </Card>
