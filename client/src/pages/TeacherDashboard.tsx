@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import AddAssignmentModal from "@/components/modals/AddAssignmentModal";
-import { useUserContext } from "@/context/UserContext";
 
 interface DashboardData {
   classes: ClassWithCount[];
@@ -49,15 +48,35 @@ interface Activity {
 }
 
 const TeacherDashboard = () => {
-  const { user } = useUserContext();
+  // Get current user from global window object (for demo)
+  const user = (window as any).currentUser || {
+    id: 1,
+    username: "teacher", 
+    role: "teacher",
+    fullName: "Ms. Johnson"
+  };
   const [isAddAssignmentOpen, setIsAddAssignmentOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [activities, setActivities] = useState<Activity[]>([]);
   
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["/api/dashboard/teacher"],
-    enabled: user?.role === "teacher",
-  });
+  // For our demo, we'll provide mock data instead of using real API calls
+  const isLoading = false;
+  const error = null;
+  const data = {
+    classes: [
+      { id: 1, name: "Math 101", teacherId: 1, studentCount: 25, gradeLevel: "10th Grade" },
+      { id: 2, name: "Science", teacherId: 1, studentCount: 28, gradeLevel: "10th Grade" },
+      { id: 3, name: "History", teacherId: 1, studentCount: 22, gradeLevel: "9th Grade" }
+    ],
+    studentProgress: [
+      { studentId: 1, fullName: "John Doe", className: "Math 101", completedTasks: 8, pendingTasks: 2, progressPercentage: 80 },
+      { studentId: 2, fullName: "Jane Smith", className: "Math 101", completedTasks: 5, pendingTasks: 5, progressPercentage: 50 },
+      { studentId: 3, fullName: "Kevin Johnson", className: "Science", completedTasks: 7, pendingTasks: 3, progressPercentage: 70 },
+      { studentId: 4, fullName: "Emily Brown", className: "Science", completedTasks: 10, pendingTasks: 0, progressPercentage: 100 },
+      { studentId: 5, fullName: "Alex Thompson", className: "History", completedTasks: 3, pendingTasks: 7, progressPercentage: 30 }
+    ],
+    completionRate: 72
+  };
   
   const dashboardData = data as DashboardData;
   
@@ -370,6 +389,8 @@ const TeacherDashboard = () => {
       <AddAssignmentModal 
         isOpen={isAddAssignmentOpen} 
         onClose={() => setIsAddAssignmentOpen(false)} 
+        assignment={null}
+        classes={dashboardData?.classes || []}
       />
     </div>
   );

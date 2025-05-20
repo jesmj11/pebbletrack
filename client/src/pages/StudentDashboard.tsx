@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { format } from "date-fns";
 import { CheckCircle, Clock, BookOpen, CheckSquare, TrendingUp, MoreVertical } from "lucide-react";
@@ -14,8 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
 
 interface DashboardData {
   completedTasks: number;
@@ -48,19 +45,87 @@ const StudentDashboard = () => {
   const { toast } = useToast();
   const [selectedClass, setSelectedClass] = useState<string>("all");
   
-  const { data: dashboardData, isLoading: isDashboardLoading } = useQuery({
-    queryKey: ["/api/dashboard/student"]
-  });
-  
-  const { data: tasksData, isLoading: isTasksLoading } = useQuery({
-    queryKey: ["/api/student/tasks"]
-  });
-  
-  const studentData = dashboardData as DashboardData;
-  const tasks = tasksData as Task[];
-  
+  // For demo purposes, provide mock data 
+  const isLoading = false;
   const currentDate = format(new Date(), "MMMM d, yyyy");
-  const isLoading = isDashboardLoading || isTasksLoading;
+  
+  // Mock student dashboard data
+  const studentData: DashboardData = {
+    completedTasks: 12,
+    pendingTasks: 8,
+    dueTodayTasks: 3,
+    totalClasses: 4,
+    progress: [
+      { className: "Math 101", percentage: 75 },
+      { className: "Science", percentage: 60 },
+      { className: "History", percentage: 90 },
+      { className: "English", percentage: 45 }
+    ]
+  };
+  
+  // Mock tasks data
+  const tasks: Task[] = [
+    {
+      id: 1,
+      assignment: {
+        id: 101,
+        title: "Math Homework - Chapter 4",
+        dueDate: new Date().toISOString(),
+        priority: "high"
+      },
+      class: {
+        id: 1,
+        name: "Math 101"
+      },
+      completed: false,
+      completedAt: null
+    },
+    {
+      id: 2,
+      assignment: {
+        id: 102,
+        title: "Science Lab Report",
+        dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+        priority: "medium" 
+      },
+      class: {
+        id: 2,
+        name: "Science"
+      },
+      completed: false,
+      completedAt: null
+    },
+    {
+      id: 3,
+      assignment: {
+        id: 103,
+        title: "History Essay",
+        dueDate: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
+        priority: "low"
+      },
+      class: {
+        id: 3,
+        name: "History" 
+      },
+      completed: true,
+      completedAt: new Date(Date.now() - 86400000).toISOString() // Yesterday
+    },
+    {
+      id: 4,
+      assignment: {
+        id: 104,
+        title: "English Literature Review",
+        dueDate: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+        priority: "high"
+      },
+      class: {
+        id: 4,
+        name: "English"
+      },
+      completed: true,
+      completedAt: new Date(Date.now() - 172800000).toISOString() // 2 days ago
+    }
+  ];
   
   // Filter tasks by class if selected
   const filteredTasks = tasks ? (
@@ -94,26 +159,13 @@ const StudentDashboard = () => {
         .slice(0, 2) // Just show the 2 most recent
     : [];
   
-  const handleTaskComplete = async (taskId: number, isCompleted: boolean) => {
-    try {
-      await apiRequest("PUT", `/api/tasks/${taskId}`, { completed: isCompleted });
-      
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ["/api/student/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/student"] });
-      
-      toast({
-        title: isCompleted ? "Task completed" : "Task marked as incomplete",
-        description: isCompleted ? "Great job! Task marked as complete." : "Task marked as incomplete.",
-        variant: isCompleted ? "default" : "destructive",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Could not update task status",
-        variant: "destructive",
-      });
-    }
+  const handleTaskComplete = (taskId: number, isCompleted: boolean) => {
+    // For demo purposes, just show a toast notification
+    toast({
+      title: isCompleted ? "Task completed" : "Task marked as incomplete",
+      description: isCompleted ? "Great job! Task marked as complete." : "Task marked as incomplete.",
+      variant: isCompleted ? "default" : "destructive",
+    });
   };
   
   const getTaskPriorityColor = (priority: string) => {
