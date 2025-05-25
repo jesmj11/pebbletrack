@@ -249,6 +249,20 @@ const Assignments = () => {
                 return (
                   <TableRow key={assignment.id}>
                     <TableCell className="font-medium">{assignment.title}</TableCell>
+                    <TableCell>
+                      {assignment.studentName ? (
+                        <div>
+                          <div className="font-medium">{assignment.studentName}</div>
+                          {assignment.gradeLevel && (
+                            <Badge variant="outline" className="bg-secondary bg-opacity-10 text-secondary-dark mt-1">
+                              {assignment.gradeLevel}
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-neutral-dark">All students</span>
+                      )}
+                    </TableCell>
                     <TableCell>{getClassName(assignment.classId)}</TableCell>
                     <TableCell>
                       <div className="flex items-center">
