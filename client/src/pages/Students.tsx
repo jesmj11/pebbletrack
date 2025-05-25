@@ -34,6 +34,7 @@ interface Student {
     username: string;
   };
   classIds: string[];
+  gradeLevel?: string;
 }
 
 interface Class {
@@ -47,16 +48,51 @@ const Students = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   
-  const { data: studentsData, isLoading: isStudentsLoading } = useQuery({
-    queryKey: ["/api/students"],
-  });
+  // For our homeschool demo, we'll use mock data
+  const isStudentsLoading = false;
+  const isClassesLoading = false;
   
-  const { data: classesData, isLoading: isClassesLoading } = useQuery({
-    queryKey: ["/api/classes"],
-  });
+  // Mock homeschool students
+  const students: Student[] = [
+    {
+      id: 1,
+      user: {
+        id: 101,
+        fullName: "Emma",
+        username: "emma"
+      },
+      classIds: ["1", "3"],
+      gradeLevel: "2nd Grade"
+    },
+    {
+      id: 2,
+      user: {
+        id: 102,
+        fullName: "Michael",
+        username: "michael"
+      },
+      classIds: ["1", "2"],
+      gradeLevel: "5th Grade"
+    },
+    {
+      id: 3,
+      user: {
+        id: 103,
+        fullName: "Sophia",
+        username: "sophia"
+      },
+      classIds: ["2", "4"],
+      gradeLevel: "7th Grade"
+    }
+  ];
   
-  const students = studentsData as Student[];
-  const classes = classesData as Class[];
+  // Mock classes
+  const classes: Class[] = [
+    { id: 1, name: "Math" },
+    { id: 2, name: "Science" },
+    { id: 3, name: "Reading" },
+    { id: 4, name: "History" }
+  ];
   
   const deleteStudentMutation = useMutation({
     mutationFn: async (studentId: number) => {
@@ -140,6 +176,7 @@ const Students = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Grade Level</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Classes</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -149,6 +186,11 @@ const Students = () => {
               {filteredStudents.map(student => (
                 <TableRow key={student.id}>
                   <TableCell className="font-medium">{student.user.fullName}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className="bg-secondary bg-opacity-20 text-secondary-dark">
+                      {student.gradeLevel || "Not assigned"}
+                    </Badge>
+                  </TableCell>
                   <TableCell>{student.user.username}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">

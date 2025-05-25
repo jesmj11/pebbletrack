@@ -35,6 +35,9 @@ interface Assignment {
   dueDate: string;
   priority: string;
   createdBy: number;
+  studentId?: number;
+  studentName?: string;
+  gradeLevel?: string;
 }
 
 interface Class {
@@ -48,16 +51,93 @@ const Assignments = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   
-  const { data: assignmentsData, isLoading: isAssignmentsLoading } = useQuery({
-    queryKey: ["/api/assignments"],
-  });
+  // For our homeschool demo, we'll use mock data
+  const isAssignmentsLoading = false;
+  const isClassesLoading = false;
   
-  const { data: classesData, isLoading: isClassesLoading } = useQuery({
-    queryKey: ["/api/classes"],
-  });
+  // Mock homeschool assignments - with student-specific assignments
+  const assignments: Assignment[] = [
+    {
+      id: 1,
+      title: "Addition and Subtraction Practice",
+      description: "Complete worksheet pages 10-12",
+      classId: 1, // Math
+      dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+      priority: "high",
+      createdBy: 1,
+      studentId: 1,
+      studentName: "Emma",
+      gradeLevel: "2nd Grade"
+    },
+    {
+      id: 2,
+      title: "Phonics Reading Exercise",
+      description: "Read chapter 3 of 'Learn to Read' book",
+      classId: 3, // Reading
+      dueDate: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
+      priority: "medium",
+      createdBy: 1,
+      studentId: 1,
+      studentName: "Emma",
+      gradeLevel: "2nd Grade"
+    },
+    {
+      id: 3,
+      title: "Fractions and Decimals",
+      description: "Complete practice problems 1-15",
+      classId: 1, // Math
+      dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+      priority: "high",
+      createdBy: 1,
+      studentId: 2,
+      studentName: "Michael",
+      gradeLevel: "5th Grade"
+    },
+    {
+      id: 4,
+      title: "Weather Systems Research",
+      description: "Create a diagram of weather systems",
+      classId: 2, // Science
+      dueDate: new Date(Date.now() + 259200000).toISOString(), // 3 days from now
+      priority: "medium",
+      createdBy: 1,
+      studentId: 2,
+      studentName: "Michael",
+      gradeLevel: "5th Grade"
+    },
+    {
+      id: 5,
+      title: "Algebra Equations",
+      description: "Solve the equations on pages 45-47",
+      classId: 1, // Math
+      dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+      priority: "high",
+      createdBy: 1,
+      studentId: 3,
+      studentName: "Sophia",
+      gradeLevel: "7th Grade"
+    },
+    {
+      id: 6,
+      title: "Ancient Civilizations Essay",
+      description: "Write a 2-page essay on ancient Egypt",
+      classId: 4, // History
+      dueDate: new Date(Date.now() + 345600000).toISOString(), // 4 days from now
+      priority: "low",
+      createdBy: 1,
+      studentId: 3,
+      studentName: "Sophia",
+      gradeLevel: "7th Grade"
+    }
+  ];
   
-  const assignments = assignmentsData as Assignment[];
-  const classes = classesData as Class[];
+  // Mock classes
+  const classes: Class[] = [
+    { id: 1, name: "Math" },
+    { id: 2, name: "Science" },
+    { id: 3, name: "Reading" },
+    { id: 4, name: "History" }
+  ];
   
   const deleteAssignmentMutation = useMutation({
     mutationFn: async (assignmentId: number) => {
@@ -154,6 +234,7 @@ const Assignments = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
+                <TableHead>Student</TableHead>
                 <TableHead>Class</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead>Priority</TableHead>

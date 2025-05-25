@@ -59,23 +59,30 @@ const TeacherDashboard = () => {
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [activities, setActivities] = useState<Activity[]>([]);
   
-  // For our demo, we'll provide mock data instead of using real API calls
+  // For our demo, we'll provide data suited for homeschooling
   const isLoading = false;
   const error = null;
   const data = {
     classes: [
-      { id: 1, name: "Math 101", teacherId: 1, studentCount: 25, gradeLevel: "10th Grade" },
-      { id: 2, name: "Science", teacherId: 1, studentCount: 28, gradeLevel: "10th Grade" },
-      { id: 3, name: "History", teacherId: 1, studentCount: 22, gradeLevel: "9th Grade" }
+      { id: 1, name: "Math", teacherId: 1, studentCount: 3, gradeLevel: "Multiple Grades" },
+      { id: 2, name: "Science", teacherId: 1, studentCount: 3, gradeLevel: "Multiple Grades" },
+      { id: 3, name: "Reading", teacherId: 1, studentCount: 3, gradeLevel: "Multiple Grades" },
+      { id: 4, name: "History", teacherId: 1, studentCount: 3, gradeLevel: "Multiple Grades" }
     ],
     studentProgress: [
-      { studentId: 1, fullName: "John Doe", className: "Math 101", completedTasks: 8, pendingTasks: 2, progressPercentage: 80 },
-      { studentId: 2, fullName: "Jane Smith", className: "Math 101", completedTasks: 5, pendingTasks: 5, progressPercentage: 50 },
-      { studentId: 3, fullName: "Kevin Johnson", className: "Science", completedTasks: 7, pendingTasks: 3, progressPercentage: 70 },
-      { studentId: 4, fullName: "Emily Brown", className: "Science", completedTasks: 10, pendingTasks: 0, progressPercentage: 100 },
-      { studentId: 5, fullName: "Alex Thompson", className: "History", completedTasks: 3, pendingTasks: 7, progressPercentage: 30 }
+      // Emma - 2nd Grade
+      { studentId: 1, fullName: "Emma (2nd Grade)", className: "Math", completedTasks: 8, pendingTasks: 2, progressPercentage: 80 },
+      { studentId: 1, fullName: "Emma (2nd Grade)", className: "Reading", completedTasks: 7, pendingTasks: 1, progressPercentage: 88 },
+      
+      // Michael - 5th Grade
+      { studentId: 2, fullName: "Michael (5th Grade)", className: "Math", completedTasks: 5, pendingTasks: 5, progressPercentage: 50 },
+      { studentId: 2, fullName: "Michael (5th Grade)", className: "Science", completedTasks: 7, pendingTasks: 3, progressPercentage: 70 },
+      
+      // Sophia - 7th Grade
+      { studentId: 3, fullName: "Sophia (7th Grade)", className: "Science", completedTasks: 10, pendingTasks: 0, progressPercentage: 100 },
+      { studentId: 3, fullName: "Sophia (7th Grade)", className: "History", completedTasks: 6, pendingTasks: 4, progressPercentage: 60 }
     ],
-    completionRate: 72
+    completionRate: 75
   };
   
   const dashboardData = data as DashboardData;
