@@ -51,31 +51,31 @@ const StudentDashboard = () => {
   
   // Mock student dashboard data
   const studentData: DashboardData = {
-    completedTasks: 12,
-    pendingTasks: 8,
+    completedTasks: 3,
+    pendingTasks: 5,
     dueTodayTasks: 3,
     totalClasses: 4,
     progress: [
-      { className: "Math 101", percentage: 75 },
+      { className: "Math", percentage: 75 },
       { className: "Science", percentage: 60 },
-      { className: "History", percentage: 90 },
-      { className: "English", percentage: 45 }
+      { className: "Reading", percentage: 90 },
+      { className: "History", percentage: 45 }
     ]
   };
   
-  // Mock tasks data
+  // Mock tasks data - kid-friendly tasks
   const tasks: Task[] = [
     {
       id: 1,
       assignment: {
         id: 101,
-        title: "Math Homework - Chapter 4",
+        title: "Practice Addition Problems",
         dueDate: new Date().toISOString(),
         priority: "high"
       },
       class: {
         id: 1,
-        name: "Math 101"
+        name: "Math"
       },
       completed: false,
       completedAt: null
@@ -84,13 +84,13 @@ const StudentDashboard = () => {
       id: 2,
       assignment: {
         id: 102,
-        title: "Science Lab Report",
-        dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+        title: "Read 20 Minutes",
+        dueDate: new Date().toISOString(),
         priority: "medium" 
       },
       class: {
-        id: 2,
-        name: "Science"
+        id: 3,
+        name: "Reading"
       },
       completed: false,
       completedAt: null
@@ -99,110 +99,59 @@ const StudentDashboard = () => {
       id: 3,
       assignment: {
         id: 103,
-        title: "History Essay",
-        dueDate: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
+        title: "Science Journal Entry",
+        dueDate: new Date().toISOString(),
         priority: "low"
       },
       class: {
-        id: 3,
-        name: "History" 
+        id: 2,
+        name: "Science" 
       },
-      completed: true,
-      completedAt: new Date(Date.now() - 86400000).toISOString() // Yesterday
+      completed: false,
+      completedAt: null
     },
     {
       id: 4,
       assignment: {
         id: 104,
-        title: "English Literature Review",
-        dueDate: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+        title: "Spelling Practice",
+        dueDate: new Date(Date.now() - 86400000).toISOString(),
         priority: "high"
       },
       class: {
-        id: 4,
-        name: "English"
+        id: 3,
+        name: "Reading"
       },
       completed: true,
-      completedAt: new Date(Date.now() - 172800000).toISOString() // 2 days ago
+      completedAt: new Date(Date.now() - 3600000).toISOString()
+    },
+    {
+      id: 5,
+      assignment: {
+        id: 105,
+        title: "Math Worksheet",
+        dueDate: new Date(Date.now() - 86400000).toISOString(),
+        priority: "medium"
+      },
+      class: {
+        id: 1,
+        name: "Math"
+      },
+      completed: true,
+      completedAt: new Date(Date.now() - 7200000).toISOString()
     }
   ];
   
-  // Filter tasks by class if selected
-  const filteredTasks = tasks ? (
-    selectedClass === "all" 
-      ? tasks 
-      : tasks.filter(task => task.class.name === selectedClass)
-  ) : [];
+  // Filter tasks by completion status
+  const todayTasks = tasks.filter(task => !task.completed);
+  const completedTasks = tasks.filter(task => task.completed).slice(0, 3);
   
-  // Group tasks by due date
-  const todayTasks = filteredTasks
-    ? filteredTasks.filter(task => {
-        if (task.completed) return false;
-        const dueDate = new Date(task.assignment.dueDate);
-        const today = new Date();
-        return dueDate.toDateString() === today.toDateString();
-      })
-    : [];
-  
-  const upcomingTasks = filteredTasks
-    ? filteredTasks.filter(task => {
-        if (task.completed) return false;
-        const dueDate = new Date(task.assignment.dueDate);
-        const today = new Date();
-        return dueDate > today && dueDate.toDateString() !== today.toDateString();
-      })
-    : [];
-  
-  const completedTasks = filteredTasks
-    ? filteredTasks.filter(task => task.completed)
-        .sort((a, b) => new Date(b.completedAt || 0).getTime() - new Date(a.completedAt || 0).getTime())
-        .slice(0, 2) // Just show the 2 most recent
-    : [];
-  
+  // Function to handle task completion toggle
   const handleTaskComplete = (taskId: number, isCompleted: boolean) => {
-    // For demo purposes, just show a toast notification
     toast({
-      title: isCompleted ? "Task completed" : "Task marked as incomplete",
-      description: isCompleted ? "Great job! Task marked as complete." : "Task marked as incomplete.",
-      variant: isCompleted ? "default" : "destructive",
+      title: isCompleted ? "Great job!" : "Task reopened",
+      description: isCompleted ? "You completed a task! Keep going!" : "Task has been reopened.",
     });
-  };
-  
-  const getTaskPriorityColor = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case "high":
-        return "text-red-500";
-      case "medium":
-        return "text-amber-500";
-      case "low":
-        return "text-green-500";
-      default:
-        return "text-neutral-dark";
-    }
-  };
-  
-  const getTaskPriorityIcon = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case "high":
-        return <span className="material-icons text-xs mr-1 text-error">priority_high</span>;
-      case "medium":
-        return <span className="material-icons text-xs mr-1 text-warning">low_priority</span>;
-      case "low":
-        return <span className="material-icons text-xs mr-1 text-success">low_priority</span>;
-      default:
-        return null;
-    }
-  };
-  
-  const formatDueDate = (dateString: string) => {
-    const dueDate = new Date(dateString);
-    const today = new Date();
-    
-    if (dueDate.toDateString() === today.toDateString()) {
-      return `Due ${format(dueDate, "h:mm a")}`;
-    } else {
-      return `Due ${format(dueDate, "MMM d")}`;
-    }
   };
   
   if (isLoading) {
@@ -214,286 +163,102 @@ const StudentDashboard = () => {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <h2 className="text-2xl font-medium text-neutral-darkest mb-2 md:mb-0">My Tasks</h2>
-        <div>
-          <span className="text-sm text-neutral-dark">Today: <span className="font-medium">{currentDate}</span></span>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Kid-friendly header */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-primary mb-2">My Learning Adventures!</h1>
+        <p className="text-lg text-neutral-dark">Today is <span className="font-medium text-secondary">{currentDate}</span></p>
+        <div className="mt-4 text-xl">
+          <span className="text-green-600">Completed: {studentData?.completedTasks || 0} tasks!</span>
+          <span className="mx-4">•</span>
+          <span className="text-blue-600">To do: {studentData?.pendingTasks || 0} tasks!</span>
         </div>
       </div>
       
-      {/* Student Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-5 border-l-4 border-secondary">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-neutral-dark text-sm">Pending Tasks</p>
-              <h3 className="text-2xl font-medium text-neutral-darkest">{studentData?.pendingTasks || 0}</h3>
-            </div>
-            <div className="bg-secondary bg-opacity-10 p-2 rounded-full">
-              <CheckSquare className="h-5 w-5 text-secondary" />
-            </div>
-          </div>
-          <p className="text-xs text-amber-500 mt-2 flex items-center">
-            <Clock className="h-3 w-3 mr-1" />
-            <span>{studentData?.dueTodayTasks || 0} due today</span>
-          </p>
-        </Card>
-        
-        <Card className="p-5 border-l-4 border-green-500">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-neutral-dark text-sm">Completed</p>
-              <h3 className="text-2xl font-medium text-neutral-darkest">{studentData?.completedTasks || 0}</h3>
-            </div>
-            <div className="bg-green-100 p-2 rounded-full">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-            </div>
-          </div>
-          <p className="text-xs text-green-500 mt-2 flex items-center">
-            <TrendingUp className="h-3 w-3 mr-1" />
-            <span>{completedTasks?.length || 0} completed recently</span>
-          </p>
-        </Card>
-        
-        <Card className="p-5 border-l-4 border-amber-500">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-neutral-dark text-sm">My Classes</p>
-              <h3 className="text-2xl font-medium text-neutral-darkest">{studentData?.totalClasses || 0}</h3>
-            </div>
-            <div className="bg-amber-100 p-2 rounded-full">
-              <BookOpen className="h-5 w-5 text-amber-500" />
-            </div>
-          </div>
-          <p className="text-xs text-neutral-dark mt-2">
-            {studentData?.progress?.map(p => p.className).join(", ") || "No classes"}
-          </p>
-        </Card>
-      </div>
-      
-      {/* Task List */}
-      <Card className="p-5">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-neutral-darkest">My Tasks</h3>
-          <div className="flex space-x-2">
-            <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger className="bg-neutral-light text-neutral-darkest w-[180px]">
-                <SelectValue placeholder="All Classes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Classes</SelectItem>
-                {studentData?.progress?.map(p => (
-                  <SelectItem key={p.className} value={p.className}>{p.className}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* Progress Bar */}
+      <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-primary/20">
+        <h2 className="text-2xl font-bold text-center mb-4 text-primary">Today's Progress</h2>
+        <div className="w-full bg-gray-200 rounded-full h-8 mb-4">
+          <div 
+            className="bg-gradient-to-r from-green-400 to-green-600 h-8 rounded-full flex items-center justify-center text-white font-bold transition-all duration-500"
+            style={{ width: `${Math.round(((studentData?.completedTasks || 0) / ((studentData?.completedTasks || 0) + (studentData?.pendingTasks || 1))) * 100)}%` }}
+          >
+            {Math.round(((studentData?.completedTasks || 0) / ((studentData?.completedTasks || 0) + (studentData?.pendingTasks || 1))) * 100)}%
           </div>
         </div>
+        <p className="text-center text-lg text-neutral-dark">
+          You've completed <span className="font-bold text-green-600">{studentData?.completedTasks || 0}</span> out of <span className="font-bold text-blue-600">{(studentData?.completedTasks || 0) + (studentData?.pendingTasks || 0)}</span> tasks today!
+        </p>
+      </div>
+      
+      {/* Daily Checklist */}
+      <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-secondary/20">
+        <h2 className="text-3xl font-bold text-center mb-6 text-secondary">My Daily Checklist</h2>
         
-        <div className="space-y-3">
+        <div className="space-y-4">
           {todayTasks.length > 0 && (
             <>
-              <h4 className="text-sm font-medium text-neutral-dark mt-4">Due Today</h4>
+              <h3 className="text-2xl font-bold text-orange-600 mb-4 text-center">Today's Tasks</h3>
               
               {todayTasks.map(task => (
-                <div key={task.id} className="flex items-center bg-neutral-light bg-opacity-50 rounded-lg p-3 border-l-4 border-amber-500">
-                  <div className="mr-3">
-                    <Checkbox 
-                      checked={task.completed}
-                      onCheckedChange={(checked) => handleTaskComplete(task.id, !!checked)}
-                      className="h-5 w-5 rounded border-neutral-medium text-secondary"
-                    />
-                  </div>
-                  <div className="flex-grow">
-                    <h5 className={`text-neutral-darkest font-medium ${task.completed ? 'line-through' : ''}`}>
-                      {task.assignment.title}
-                    </h5>
-                    <div className="flex items-center text-xs text-neutral-dark mt-1">
-                      <BookOpen className="h-3 w-3 mr-1" />
-                      <span className="mr-3">{task.class.name}</span>
-                      <Clock className="h-3 w-3 mr-1" />
-                      <span className="mr-3">{formatDueDate(task.assignment.dueDate)}</span>
-                      <span className={`mr-1 ${getTaskPriorityColor(task.assignment.priority)}`}>•</span>
-                      <span className={getTaskPriorityColor(task.assignment.priority)}>
-                        {task.assignment.priority.charAt(0).toUpperCase() + task.assignment.priority.slice(1)} Priority
-                      </span>
+                <div key={task.id} className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-6 border-2 border-orange-200 shadow-md hover:shadow-lg transition-all">
+                  <div className="flex items-center">
+                    <div className="mr-6">
+                      <Checkbox 
+                        checked={task.completed}
+                        onCheckedChange={(checked) => handleTaskComplete(task.id, !!checked)}
+                        className="h-8 w-8 rounded-lg border-2 border-orange-300 text-orange-600 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+                      />
                     </div>
+                    <div className="flex-grow">
+                      <h4 className={`text-xl font-bold mb-2 ${task.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                        {task.assignment.title}
+                      </h4>
+                      <div className="flex items-center text-lg text-gray-600">
+                        <BookOpen className="h-5 w-5 mr-2 text-blue-500" />
+                        <span className="font-medium">{task.class.name}</span>
+                      </div>
+                    </div>
+                    {task.completed && (
+                      <div className="text-4xl">✅</div>
+                    )}
                   </div>
-                  <Button variant="ghost" className="text-neutral-dark hover:text-neutral-darkest ml-2 p-1 h-auto">
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
                 </div>
               ))}
             </>
           )}
           
-          {upcomingTasks.length > 0 && (
-            <>
-              <h4 className="text-sm font-medium text-neutral-dark mt-4">Upcoming</h4>
-              
-              {upcomingTasks.map(task => (
-                <div key={task.id} className="flex items-center bg-neutral-light bg-opacity-50 rounded-lg p-3 border-l-4 border-neutral-medium">
-                  <div className="mr-3">
-                    <Checkbox 
-                      checked={task.completed}
-                      onCheckedChange={(checked) => handleTaskComplete(task.id, !!checked)}
-                      className="h-5 w-5 rounded border-neutral-medium text-secondary"
-                    />
-                  </div>
-                  <div className="flex-grow">
-                    <h5 className={`text-neutral-darkest font-medium ${task.completed ? 'line-through' : ''}`}>
-                      {task.assignment.title}
-                    </h5>
-                    <div className="flex items-center text-xs text-neutral-dark mt-1">
-                      <BookOpen className="h-3 w-3 mr-1" />
-                      <span className="mr-3">{task.class.name}</span>
-                      <Clock className="h-3 w-3 mr-1" />
-                      <span className="mr-3">{formatDueDate(task.assignment.dueDate)}</span>
-                      <span className={`mr-1 ${getTaskPriorityColor(task.assignment.priority)}`}>•</span>
-                      <span className={getTaskPriorityColor(task.assignment.priority)}>
-                        {task.assignment.priority.charAt(0).toUpperCase() + task.assignment.priority.slice(1)} Priority
-                      </span>
-                    </div>
-                  </div>
-                  <Button variant="ghost" className="text-neutral-dark hover:text-neutral-darkest ml-2 p-1 h-auto">
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
-                </div>
-              ))}
-            </>
-          )}
-          
-          {completedTasks.length > 0 && (
-            <>
-              <h4 className="text-sm font-medium text-neutral-dark mt-4">Recently Completed</h4>
-              
-              {completedTasks.map(task => (
-                <div key={task.id} className="flex items-center bg-neutral-light bg-opacity-30 rounded-lg p-3 border-l-4 border-green-500">
-                  <div className="mr-3">
-                    <Checkbox 
-                      checked={task.completed}
-                      onCheckedChange={(checked) => handleTaskComplete(task.id, !!checked)}
-                      className="h-5 w-5 rounded border-neutral-medium text-secondary"
-                    />
-                  </div>
-                  <div className="flex-grow">
-                    <h5 className="text-neutral-darkest font-medium line-through">
-                      {task.assignment.title}
-                    </h5>
-                    <div className="flex items-center text-xs text-neutral-dark mt-1">
-                      <BookOpen className="h-3 w-3 mr-1" />
-                      <span className="mr-3">{task.class.name}</span>
-                      <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
-                      <span className="text-green-500">
-                        Completed {task.completedAt ? format(new Date(task.completedAt), "MMM d") : ""}
-                      </span>
-                    </div>
-                  </div>
-                  <Button variant="ghost" className="text-neutral-dark hover:text-neutral-darkest ml-2 p-1 h-auto">
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
-                </div>
-              ))}
-            </>
-          )}
-          
-          {filteredTasks.length === 0 && (
-            <div className="text-center py-8 text-neutral-dark">
-              <p>No tasks available for the selected class.</p>
+          {todayTasks.length === 0 && (
+            <div className="text-center py-8">
+              <h3 className="text-2xl font-bold text-green-600 mb-2">Great job!</h3>
+              <p className="text-lg text-gray-600">All your tasks are complete!</p>
+              <div className="text-6xl mt-4">🎉</div>
             </div>
           )}
         </div>
-        
-        <Link href="/student/tasks">
-          <Button variant="link" className="mt-4 text-secondary hover:text-secondary-dark text-sm flex items-center p-0">
-            <span>View All Tasks</span>
-          </Button>
-        </Link>
-      </Card>
+      </div>
       
-      {/* Progress Summary */}
-      <Card className="p-5">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-neutral-darkest">My Progress</h3>
-          <Link href="/student/progress">
-            <Button variant="link" className="text-secondary text-sm hover:underline p-0">
-              View Detailed Report
-            </Button>
-          </Link>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="border border-neutral-light rounded-lg p-4">
-            <h4 className="text-neutral-dark text-sm mb-3">Task Completion by Class</h4>
-            <div className="space-y-3">
-              {studentData?.progress?.map(prog => (
-                <div key={prog.className}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-neutral-darkest">{prog.className}</span>
-                    <span className="text-neutral-dark">{Math.round(prog.percentage)}%</span>
-                  </div>
-                  <div className="w-full bg-neutral-light rounded-full h-2">
-                    <div 
-                      className="bg-secondary h-2 rounded-full"
-                      style={{ width: `${prog.percentage}%` }}
-                    />
+      {/* Celebration Section */}
+      {completedTasks.length > 0 && (
+        <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-xl p-6 shadow-lg border-2 border-green-200">
+          <h3 className="text-2xl font-bold text-green-700 mb-4 text-center">Recently Completed!</h3>
+          <div className="space-y-3">
+            {completedTasks.map(task => (
+              <div key={task.id} className="bg-white rounded-lg p-4 shadow-sm border border-green-200">
+                <div className="flex items-center">
+                  <div className="text-3xl mr-4">🎉</div>
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-800 line-through">{task.assignment.title}</h4>
+                    <p className="text-gray-600">{task.class.name} - Completed!</p>
                   </div>
                 </div>
-              ))}
-              
-              {(!studentData?.progress || studentData.progress.length === 0) && (
-                <div className="text-center py-4 text-neutral-dark">
-                  <p>No progress data available.</p>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="border border-neutral-light rounded-lg p-4">
-            <h4 className="text-neutral-dark text-sm mb-3">Weekly Overview</h4>
-            <div className="h-40 flex items-end justify-between px-2">
-              {/* This would ideally be real data from the backend */}
-              <DayBar day="Mon" percentage={30} isToday={false} />
-              <DayBar day="Tue" percentage={60} isToday={false} />
-              <DayBar day="Wed" percentage={40} isToday={false} />
-              <DayBar day="Thu" percentage={80} isToday={false} />
-              <DayBar day="Fri" percentage={65} isToday={true} />
-              <DayBar day="Sat" percentage={20} isToday={false} />
-              <DayBar day="Sun" percentage={10} isToday={false} />
-            </div>
+              </div>
+            ))}
           </div>
         </div>
-      </Card>
+      )}
     </div>
   );
 };
-
-interface DayBarProps {
-  day: string;
-  percentage: number;
-  isToday: boolean;
-}
-
-const DayBar = ({ day, percentage, isToday }: DayBarProps) => {
-  return (
-    <div className="flex flex-col items-center">
-      <div 
-        className={`w-8 rounded-t-sm ${isToday ? 'bg-secondary' : 'bg-neutral-light'}`}
-        style={{ height: `${percentage}%` }}
-      />
-      <span className={`text-xs mt-1 ${isToday ? 'font-medium text-secondary' : 'text-neutral-dark'}`}>
-        {day}
-      </span>
-    </div>
-  );
-};
-
-// Simple chevron right icon
-const ChevronRightIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-);
 
 export default StudentDashboard;
