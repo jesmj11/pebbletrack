@@ -253,54 +253,58 @@ const StudentDashboard = () => {
       <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-secondary/20">
         <h2 className="text-3xl font-bold text-center mb-8 text-secondary">Today's Classes</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {studentData.progress.map(classItem => {
             const isCompleted = Math.random() > 0.5; // This will be replaced with real completion status
             return (
               <button
                 key={classItem.className}
-                onClick={() => handleClassComplete(classItem.className, !isCompleted)}
-                className={`relative p-8 rounded-2xl border-4 transition-all duration-300 transform hover:scale-105 shadow-lg ${
-                  isCompleted 
-                    ? 'bg-gradient-to-br from-green-100 to-green-200 border-green-400 shadow-green-200' 
-                    : 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 shadow-blue-200 hover:shadow-xl'
-                }`}
+                onClick={() => !isCompleted && handleClassComplete(classItem.className, !isCompleted)}
+                className={`relative p-8 rounded-3xl border-4 transition-all duration-300 transform hover:scale-105 shadow-lg ${
+                  isCompleted
+                    ? "bg-green-500 border-green-700 shadow-green-400"
+                    : `${getClassColor(classItem.className)} border-4 shadow-xl hover:shadow-2xl`
+                } ${!isCompleted ? "hover:scale-105 active:scale-95" : ""}`}
+                disabled={isCompleted}
               >
-                {/* Class Icon */}
-                <div className="text-center mb-4">
-                  <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl ${
-                    isCompleted ? 'bg-green-500' : getClassColor(classItem.className)
-                  }`}>
-                    {getClassIcon(classItem.className)}
+                {/* Checkbox */}
+                <div className="absolute top-4 left-4">
+                  <div
+                    className={`w-8 h-8 border-4 rounded-lg flex items-center justify-center ${
+                      isCompleted ? "bg-green-500 border-green-600" : "bg-white border-gray-400"
+                    }`}
+                  >
+                    {isCompleted && <CheckCircle className="w-6 h-6 text-white" />}
                   </div>
                 </div>
-                
-                {/* Class Name */}
-                <h3 className={`text-2xl font-bold text-center mb-4 ${
-                  isCompleted ? 'text-green-800' : 'text-gray-800'
-                }`}>
-                  {classItem.className}
-                </h3>
-                
-                {/* Completion Status */}
-                <div className="text-center">
-                  {isCompleted ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <CheckCircle className="h-8 w-8 text-green-600" />
-                      <span className="text-lg font-bold text-green-600">Complete!</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center space-x-2">
-                      <Clock className="h-6 w-6 text-blue-600" />
-                      <span className="text-lg font-bold text-blue-600">Tap to Complete</span>
-                    </div>
-                  )}
+
+                {/* Task Content */}
+                <div className="flex items-center gap-6 mt-4">
+                  {/* Large Emoji */}
+                  <div className="text-8xl">{getClassIcon(classItem.className)}</div>
+
+                  {/* Task Text */}
+                  <div className="flex-1 text-left">
+                    <h3
+                      className={`text-3xl font-bold mb-2 ${
+                        isCompleted ? "line-through text-gray-600" : "text-white"
+                      }`}
+                      style={{ fontFamily: "Comic Sans MS, cursive" }}
+                    >
+                      {classItem.className}
+                    </h3>
+                    <p className="text-xl text-white opacity-90" style={{ fontFamily: "Comic Sans MS, cursive" }}>
+                      Daily Learning
+                    </p>
+                  </div>
                 </div>
-                
-                {/* Completion Checkmark Overlay */}
+
+                {/* Completion Overlay */}
                 {isCompleted && (
-                  <div className="absolute top-4 right-4 bg-green-500 rounded-full p-2">
-                    <CheckCircle className="h-6 w-6 text-white" />
+                  <div className="absolute inset-0 bg-green-400 bg-opacity-20 rounded-3xl flex items-center justify-center">
+                    <div className="bg-green-500 text-white px-6 py-3 rounded-2xl text-2xl font-bold shadow-lg">
+                      ✅ DONE!
+                    </div>
                   </div>
                 )}
               </button>

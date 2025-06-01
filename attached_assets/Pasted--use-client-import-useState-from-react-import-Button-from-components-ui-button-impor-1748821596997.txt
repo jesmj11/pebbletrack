@@ -1,0 +1,280 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { ArrowLeft, Star, Trophy, CheckCircle2 } from "lucide-react"
+
+interface Student {
+  id: string
+  name: string
+  avatar: string
+  level: number
+  xp: number
+  totalXp: number
+}
+
+interface Task {
+  id: string
+  title: string
+  subject: string
+  dueDate: string
+  priority: "low" | "medium" | "high"
+  completed: boolean
+  xpReward: number
+  studentId: string
+  description?: string
+  emoji: string
+  color: string
+}
+
+interface StudentDashboardProps {
+  student: Student
+  onBack: () => void
+}
+
+export function StudentDashboard({ student, onBack }: StudentDashboardProps) {
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: "1",
+      title: "Math Practice",
+      subject: "Mathematics",
+      dueDate: "2024-01-15",
+      priority: "high",
+      completed: false,
+      xpReward: 50,
+      studentId: student.id,
+      emoji: "🔢",
+      color: "bg-blue-400 hover:bg-blue-500 border-blue-600",
+    },
+    {
+      id: "2",
+      title: "Read a Story",
+      subject: "Reading",
+      dueDate: "2024-01-15",
+      priority: "medium",
+      completed: false,
+      xpReward: 30,
+      studentId: student.id,
+      emoji: "📚",
+      color: "bg-green-400 hover:bg-green-500 border-green-600",
+    },
+    {
+      id: "3",
+      title: "Draw a Picture",
+      subject: "Art",
+      dueDate: "2024-01-16",
+      priority: "low",
+      completed: false,
+      xpReward: 25,
+      studentId: student.id,
+      emoji: "🎨",
+      color: "bg-purple-400 hover:bg-purple-500 border-purple-600",
+    },
+    {
+      id: "4",
+      title: "Science Fun",
+      subject: "Science",
+      dueDate: "2024-01-16",
+      priority: "medium",
+      completed: false,
+      xpReward: 40,
+      studentId: student.id,
+      emoji: "🔬",
+      color: "bg-yellow-400 hover:bg-yellow-500 border-yellow-600",
+    },
+    {
+      id: "5",
+      title: "Write Letters",
+      subject: "Writing",
+      dueDate: "2024-01-16",
+      priority: "medium",
+      completed: false,
+      xpReward: 35,
+      studentId: student.id,
+      emoji: "✏️",
+      color: "bg-pink-400 hover:bg-pink-500 border-pink-600",
+    },
+    {
+      id: "6",
+      title: "Play Outside",
+      subject: "Physical Education",
+      dueDate: "2024-01-16",
+      priority: "low",
+      completed: false,
+      xpReward: 20,
+      studentId: student.id,
+      emoji: "⚽",
+      color: "bg-orange-400 hover:bg-orange-500 border-orange-600",
+    },
+  ])
+
+  const [showCelebration, setShowCelebration] = useState(false)
+  const [celebrationMessage, setCelebrationMessage] = useState("")
+
+  const toggleTaskCompletion = (taskId: string) => {
+    setTasks(
+      tasks.map((task) => {
+        if (task.id === taskId && !task.completed) {
+          setCelebrationMessage(`🎉 Great Job! +${task.xpReward} XP! 🎉`)
+          setShowCelebration(true)
+          setTimeout(() => setShowCelebration(false), 3000)
+          return { ...task, completed: true }
+        }
+        return task
+      }),
+    )
+  }
+
+  const completedTasks = tasks.filter((task) => task.completed).length
+  const totalTasks = tasks.length
+  const todayXP = tasks.filter((t) => t.completed).reduce((sum, t) => sum + t.xpReward, 0)
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-400 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="outline" onClick={onBack} className="text-lg px-6 py-3">
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Back
+          </Button>
+        </div>
+
+        {/* Celebration Animation */}
+        {showCelebration && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-12 py-6 rounded-3xl text-3xl font-bold animate-bounce shadow-2xl border-4 border-white">
+              {celebrationMessage}
+            </div>
+          </div>
+        )}
+
+        {/* Title Card */}
+        <Card className="mb-8 bg-gradient-to-r from-yellow-400 to-orange-500 border-4 border-yellow-600 shadow-lg">
+          <CardContent className="p-8 text-center">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span className="text-6xl">☀️</span>
+              <div>
+                <h1 className="text-4xl font-bold text-gray-800" style={{ fontFamily: "Comic Sans MS, cursive" }}>
+                  {student.name}'s
+                </h1>
+                <h2 className="text-5xl font-bold text-purple-600" style={{ fontFamily: "Comic Sans MS, cursive" }}>
+                  Learning JOBS
+                </h2>
+              </div>
+              <span className="text-6xl">⭐</span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="bg-white rounded-full p-3 shadow-lg border-2 border-orange-600">
+              <div className="flex justify-between text-lg font-bold mb-2 px-4">
+                <span>Progress Today</span>
+                <span>
+                  {completedTasks}/{totalTasks}
+                </span>
+              </div>
+              <Progress value={(completedTasks / totalTasks) * 100} className="h-6 bg-gray-200" />
+            </div>
+
+            {/* XP Display */}
+            <div className="mt-4 flex justify-center gap-8">
+              <div className="bg-white rounded-2xl px-6 py-3 shadow-lg border-2 border-purple-300">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-6 h-6 text-yellow-500" />
+                  <span className="text-2xl font-bold text-purple-600">{todayXP} XP Today!</span>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl px-6 py-3 shadow-lg border-2 border-blue-300">
+                <div className="flex items-center gap-2">
+                  <Star className="w-6 h-6 text-blue-500" />
+                  <span className="text-2xl font-bold text-blue-600">Level {student.level}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Task Buttons Grid */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {tasks.map((task) => (
+            <button
+              key={task.id}
+              onClick={() => !task.completed && toggleTaskCompletion(task.id)}
+              className={`relative p-8 rounded-3xl border-4 transition-all duration-300 transform hover:scale-105 shadow-lg ${
+                task.completed
+                  ? "bg-green-500 border-green-700 shadow-green-400"
+                  : `${task.color} border-4 shadow-xl hover:shadow-2xl`
+              } ${!task.completed ? "hover:scale-105 active:scale-95" : ""}`}
+              disabled={task.completed}
+            >
+              {/* Checkbox */}
+              <div className="absolute top-4 left-4">
+                <div
+                  className={`w-8 h-8 border-4 rounded-lg flex items-center justify-center ${
+                    task.completed ? "bg-green-500 border-green-600" : "bg-white border-gray-400"
+                  }`}
+                >
+                  {task.completed && <CheckCircle2 className="w-6 h-6 text-white" />}
+                </div>
+              </div>
+
+              {/* XP Badge */}
+              <div className="absolute top-4 right-4">
+                <div className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg">
+                  <Trophy className="w-4 h-4" />
+                  {task.xpReward}
+                </div>
+              </div>
+
+              {/* Task Content */}
+              <div className="flex items-center gap-6 mt-4">
+                {/* Large Emoji */}
+                <div className="text-8xl">{task.emoji}</div>
+
+                {/* Task Text */}
+                <div className="flex-1 text-left">
+                  <h3
+                    className={`text-3xl font-bold mb-2 ${
+                      task.completed ? "line-through text-gray-600" : "text-gray-800"
+                    }`}
+                    style={{ fontFamily: "Comic Sans MS, cursive" }}
+                  >
+                    {task.title}
+                  </h3>
+                  <p className="text-xl text-gray-600" style={{ fontFamily: "Comic Sans MS, cursive" }}>
+                    {task.subject}
+                  </p>
+                </div>
+              </div>
+
+              {/* Completion Overlay */}
+              {task.completed && (
+                <div className="absolute inset-0 bg-green-400 bg-opacity-20 rounded-3xl flex items-center justify-center">
+                  <div className="bg-green-500 text-white px-6 py-3 rounded-2xl text-2xl font-bold shadow-lg">
+                    ✅ DONE!
+                  </div>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Encouragement Message */}
+        <Card className="mt-8 bg-gradient-to-r from-pink-500 to-purple-600 border-4 border-pink-700">
+          <CardContent className="p-6 text-center">
+            <h3 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: "Comic Sans MS, cursive" }}>
+              🌟 You're Doing AMAZING, {student.name}! 🌟
+            </h3>
+            <p className="text-xl text-white" style={{ fontFamily: "Comic Sans MS, cursive" }}>
+              {completedTasks === totalTasks
+                ? "🎉 All done! You're a learning superstar! 🎉"
+                : `Keep going! ${totalTasks - completedTasks} more to go!`}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
