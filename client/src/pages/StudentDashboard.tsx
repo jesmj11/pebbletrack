@@ -48,6 +48,64 @@ const StudentDashboard = () => {
   // For demo purposes, provide mock data 
   const isLoading = false;
   const currentDate = format(new Date(), "MMMM d, yyyy");
+
+  // Function to handle class completion
+  const handleClassComplete = (className: string, isCompleted: boolean) => {
+    toast({
+      title: isCompleted ? "Class Complete!" : "Class Reopened",
+      description: isCompleted ? `Great work on ${className}!` : `${className} has been reopened.`,
+    });
+  };
+
+  // Function to get class icons
+  const getClassIcon = (className: string) => {
+    switch (className.toLowerCase()) {
+      case 'math':
+        return '🔢';
+      case 'science':
+        return '🔬';
+      case 'reading':
+        return '📚';
+      case 'history':
+        return '🏛️';
+      case 'english':
+        return '✍️';
+      case 'art':
+        return '🎨';
+      case 'music':
+        return '🎵';
+      case 'pe':
+      case 'physical education':
+        return '⚽';
+      default:
+        return '📖';
+    }
+  };
+
+  // Function to get class colors
+  const getClassColor = (className: string) => {
+    switch (className.toLowerCase()) {
+      case 'math':
+        return 'bg-blue-500';
+      case 'science':
+        return 'bg-purple-500';
+      case 'reading':
+        return 'bg-green-500';
+      case 'history':
+        return 'bg-amber-500';
+      case 'english':
+        return 'bg-red-500';
+      case 'art':
+        return 'bg-pink-500';
+      case 'music':
+        return 'bg-indigo-500';
+      case 'pe':
+      case 'physical education':
+        return 'bg-orange-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
   
   // Mock student dashboard data
   const studentData: DashboardData = {
@@ -191,51 +249,73 @@ const StudentDashboard = () => {
         </p>
       </div>
       
-      {/* Daily Checklist */}
+      {/* Daily Class Checklist */}
       <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-secondary/20">
-        <h2 className="text-3xl font-bold text-center mb-6 text-secondary">My Daily Checklist</h2>
+        <h2 className="text-3xl font-bold text-center mb-8 text-secondary">Today's Classes</h2>
         
-        <div className="space-y-4">
-          {todayTasks.length > 0 && (
-            <>
-              <h3 className="text-2xl font-bold text-orange-600 mb-4 text-center">Today's Tasks</h3>
-              
-              {todayTasks.map(task => (
-                <div key={task.id} className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-6 border-2 border-orange-200 shadow-md hover:shadow-lg transition-all">
-                  <div className="flex items-center">
-                    <div className="mr-6">
-                      <Checkbox 
-                        checked={task.completed}
-                        onCheckedChange={(checked) => handleTaskComplete(task.id, !!checked)}
-                        className="h-8 w-8 rounded-lg border-2 border-orange-300 text-orange-600 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
-                      />
-                    </div>
-                    <div className="flex-grow">
-                      <h4 className={`text-xl font-bold mb-2 ${task.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
-                        {task.assignment.title}
-                      </h4>
-                      <div className="flex items-center text-lg text-gray-600">
-                        <BookOpen className="h-5 w-5 mr-2 text-blue-500" />
-                        <span className="font-medium">{task.class.name}</span>
-                      </div>
-                    </div>
-                    {task.completed && (
-                      <div className="text-4xl">✅</div>
-                    )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {studentData.progress.map(classItem => {
+            const isCompleted = Math.random() > 0.5; // This will be replaced with real completion status
+            return (
+              <button
+                key={classItem.className}
+                onClick={() => handleClassComplete(classItem.className, !isCompleted)}
+                className={`relative p-8 rounded-2xl border-4 transition-all duration-300 transform hover:scale-105 shadow-lg ${
+                  isCompleted 
+                    ? 'bg-gradient-to-br from-green-100 to-green-200 border-green-400 shadow-green-200' 
+                    : 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 shadow-blue-200 hover:shadow-xl'
+                }`}
+              >
+                {/* Class Icon */}
+                <div className="text-center mb-4">
+                  <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl ${
+                    isCompleted ? 'bg-green-500' : getClassColor(classItem.className)
+                  }`}>
+                    {getClassIcon(classItem.className)}
                   </div>
                 </div>
-              ))}
-            </>
-          )}
-          
-          {todayTasks.length === 0 && (
-            <div className="text-center py-8">
-              <h3 className="text-2xl font-bold text-green-600 mb-2">Great job!</h3>
-              <p className="text-lg text-gray-600">All your tasks are complete!</p>
-              <div className="text-6xl mt-4">🎉</div>
-            </div>
-          )}
+                
+                {/* Class Name */}
+                <h3 className={`text-2xl font-bold text-center mb-4 ${
+                  isCompleted ? 'text-green-800' : 'text-gray-800'
+                }`}>
+                  {classItem.className}
+                </h3>
+                
+                {/* Completion Status */}
+                <div className="text-center">
+                  {isCompleted ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <CheckCircle className="h-8 w-8 text-green-600" />
+                      <span className="text-lg font-bold text-green-600">Complete!</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center space-x-2">
+                      <Clock className="h-6 w-6 text-blue-600" />
+                      <span className="text-lg font-bold text-blue-600">Tap to Complete</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Completion Checkmark Overlay */}
+                {isCompleted && (
+                  <div className="absolute top-4 right-4 bg-green-500 rounded-full p-2">
+                    <CheckCircle className="h-6 w-6 text-white" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
+        
+        {/* All Complete Message */}
+        {studentData.progress.every(() => Math.random() > 0.7) && (
+          <div className="text-center mt-8 p-6 bg-gradient-to-r from-green-100 to-yellow-100 rounded-xl border-2 border-green-300">
+            <div className="text-6xl mb-4">🌟</div>
+            <h3 className="text-3xl font-bold text-green-700 mb-2">Amazing Work!</h3>
+            <p className="text-xl text-green-600">You completed all your classes today!</p>
+          </div>
+        )}
       </div>
       
       {/* Celebration Section */}
