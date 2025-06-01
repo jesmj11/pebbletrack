@@ -56,18 +56,10 @@ export interface IStorage {
   getTaskCompletionRate(teacherId: number): Promise<number>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private classes: Map<number, Class>;
-  private students: Map<number, Student>;
-  private assignments: Map<number, Assignment>;
-  private tasks: Map<number, Task>;
-  
-  private userId: number;
-  private classId: number;
-  private studentId: number;
-  private assignmentId: number;
-  private taskId: number;
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
   
   constructor() {
     this.users = new Map();
@@ -370,4 +362,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
