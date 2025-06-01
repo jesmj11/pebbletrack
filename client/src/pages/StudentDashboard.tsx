@@ -260,7 +260,7 @@ const StudentDashboard = () => {
               <button
                 key={classItem.className}
                 onClick={() => !isCompleted && handleClassComplete(classItem.className, !isCompleted)}
-                className={`relative p-8 rounded-3xl border-4 transition-all duration-300 transform hover:scale-105 shadow-lg ${
+                className={`relative p-6 rounded-3xl border-4 transition-all duration-300 transform hover:scale-105 shadow-lg min-h-[140px] ${
                   isCompleted
                     ? "bg-green-500 border-green-700 shadow-green-400"
                     : `${getClassColor(classItem.className)} border-4 shadow-xl hover:shadow-2xl`
@@ -279,21 +279,21 @@ const StudentDashboard = () => {
                 </div>
 
                 {/* Task Content */}
-                <div className="flex items-center gap-6 mt-4">
+                <div className="flex items-center gap-4 mt-4">
                   {/* Large Emoji */}
-                  <div className="text-8xl">{getClassIcon(classItem.className)}</div>
+                  <div className="text-6xl flex-shrink-0">{getClassIcon(classItem.className)}</div>
 
                   {/* Task Text */}
-                  <div className="flex-1 text-left">
+                  <div className="flex-1 text-left min-w-0">
                     <h3
-                      className={`text-3xl font-bold mb-2 ${
+                      className={`text-2xl font-bold mb-1 ${
                         isCompleted ? "line-through text-gray-600" : "text-white"
-                      }`}
+                      } truncate`}
                       style={{ fontFamily: "Comic Sans MS, cursive" }}
                     >
                       {classItem.className}
                     </h3>
-                    <p className="text-xl text-white opacity-90" style={{ fontFamily: "Comic Sans MS, cursive" }}>
+                    <p className="text-lg text-white opacity-90 truncate" style={{ fontFamily: "Comic Sans MS, cursive" }}>
                       Daily Learning
                     </p>
                   </div>
