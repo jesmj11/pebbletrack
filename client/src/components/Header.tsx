@@ -46,7 +46,7 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <School className="mr-2 h-5 w-5" />
-          <h1 className="text-xl font-medium">EduTask</h1>
+          <h1 className="text-xl font-medium">Pebble Track</h1>
         </div>
         
         <div className="flex items-center space-x-4">
