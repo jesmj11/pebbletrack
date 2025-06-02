@@ -45,37 +45,16 @@ function Router() {
     }
   }, [authUser, error]);
 
-  // Show login page if not authenticated
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#9CA3AF] via-[#A7B8A8] to-[#7FB3C4] flex items-center justify-center">
-        <div className="text-xl font-bold text-[#4B5563]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
-          Loading Pebble Track...
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Switch>
-        <Route path="/register" component={Register} />
-        <Route path="/" component={Login} />
-        <Route component={Login} />
-      </Switch>
-    );
-  }
-
   // Handle role switching for demo purposes (parent can view as student)
   const handleRoleSwitch = (role: "parent" | "student") => {
     if (role === "parent") {
       setUser({
-        ...user,
+        ...user!,
         role: "parent"
       });
     } else {
       setUser({
-        ...user,
+        ...user!,
         role: "student",
         fullName: "Alex Student"
       });
@@ -97,73 +76,39 @@ function Router() {
     }
   }, [user, isLoading, location, setLocation]);
 
+  // Show login page if not authenticated
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#9CA3AF] via-[#A7B8A8] to-[#7FB3C4] flex items-center justify-center">
+        <div className="text-xl font-bold text-[#4B5563]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          Loading Pebble Track...
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Switch>
+        <Route path="/register" component={Register} />
+        <Route path="/" component={Login} />
+        <Route component={Login} />
+      </Switch>
+    );
+  }
+
   return (
     <Switch>
       {/* Authenticated routes */}
-      {user ? (
-        <>
-          <Route path="/" component={() => user.role === "parent" ? <TeacherDashboard /> : <StudentDashboard />} />
-          <Route path="/teacher/dashboard" component={TeacherDashboard} />
-          <Route path="/students" component={Students} />
-          <Route path="/classes" component={Classes} />
-          <Route path="/assignments" component={Assignments} />
-          <Route path="/reports" component={Reports} />
-          <Route path="/student" component={StudentDashboard} />
-          <Route path="/student/tasks" component={StudentTasks} />
-        </>
-      ) : (
-        <>
-          {/* Public routes */}
-          <Route path="/register" component={Register} />
-          <Route path="/" component={Login} />
-        </>
-      )}
+      <Route path="/" component={() => user.role === "parent" ? <TeacherDashboard /> : <StudentDashboard />} />
+      <Route path="/teacher/dashboard" component={TeacherDashboard} />
+      <Route path="/students" component={Students} />
+      <Route path="/classes" component={Classes} />
+      <Route path="/assignments" component={Assignments} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/student" component={StudentDashboard} />
+      <Route path="/student/tasks" component={StudentTasks} />
       <Route component={NotFound} />
-    </Switch>
-        )}
-      </Route>
-
-      {/* Teacher routes */}
-      <Route path="/teacher/dashboard">
-        <Layout>
-          <TeacherDashboard />
-        </Layout>
-      </Route>
-      <Route path="/teacher/students">
-        <Layout>
-          <Students />
-        </Layout>
-      </Route>
-      <Route path="/teacher/classes">
-        <Layout>
-          <Classes />
-        </Layout>
-      </Route>
-      <Route path="/teacher/assignments">
-        <Layout>
-          <Assignments />
-        </Layout>
-      </Route>
-      <Route path="/teacher/reports">
-        <Layout>
-          <Reports />
-        </Layout>
-      </Route>
-
-      {/* Student routes - No layout/sidebar for security */}
-      <Route path="/student">
-        <StudentDashboard />
-      </Route>
-      <Route path="/student/tasks">
-        <Layout>
-          <StudentTasks />
-        </Layout>
-      </Route>
-
-      {/* Fallback to 404 */}
-      <Route>
-        <NotFound />
-      </Route>
     </Switch>
   );
 }

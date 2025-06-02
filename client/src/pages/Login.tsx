@@ -9,8 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { useUserContext } from "@/context/UserContext";
+import { queryClient } from "@/lib/queryClient";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -22,7 +21,6 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { checkAuthentication } = useUserContext();
   
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -50,7 +48,8 @@ export default function Login() {
       return response.json();
     },
     onSuccess: async () => {
-      await checkAuthentication();
+      // Invalidate auth query to trigger re-fetch
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
