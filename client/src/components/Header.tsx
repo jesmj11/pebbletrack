@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { School, PersonStanding, LogOut, Eye, Users, X } from "lucide-react";
+import { School, PersonStanding, LogOut, Eye, Users, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -25,13 +25,75 @@ interface StudentDashboardModalProps {
 }
 
 const StudentDashboardModal = ({ onClose, user }: StudentDashboardModalProps) => {
+  const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
+
+  // Fetch family students
+  const { data: students } = useQuery({
+    queryKey: ["/api/auth/students"],
+    enabled: !!user && user.role === "parent",
+  });
+
+  const currentStudent = students?.[currentStudentIndex];
+
+  const handlePreviousStudent = () => {
+    setCurrentStudentIndex(prev => 
+      prev === 0 ? (students?.length || 1) - 1 : prev - 1
+    );
+  };
+
+  const handleNextStudent = () => {
+    setCurrentStudentIndex(prev => 
+      prev === (students?.length || 1) - 1 ? 0 : prev + 1
+    );
+  };
+
+  if (!students || students.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 text-center">
+          <h2 className="text-xl font-bold mb-4" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            No Students Found
+          </h2>
+          <p className="text-gray-600 mb-4">Add students to your family to view their dashboards.</p>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] text-white rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] text-white">
-          <h2 className="text-xl font-bold" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
-            Student Dashboard Preview
-          </h2>
+          <div className="flex items-center space-x-4">
+            <h2 className="text-xl font-bold" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+              {currentStudent?.fullName}'s Dashboard
+            </h2>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handlePreviousStudent}
+                disabled={students.length <= 1}
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors disabled:opacity-50"
+              >
+                <ChevronLeft className="h-5 w-5 text-white" />
+              </button>
+              <span className="text-sm px-2">
+                {currentStudentIndex + 1} of {students.length}
+              </span>
+              <button
+                onClick={handleNextStudent}
+                disabled={students.length <= 1}
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors disabled:opacity-50"
+              >
+                <ChevronRight className="h-5 w-5 text-white" />
+              </button>
+            </div>
+          </div>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
@@ -40,7 +102,7 @@ const StudentDashboardModal = ({ onClose, user }: StudentDashboardModalProps) =>
           </button>
         </div>
         <div className="overflow-auto max-h-[calc(90vh-80px)]">
-          <StudentDashboard />
+          <StudentDashboard studentId={currentStudent?.id} />
         </div>
       </div>
     </div>

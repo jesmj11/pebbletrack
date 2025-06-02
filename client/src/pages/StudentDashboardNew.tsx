@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -38,16 +39,25 @@ interface Task {
   color: string;
 }
 
-const StudentDashboard = () => {
-  // Mock student data
-  const student: Student = {
-    id: "1",
-    name: "Emma",
-    avatar: "👧",
-    level: 2,
-    xp: 340,
-    totalXp: 500
-  };
+interface StudentDashboardProps {
+  studentId?: number;
+}
+
+const StudentDashboard = ({ studentId }: StudentDashboardProps) => {
+  // Fetch actual student data
+  const { data: students } = useQuery({
+    queryKey: ["/api/auth/students"],
+  });
+
+  const student = students?.find((s: any) => s.id === studentId) || students?.[0];
+  
+  if (!student) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-500">Student not found</p>
+      </div>
+    );
+  }
 
   const [tasks, setTasks] = useState<Task[]>([
     {
@@ -58,7 +68,7 @@ const StudentDashboard = () => {
       priority: "high",
       completed: false,
       xpReward: 50,
-      studentId: student.id,
+      studentId: student.id.toString(),
       icon: Calculator,
       color: "from-stream-blue/20 to-stream-blue/30 hover:from-stream-blue/30 hover:to-stream-blue/40 border-stream-blue/40",
     },
@@ -181,10 +191,10 @@ const StudentDashboard = () => {
               </div>
               <div>
                 <h1 className="text-4xl font-bold" style={{color: "hsl(var(--charcoal-slate))"}}>
-                  {student.name}'s Learning Path
+                  {student.fullName}'s Learning Path
                 </h1>
                 <p className="text-xl" style={{color: "hsl(var(--pebble-gray))"}}>
-                  Level {student.level} Explorer
+                  Level {student.level || 1} Explorer
                 </p>
               </div>
             </div>
