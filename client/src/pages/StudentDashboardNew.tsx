@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { getAvatarById } from "@/lib/avatars";
 import {
   ArrowLeft,
   Star,
@@ -58,6 +59,9 @@ const StudentDashboard = ({ studentId }: StudentDashboardProps) => {
       </div>
     );
   }
+
+  // Get the student's nature avatar
+  const studentAvatar = getAvatarById(student.avatar);
 
   const [tasks, setTasks] = useState<Task[]>([
     {
@@ -182,12 +186,12 @@ const StudentDashboard = ({ studentId }: StudentDashboardProps) => {
           <CardContent className="p-8 text-center">
             <div className="flex items-center justify-center gap-4 mb-6">
               <div 
-                className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+                className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold"
                 style={{
-                  background: "linear-gradient(to bottom right, hsl(var(--moss-green)), hsl(var(--stream-blue)))"
+                  backgroundColor: studentAvatar?.backgroundColor || '#3E4A59'
                 }}
               >
-                {student.avatar}
+                {studentAvatar?.emoji || '👦'}
               </div>
               <div>
                 <h1 className="text-4xl font-bold" style={{color: "hsl(var(--charcoal-slate))"}}>
