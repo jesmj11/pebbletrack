@@ -373,7 +373,7 @@ const StudentDashboard = ({ studentId }: StudentDashboardProps) => {
         >
           <CardContent className="p-6 text-center">
             <h3 className="text-2xl font-bold mb-2" style={{color: "hsl(var(--charcoal-slate))"}}>
-              Keep Growing, {student.name}!
+              Keep Growing, {student.fullName}!
             </h3>
             <p className="text-lg mb-4" style={{color: "hsl(var(--pebble-gray))"}}>
               {completedTasks === totalTasks
