@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,38 +15,67 @@ import Classes from "@/pages/Classes";
 import Assignments from "@/pages/Assignments";
 import Reports from "@/pages/Reports";
 import StudentTasks from "@/pages/StudentTasks";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 
-// Mock user for development
+// Family-based user interface
 interface User {
   id: number;
-  username: string;
-  role: "teacher" | "student";
+  email: string;
+  role: "parent" | "student";
   fullName: string;
+  familyName?: string;
 }
 
 function Router() {
-  const [user, setUser] = useState<User | null>({
-    id: 1,
-    username: "teacher",
-    role: "teacher",
-    fullName: "Ms. Johnson"
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const [location, setLocation] = useLocation();
   
-  // Handle role switching (for demo purposes)
-  const handleRoleSwitch = (role: "teacher" | "student") => {
-    if (role === "teacher") {
+  // Check authentication status
+  const { data: authUser, isLoading, error } = useQuery({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (authUser) {
+      setUser(authUser);
+    } else if (error) {
+      setUser(null);
+    }
+  }, [authUser, error]);
+
+  // Show login page if not authenticated
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#9CA3AF] via-[#A7B8A8] to-[#7FB3C4] flex items-center justify-center">
+        <div className="text-xl font-bold text-[#4B5563]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+          Loading Pebble Track...
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Switch>
+        <Route path="/register" component={Register} />
+        <Route path="/" component={Login} />
+        <Route component={Login} />
+      </Switch>
+    );
+  }
+
+  // Handle role switching for demo purposes (parent can view as student)
+  const handleRoleSwitch = (role: "parent" | "student") => {
+    if (role === "parent") {
       setUser({
-        id: 1,
-        username: "teacher",
-        role: "teacher",
-        fullName: "Ms. Johnson"
+        ...user,
+        role: "parent"
       });
     } else {
       setUser({
-        id: 2,
-        username: "student",
+        ...user,
         role: "student",
         fullName: "Alex Student"
       });
@@ -60,39 +89,37 @@ function Router() {
   // Redirect to the appropriate dashboard based on user role
   useEffect(() => {
     if (!isLoading && user) {
-      if (location === "/" && user.role === "teacher") {
+      if (location === "/" && user.role === "parent") {
         setLocation("/teacher/dashboard");
       } else if (location === "/" && user.role === "student") {
         setLocation("/student");
       }
     }
   }, [user, isLoading, location, setLocation]);
-  
-  // If not logged in, we'll show login page at /
-  if (isLoading) {
-    return <div className="h-screen w-full flex items-center justify-center">Loading...</div>;
-  }
-
-  if (!user && location !== "/") {
-    setLocation("/");
-    return null;
-  }
 
   return (
     <Switch>
-      {/* Login path */}
-      <Route path="/">
-        {/* If user is logged in, redirect to dashboard */}
-        {user ? (
-          user.role === "teacher" ? (
-            <TeacherDashboard />
-          ) : (
-            <StudentDashboard />
-          )
-        ) : (
-          <Layout>
-            <TeacherDashboard />
-          </Layout>
+      {/* Authenticated routes */}
+      {user ? (
+        <>
+          <Route path="/" component={() => user.role === "parent" ? <TeacherDashboard /> : <StudentDashboard />} />
+          <Route path="/teacher/dashboard" component={TeacherDashboard} />
+          <Route path="/students" component={Students} />
+          <Route path="/classes" component={Classes} />
+          <Route path="/assignments" component={Assignments} />
+          <Route path="/reports" component={Reports} />
+          <Route path="/student" component={StudentDashboard} />
+          <Route path="/student/tasks" component={StudentTasks} />
+        </>
+      ) : (
+        <>
+          {/* Public routes */}
+          <Route path="/register" component={Register} />
+          <Route path="/" component={Login} />
+        </>
+      )}
+      <Route component={NotFound} />
+    </Switch>
         )}
       </Route>
 

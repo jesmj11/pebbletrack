@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { authStorage } from "./storage-auth";
 import { z } from "zod";
 import { 
   insertUserSchema, 
@@ -33,15 +34,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(passport.session());
 
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
+    new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
       try {
-        const user = await storage.getUserByUsername(username);
+        const user = await authStorage.getUserByEmail(email);
         if (!user) {
-          return done(null, false, { message: "Invalid username" });
+          return done(null, false, { message: "Invalid email or password" });
         }
-        if (user.password !== password) {
-          return done(null, false, { message: "Invalid password" });
+        const isValidPassword = await authStorage.validatePassword(password, user.password);
+        if (!isValidPassword) {
+          return done(null, false, { message: "Invalid email or password" });
         }
+        await authStorage.updateUserLastLogin(user.id);
         return done(null, user);
       } catch (error) {
         return done(error);
@@ -55,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   passport.deserializeUser(async (id: number, done) => {
     try {
-      const user = await storage.getUser(id);
+      const user = await authStorage.getUserByEmail(id);
       done(null, user);
     } catch (error) {
       done(error);
@@ -71,6 +74,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Auth routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await authStorage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "An account with this email already exists" });
+      }
+
+      const user = await authStorage.createUser(userData);
+      res.status(201).json({ message: "Account created successfully", userId: user.id });
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      res.status(400).json({ message: error.message || "Registration failed" });
+    }
+  });
+
   app.post("/api/auth/login", passport.authenticate("local"), (req, res) => {
     res.json(req.user);
   });
@@ -81,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get("/api/auth/status", (req, res) => {
+  app.get("/api/auth/user", (req, res) => {
     if (req.isAuthenticated()) {
       res.json(req.user);
     } else {
