@@ -435,15 +435,24 @@ interface TaskModalProps {
 
 const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) => {
   const [formData, setFormData] = useState({
-    subject: task?.subject || 'Math K-7',
+    subject: task?.subject || 'Math K',
     title: task?.title || '',
     description: task?.description || '',
     type: task?.type || 'lesson'
   });
 
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['Math']);
+
   const subjectHierarchy = {
     'Math': [
-      'Math K-7',
+      'Math K',
+      'Math 1st Grade',
+      'Math 2nd Grade', 
+      'Math 3rd Grade',
+      'Math 4th Grade',
+      'Math 5th Grade',
+      'Math 6th Grade',
+      'Math 7th Grade',
       'Pre-Algebra',
       'Algebra I',
       'Geometry',
@@ -453,7 +462,15 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
       'Calculus'
     ],
     'Science': [
-      'Elementary Science',
+      'Science K',
+      'Science 1st Grade',
+      'Science 2nd Grade',
+      'Science 3rd Grade', 
+      'Science 4th Grade',
+      'Science 5th Grade',
+      'Science 6th Grade',
+      'Science 7th Grade',
+      'Science 8th Grade',
       'Earth Science',
       'Life Science',
       'Physical Science',
@@ -463,8 +480,15 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
       'Environmental Science'
     ],
     'ELA': [
-      'Reading K-5',
-      'Language Arts 6-8',
+      'Reading K',
+      'Reading 1st Grade',
+      'Reading 2nd Grade',
+      'Reading 3rd Grade',
+      'Reading 4th Grade', 
+      'Reading 5th Grade',
+      'Language Arts 6th Grade',
+      'Language Arts 7th Grade',
+      'Language Arts 8th Grade',
       'English 9',
       'English 10',
       'English 11',
@@ -482,13 +506,13 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
     ]
   };
 
-  // Get all subjects in a flat list for easy selection
-  const allSubjects = Object.entries(subjectHierarchy).reduce((acc, [category, subjects]) => {
-    subjects.forEach(subject => {
-      acc.push({ category, subject });
-    });
-    return acc;
-  }, [] as { category: string; subject: string }[]);
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
 
   const handleSave = () => {
     if (!formData.title.trim()) return;
@@ -510,25 +534,43 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-[#3E4A59]">Subject</label>
-            <Select value={formData.subject} onValueChange={(value) => setFormData(prev => ({ ...prev, subject: value }))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(subjectHierarchy).map(([category, subjects]) => (
-                  <div key={category}>
-                    <div className="px-2 py-1 text-xs font-semibold text-[#7E8A97] bg-[#F5F2EA]">
-                      {category}
+            <div className="border rounded-md p-2 max-h-64 overflow-y-auto bg-white">
+              {Object.entries(subjectHierarchy).map(([category, subjects]) => (
+                <div key={category} className="mb-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleCategory(category)}
+                    className="flex items-center w-full text-left px-2 py-1 text-sm font-semibold text-[#3E4A59] bg-[#F5F2EA] rounded hover:bg-[#E8E2D5] transition-colors"
+                  >
+                    <span className="mr-2">
+                      {expandedCategories.includes(category) ? '▼' : '▶'}
+                    </span>
+                    {category}
+                  </button>
+                  {expandedCategories.includes(category) && (
+                    <div className="mt-1 ml-4 space-y-1">
+                      {subjects.map(subject => (
+                        <button
+                          key={subject}
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, subject }))}
+                          className={`block w-full text-left px-2 py-1 text-sm rounded transition-colors ${
+                            formData.subject === subject
+                              ? 'bg-[#C3A06D] text-white'
+                              : 'hover:bg-gray-100 text-[#3E4A59]'
+                          }`}
+                        >
+                          {subject}
+                        </button>
+                      ))}
                     </div>
-                    {subjects.map(subject => (
-                      <SelectItem key={subject} value={subject} className="pl-4">
-                        {subject}
-                      </SelectItem>
-                    ))}
-                  </div>
-                ))}
-              </SelectContent>
-            </Select>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="mt-1 text-xs text-[#7E8A97]">
+              Selected: <span className="font-medium">{formData.subject}</span>
+            </div>
           </div>
           
           <div>
