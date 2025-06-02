@@ -63,7 +63,7 @@ function Router() {
       if (location === "/" && user.role === "teacher") {
         setLocation("/teacher/dashboard");
       } else if (location === "/" && user.role === "student") {
-        setLocation("/student/dashboard");
+        setLocation("/student");
       }
     }
   }, [user, isLoading, location, setLocation]);
@@ -123,11 +123,9 @@ function Router() {
         </Layout>
       </Route>
 
-      {/* Student routes */}
-      <Route path="/student/dashboard">
-        <Layout>
-          <StudentDashboard />
-        </Layout>
+      {/* Student routes - No layout/sidebar for security */}
+      <Route path="/student">
+        <StudentDashboard />
       </Route>
       <Route path="/student/tasks">
         <Layout>

@@ -365,11 +365,26 @@ const StudentDashboard = () => {
             <h3 className="text-2xl font-bold mb-2" style={{color: "hsl(var(--charcoal-slate))"}}>
               Keep Growing, {student.name}!
             </h3>
-            <p className="text-lg" style={{color: "hsl(var(--pebble-gray))"}}>
+            <p className="text-lg mb-4" style={{color: "hsl(var(--pebble-gray))"}}>
               {completedTasks === totalTasks
                 ? "Excellent work! You've completed all your tasks today."
                 : `You're making great progress. ${totalTasks - completedTasks} more to go!`}
             </p>
+            
+            {/* Parent Access Button */}
+            <div className="mt-6 pt-4 border-t" style={{borderColor: "hsl(var(--fern-mist))"}}>
+              <Button
+                onClick={() => window.location.href = '/'}
+                variant="outline"
+                className="text-sm px-4 py-2"
+                style={{
+                  borderColor: "hsl(var(--pebble-gray))",
+                  color: "hsl(var(--pebble-gray))"
+                }}
+              >
+                Parent Dashboard
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
