@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-    /* Pebble Track Color Palette */
-    --pebble-gray: 210 11% 55%; /* #7E8A97 */
-    --moss-green: 127 15% 61%; /* #8BA88E */
-    --stream-blue: 202 53% 78%; /* #A8C7DD */
-    --drift-sand: 40 25% 94%; /* #F5F2EA */
-    --charcoal-slate: 213 20% 29%; /* #3E4A59 */
-    --fern-mist: 107 25% 85%; /* #D9E5D1 */
+    /* Pebble Track Color Palette - Updated with exact hex codes */
+    --pebble-gray: #7E8A97;
+    --moss-green: #8BA88E;
+    --stream-blue: #A8C7DD;
+    --drift-sand: #F5F2EA;
+    --charcoal-slate: #3E4A59;
+    --fern-mist: #D9E5D1;
     
     /* Theme variables using the color palette */
     --background: 40 25% 94%; /* Drift Sand */

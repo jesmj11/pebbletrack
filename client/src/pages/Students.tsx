@@ -61,7 +61,9 @@ interface Student {
 const studentFormSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
   gradeLevel: z.string().min(1, "Grade level is required"),
-  pin: z.string().min(4, "PIN must be at least 4 digits").max(6, "PIN must be at most 6 digits").optional(),
+  pin: z.string().optional().refine((val) => !val || (val.length >= 4 && val.length <= 6), {
+    message: "PIN must be between 4-6 digits if provided",
+  }),
 });
 
 const Students = () => {
@@ -221,7 +223,7 @@ const Students = () => {
             form.reset();
             setIsAddModalOpen(true);
           }} 
-          className="bg-gradient-to-r from-[#9CA3AF] to-[#A7B8A8] hover:from-[#8B9196] to-[#96A897] text-white"
+          className="bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] hover:from-[#6E7A87] to-[#7B987E] text-white"
           size="lg"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
@@ -245,15 +247,15 @@ const Students = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Grade Levels</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Learners</CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {students ? new Set(students.map(s => s.gradeLevel)).size : 0}
+              {students?.filter(s => s.level && s.level > 0).length || 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              Different grade levels
+              Students with progress
             </p>
           </CardContent>
         </Card>
@@ -302,7 +304,7 @@ const Students = () => {
                   form.reset();
                   setIsAddModalOpen(true);
                 }}
-                className="bg-gradient-to-r from-[#9CA3AF] to-[#A7B8A8] hover:from-[#8B9196] to-[#96A897] text-white"
+                className="bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] hover:from-[#6E7A87] to-[#7B987E] text-white"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
                 Add Your First Student
@@ -319,7 +321,7 @@ const Students = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-[#9CA3AF] to-[#A7B8A8] rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        <div className="w-12 h-12 bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] rounded-full flex items-center justify-center text-white font-bold text-lg">
                           {student.fullName.charAt(0).toUpperCase()}
                         </div>
                         <div>

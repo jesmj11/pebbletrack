@@ -28,7 +28,7 @@ const StudentDashboardModal = ({ onClose, user }: StudentDashboardModalProps) =>
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-[#9CA3AF] to-[#A7B8A8] text-white">
+        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] text-white">
           <h2 className="text-xl font-bold" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
             Student Dashboard Preview
           </h2>
@@ -99,7 +99,7 @@ const Header = ({ user }: HeaderProps) => {
 
   return (
     <>
-      <header className="bg-gradient-to-r from-[#9CA3AF] to-[#A7B8A8] text-white shadow-md">
+      <header className="bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] text-white shadow-md">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center">
             <School className="mr-3 h-6 w-6" />
