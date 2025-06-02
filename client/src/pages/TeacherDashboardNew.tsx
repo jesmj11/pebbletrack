@@ -130,11 +130,20 @@ const TeacherDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-drift-sand to-fern-mist p-4" style={{
+      background: "linear-gradient(135deg, hsl(var(--drift-sand)) 0%, hsl(var(--fern-mist)) 100%)"
+    }}>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Pebble Track Dashboard</h1>
-          <Button onClick={() => setShowTaskModal(true)}>
+          <h1 className="text-3xl font-bold text-charcoal-slate" style={{color: "hsl(var(--charcoal-slate))"}}>Pebble Track Dashboard</h1>
+          <Button 
+            onClick={() => setShowTaskModal(true)}
+            className="bg-moss-green hover:bg-moss-green/90 text-white"
+            style={{
+              backgroundColor: "hsl(var(--moss-green))",
+              color: "white"
+            }}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Assignment
           </Button>
