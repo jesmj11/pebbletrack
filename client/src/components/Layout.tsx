@@ -1,22 +1,31 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Header from "./Header";
 import TeacherSidebar from "./TeacherSidebar";
 import StudentSidebar from "./StudentSidebar";
+
+interface User {
+  id: number;
+  email: string;
+  role: "parent" | "student";
+  fullName: string;
+  familyName?: string;
+}
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  // Get current user from global window object (for demo)
-  const user = (window as any).currentUser || {
-    id: 1,
-    username: "teacher",
-    role: "teacher",
-    fullName: "Ms. Johnson"
-  };
-  const isTeacher = user?.role === "teacher";
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Get current authenticated user
+  const { data: user } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
+
+  const isParent = user?.role === "parent";
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -33,12 +42,22 @@ const Layout = ({ children }: LayoutProps) => {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
+  if (!user) {
+    return (
+      <div className="flex flex-col min-h-screen bg-neutral-light">
+        <main className="flex-1 p-4 md:p-6">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-neutral-light">
-      <Header />
+      <Header user={user} />
       
       <div className="flex flex-1">
-        {isTeacher ? <TeacherSidebar /> : <StudentSidebar />}
+        {isParent ? <TeacherSidebar /> : <StudentSidebar />}
         
         <main className={`flex-1 p-4 md:p-6 ${isMobile ? 'ml-16' : 'ml-16 md:ml-64'}`}>
           {children}

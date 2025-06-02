@@ -58,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   passport.deserializeUser(async (id: number, done) => {
     try {
-      const user = await authStorage.getUserByEmail(id);
+      const user = await authStorage.getUser(id);
       done(null, user);
     } catch (error) {
       done(error);

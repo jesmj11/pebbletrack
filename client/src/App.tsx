@@ -100,14 +100,46 @@ function Router() {
   return (
     <Switch>
       {/* Authenticated routes */}
-      <Route path="/" component={() => user.role === "parent" ? <TeacherDashboard /> : <StudentDashboard />} />
-      <Route path="/teacher/dashboard" component={TeacherDashboard} />
-      <Route path="/students" component={Students} />
-      <Route path="/classes" component={Classes} />
-      <Route path="/assignments" component={Assignments} />
-      <Route path="/reports" component={Reports} />
-      <Route path="/student" component={StudentDashboard} />
-      <Route path="/student/tasks" component={StudentTasks} />
+      <Route path="/">
+        <Layout>
+          {user.role === "parent" ? <TeacherDashboard /> : <StudentDashboard />}
+        </Layout>
+      </Route>
+      <Route path="/teacher/dashboard">
+        <Layout>
+          <TeacherDashboard />
+        </Layout>
+      </Route>
+      <Route path="/students">
+        <Layout>
+          <Students />
+        </Layout>
+      </Route>
+      <Route path="/classes">
+        <Layout>
+          <Classes />
+        </Layout>
+      </Route>
+      <Route path="/assignments">
+        <Layout>
+          <Assignments />
+        </Layout>
+      </Route>
+      <Route path="/reports">
+        <Layout>
+          <Reports />
+        </Layout>
+      </Route>
+      <Route path="/student">
+        <Layout>
+          <StudentDashboard />
+        </Layout>
+      </Route>
+      <Route path="/student/tasks">
+        <Layout>
+          <StudentTasks />
+        </Layout>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
