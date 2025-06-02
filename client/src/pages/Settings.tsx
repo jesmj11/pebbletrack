@@ -39,6 +39,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { getAvatarById } from "@/lib/avatars";
+import { queryClient } from "@/lib/queryClient";
 
 const Settings = () => {
   const { toast } = useToast();
@@ -87,12 +88,42 @@ const Settings = () => {
     }));
   };
 
+  const saveSettingsMutation = useMutation({
+    mutationFn: async (settingsData: any) => {
+      const response = await fetch("/api/family/settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(settingsData),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to save settings");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate family settings query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["/api/family/settings"] });
+      toast({
+        title: "Settings saved",
+        description: "Your preferences have been updated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: "Failed to save settings. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSaveSettings = () => {
-    // Would save to backend API
-    toast({
-      title: "Settings saved",
-      description: "Your preferences have been updated successfully.",
-    });
+    saveSettingsMutation.mutate(settings);
   };
 
   const handleExportData = () => {

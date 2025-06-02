@@ -115,6 +115,12 @@ const Header = ({ user }: HeaderProps) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showStudentDashboard, setShowStudentDashboard] = useState(false);
 
+  // Fetch family settings to get the family name
+  const { data: familySettings } = useQuery({
+    queryKey: ["/api/family/settings"],
+    enabled: !!user && user.role === "parent",
+  });
+
   const logoutMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/auth/logout", {
@@ -168,9 +174,9 @@ const Header = ({ user }: HeaderProps) => {
             <h1 className="text-2xl font-bold" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
               Pebble Track
             </h1>
-            {user.familyName && (
+            {familySettings?.familyName && (
               <span className="ml-3 text-sm opacity-90">
-                {user.familyName} Family
+                {familySettings.familyName}
               </span>
             )}
           </div>

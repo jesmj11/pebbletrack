@@ -207,6 +207,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simple in-memory storage for family settings (per session)
+  const familySettings = new Map();
+
+  // Family settings routes
+  app.get("/api/family/settings", isAuthenticated, async (req, res) => {
+    const user = req.user as any;
+    const userSettings = familySettings.get(user.id) || {
+      familyName: "Matthews Family",
+      preferences: {}
+    };
+    res.json(userSettings);
+  });
+
+  app.post("/api/family/settings", isAuthenticated, async (req, res) => {
+    const user = req.user as any;
+    // Save family settings to in-memory storage
+    familySettings.set(user.id, req.body);
+    res.json({ success: true, settings: req.body });
+  });
+
   // Class routes
   app.get("/api/classes", isAuthenticated, async (req, res) => {
     const user = req.user as any;
