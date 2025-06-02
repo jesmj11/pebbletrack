@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { PlusIcon, Search, Edit, Trash, MoreHorizontal, Users, GraduationCap } from "lucide-react";
+import { getAvatarForStudent, natureAvatars } from "@/lib/avatars";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -321,8 +322,11 @@ const Students = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] rounded-full flex items-center justify-center text-white font-bold text-lg">
-                          {student.fullName.charAt(0).toUpperCase()}
+                        <div 
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                          style={{ backgroundColor: getAvatarForStudent(student.fullName).backgroundColor }}
+                        >
+                          {getAvatarForStudent(student.fullName).emoji}
                         </div>
                         <div>
                           <h3 className="font-semibold text-[#4B5563]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
