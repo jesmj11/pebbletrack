@@ -4,10 +4,13 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
+  email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  role: text("role").notNull().default("student"), // "teacher" or "student"
+  role: text("role").notNull().default("parent"), // "parent" or "student"
   fullName: text("full_name").notNull(),
+  familyName: text("family_name"), // e.g., "The Johnson Family"
+  createdAt: timestamp("created_at").defaultNow(),
+  lastLogin: timestamp("last_login"),
 });
 
 export const classes = pgTable("classes", {
@@ -20,8 +23,15 @@ export const classes = pgTable("classes", {
 
 export const students = pgTable("students", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  classIds: text("class_ids").array().notNull(),
+  parentId: integer("parent_id").notNull(), // references users.id (parent)
+  fullName: text("full_name").notNull(),
+  gradeLevel: text("grade_level").notNull(), // "2nd Grade", "5th Grade", etc.
+  avatar: text("avatar").default("👧"), // emoji avatar
+  level: integer("level").default(1), // gamification level
+  xp: integer("xp").default(0), // experience points
+  totalXp: integer("total_xp").default(500), // XP needed for next level
+  pin: text("pin"), // 4-digit PIN for student login
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const assignments = pgTable("assignments", {
@@ -44,10 +54,22 @@ export const tasks = pgTable("tasks", {
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
+  email: true,
   password: true,
   role: true,
   fullName: true,
+  familyName: true,
+});
+
+export const insertStudentSchema = createInsertSchema(students).pick({
+  parentId: true,
+  fullName: true,
+  gradeLevel: true,
+  avatar: true,
+  level: true,
+  xp: true,
+  totalXp: true,
+  pin: true,
 });
 
 export const insertClassSchema = createInsertSchema(classes).pick({
@@ -55,11 +77,6 @@ export const insertClassSchema = createInsertSchema(classes).pick({
   teacherId: true,
   gradeLevel: true,
   description: true,
-});
-
-export const insertStudentSchema = createInsertSchema(students).pick({
-  userId: true,
-  classIds: true,
 });
 
 export const insertAssignmentSchema = createInsertSchema(assignments).pick({
