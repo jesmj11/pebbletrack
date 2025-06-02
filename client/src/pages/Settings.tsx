@@ -11,7 +11,11 @@ import {
   Upload,
   Save,
   Eye,
-  EyeOff
+  EyeOff,
+  CreditCard,
+  Calendar,
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,13 +38,14 @@ import {
 } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { getAvatarById } from "@/lib/avatars";
 
 const Settings = () => {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [settings, setSettings] = useState({
     // Profile Settings
-    familyName: "Smith Family",
+    familyName: "Matthews Family",
     email: "jesmj11@gmail.com",
     notifications: {
       email: true,
@@ -131,8 +136,9 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="subscription">Subscription</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
           <TabsTrigger value="app">App Settings</TabsTrigger>
@@ -176,18 +182,164 @@ const Settings = () => {
               <div className="pt-4 border-t border-[#D9E5D1]">
                 <h3 className="text-lg font-semibold text-[#3E4A59] mb-3">Family Students</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {students?.map((student: any) => (
-                    <div key={student.id} className="flex items-center space-x-3 p-3 bg-[#F5F2EA] rounded-lg">
-                      <div className="w-8 h-8 bg-[#A8C7DD] rounded-full flex items-center justify-center text-sm">
-                        {student.fullName.charAt(0)}
+                  {students?.map((student: any) => {
+                    const studentAvatar = getAvatarById(student.avatar);
+                    return (
+                      <div key={student.id} className="flex items-center space-x-3 p-3 bg-[#F5F2EA] rounded-lg">
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                          style={{
+                            backgroundColor: studentAvatar?.backgroundColor || '#A8C7DD'
+                          }}
+                        >
+                          {studentAvatar?.emoji || student.fullName.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-medium text-[#3E4A59]">{student.fullName}</p>
+                          <p className="text-xs text-[#7E8A97]">{student.gradeLevel}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-[#3E4A59]">{student.fullName}</p>
-                        <p className="text-xs text-[#7E8A97]">{student.gradeLevel}</p>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Subscription Settings */}
+        <TabsContent value="subscription" className="space-y-6">
+          <Card className="border-[#D9E5D1]">
+            <CardHeader>
+              <CardTitle className="flex items-center text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+                <CreditCard className="h-5 w-5 mr-2" />
+                Subscription & Billing
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Current Plan */}
+              <div className="bg-gradient-to-r from-[#D9E5D1] to-[#F5F2EA] p-6 rounded-lg border border-[#8BA88E]">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-[#3E4A59]">Family Pro Plan</h3>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="text-sm text-[#7E8A97]">Active Subscription</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-[#3E4A59]">$19.99</div>
+                    <div className="text-sm text-[#7E8A97]">per month</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-4 w-4 text-[#8BA88E]" />
+                    <span className="text-sm text-[#7E8A97]">Renewal: March 15, 2025</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-[#7E8A97]">Up to 10 students</span>
+                  </div>
+                </div>
+
+                <div className="flex space-x-3">
+                  <Button 
+                    variant="outline" 
+                    className="border-[#8BA88E] text-[#8BA88E] hover:bg-white"
+                  >
+                    Change Plan
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="border-[#7E8A97] text-[#7E8A97] hover:bg-white"
+                  >
+                    Cancel Subscription
+                  </Button>
+                </div>
+              </div>
+
+              {/* Usage Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="border-[#D9E5D1]">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-[#3E4A59] mb-1">6</div>
+                    <div className="text-sm text-[#7E8A97]">Active Students</div>
+                    <div className="text-xs text-green-600 mt-1">4 remaining</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-[#D9E5D1]">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-[#3E4A59] mb-1">248</div>
+                    <div className="text-sm text-[#7E8A97]">Tasks This Month</div>
+                    <div className="text-xs text-[#8BA88E] mt-1">Unlimited</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-[#D9E5D1]">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-[#3E4A59] mb-1">12</div>
+                    <div className="text-sm text-[#7E8A97]">Active Classes</div>
+                    <div className="text-xs text-[#8BA88E] mt-1">Unlimited</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Payment Method */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-[#3E4A59]">Payment Method</h3>
+                <div className="flex items-center justify-between p-4 border border-[#D9E5D1] rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-6 bg-blue-600 rounded flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">VISA</span>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-[#3E4A59]">•••• •••• •••• 4532</div>
+                      <div className="text-xs text-[#7E8A97]">Expires 03/27</div>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-[#8BA88E] text-[#8BA88E] hover:bg-[#D9E5D1]"
+                  >
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Billing History */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-[#3E4A59]">Recent Billing History</h3>
+                <div className="space-y-2">
+                  {[
+                    { date: "Feb 15, 2025", amount: "$19.99", status: "Paid" },
+                    { date: "Jan 15, 2025", amount: "$19.99", status: "Paid" },
+                    { date: "Dec 15, 2024", amount: "$19.99", status: "Paid" },
+                  ].map((bill, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-[#F5F2EA] rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <div>
+                          <div className="text-sm font-medium text-[#3E4A59]">{bill.date}</div>
+                          <div className="text-xs text-[#7E8A97]">Family Pro Plan</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-[#3E4A59]">{bill.amount}</div>
+                        <div className="text-xs text-green-600">{bill.status}</div>
                       </div>
                     </div>
                   ))}
                 </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-[#8BA88E] text-[#8BA88E] hover:bg-[#D9E5D1]"
+                >
+                  View All Invoices
+                </Button>
               </div>
             </CardContent>
           </Card>
