@@ -16,6 +16,7 @@ import Assignments from "@/pages/Assignments";
 import Reports from "@/pages/Reports";
 import Planner from "@/pages/Planner";
 import StudentTasks from "@/pages/StudentTasks";
+import Settings from "@/pages/Settings";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 
@@ -144,6 +145,11 @@ function Router() {
       <Route path="/student/tasks">
         <Layout>
           <StudentTasks />
+        </Layout>
+      </Route>
+      <Route path="/settings">
+        <Layout>
+          <Settings />
         </Layout>
       </Route>
       <Route component={NotFound} />
