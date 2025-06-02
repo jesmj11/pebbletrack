@@ -12,7 +12,8 @@ import {
   Clock,
   BookOpen,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Printer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -261,30 +262,42 @@ const Planner = () => {
           </p>
         </div>
         
-        {/* Week Navigation */}
-        <div className="flex items-center space-x-4 mt-4 md:mt-0">
+        <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 mt-4 md:mt-0">
+          {/* Print Button */}
           <Button 
             variant="outline" 
-            onClick={() => navigateWeek('prev')}
-            className="border-[#D9E5D1] text-[#7E8A97] hover:bg-[#F5F2EA]"
+            onClick={() => window.print()}
+            className="border-[#8BA88E] text-[#8BA88E] hover:bg-[#D9E5D1] print:hidden"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <Printer className="h-4 w-4 mr-2" />
+            Print Planner
           </Button>
           
-          <div className="text-center">
-            <h3 className="font-semibold text-[#3E4A59]">
-              {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 4), 'MMM d, yyyy')}
-            </h3>
-            <p className="text-sm text-[#7E8A97]">Week {format(weekStart, 'w')}</p>
+          {/* Week Navigation */}
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              onClick={() => navigateWeek('prev')}
+              className="border-[#D9E5D1] text-[#7E8A97] hover:bg-[#F5F2EA] print:hidden"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <div className="text-center">
+              <h3 className="font-semibold text-[#3E4A59]">
+                {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 4), 'MMM d, yyyy')}
+              </h3>
+              <p className="text-sm text-[#7E8A97]">Week {format(weekStart, 'w')}</p>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => navigateWeek('next')}
+              className="border-[#D9E5D1] text-[#7E8A97] hover:bg-[#F5F2EA] print:hidden"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
-          
-          <Button 
-            variant="outline" 
-            onClick={() => navigateWeek('next')}
-            className="border-[#D9E5D1] text-[#7E8A97] hover:bg-[#F5F2EA]"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
