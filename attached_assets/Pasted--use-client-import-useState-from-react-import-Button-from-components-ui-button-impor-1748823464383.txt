@@ -1,0 +1,292 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import {
+  ArrowLeft,
+  Star,
+  Trophy,
+  CheckCircle2,
+  BookOpen,
+  Calculator,
+  Palette,
+  Microscope,
+  PenTool,
+  Activity,
+} from "lucide-react"
+
+interface Student {
+  id: string
+  name: string
+  avatar: string
+  level: number
+  xp: number
+  totalXp: number
+}
+
+interface Task {
+  id: string
+  title: string
+  subject: string
+  dueDate: string
+  priority: "low" | "medium" | "high"
+  completed: boolean
+  xpReward: number
+  studentId: string
+  description?: string
+  icon: any
+  color: string
+}
+
+interface StudentDashboardProps {
+  student: Student
+  onBack: () => void
+}
+
+export function StudentDashboard({ student, onBack }: StudentDashboardProps) {
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: "1",
+      title: "Math Practice",
+      subject: "Mathematics",
+      dueDate: "2024-01-15",
+      priority: "high",
+      completed: false,
+      xpReward: 50,
+      studentId: student.id,
+      icon: Calculator,
+      color: "from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-150 border-blue-200",
+    },
+    {
+      id: "2",
+      title: "Read a Story",
+      subject: "Reading",
+      dueDate: "2024-01-15",
+      priority: "medium",
+      completed: false,
+      xpReward: 30,
+      studentId: student.id,
+      icon: BookOpen,
+      color: "from-green-50 to-green-100 hover:from-green-100 hover:to-green-150 border-green-200",
+    },
+    {
+      id: "3",
+      title: "Create Art",
+      subject: "Art",
+      dueDate: "2024-01-16",
+      priority: "low",
+      completed: false,
+      xpReward: 25,
+      studentId: student.id,
+      icon: Palette,
+      color: "from-slate-50 to-slate-100 hover:from-slate-100 hover:to-slate-150 border-slate-200",
+    },
+    {
+      id: "4",
+      title: "Science Exploration",
+      subject: "Science",
+      dueDate: "2024-01-16",
+      priority: "medium",
+      completed: false,
+      xpReward: 40,
+      studentId: student.id,
+      icon: Microscope,
+      color: "from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-150 border-emerald-200",
+    },
+    {
+      id: "5",
+      title: "Writing Practice",
+      subject: "Writing",
+      dueDate: "2024-01-16",
+      priority: "medium",
+      completed: false,
+      xpReward: 35,
+      studentId: student.id,
+      icon: PenTool,
+      color: "from-stone-50 to-stone-100 hover:from-stone-100 hover:to-stone-150 border-stone-200",
+    },
+    {
+      id: "6",
+      title: "Physical Activity",
+      subject: "Physical Education",
+      dueDate: "2024-01-16",
+      priority: "low",
+      completed: false,
+      xpReward: 20,
+      studentId: student.id,
+      icon: Activity,
+      color: "from-teal-50 to-teal-100 hover:from-teal-100 hover:to-teal-150 border-teal-200",
+    },
+  ])
+
+  const [showCelebration, setShowCelebration] = useState(false)
+  const [celebrationMessage, setCelebrationMessage] = useState("")
+
+  const toggleTaskCompletion = (taskId: string) => {
+    setTasks(
+      tasks.map((task) => {
+        if (task.id === taskId && !task.completed) {
+          setCelebrationMessage(`Well done! +${task.xpReward} XP earned`)
+          setShowCelebration(true)
+          setTimeout(() => setShowCelebration(false), 3000)
+          return { ...task, completed: true }
+        }
+        return task
+      }),
+    )
+  }
+
+  const completedTasks = tasks.filter((task) => task.completed).length
+  const totalTasks = tasks.length
+  const todayXP = tasks.filter((t) => t.completed).reduce((sum, t) => sum + t.xpReward, 0)
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-stone-100 to-stone-200 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="text-lg px-6 py-3 border-slate-300 hover:border-slate-400"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Back
+          </Button>
+        </div>
+
+        {/* Celebration Animation */}
+        {showCelebration && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-12 py-6 rounded-2xl text-2xl font-semibold animate-bounce shadow-2xl border border-white">
+              {celebrationMessage}
+            </div>
+          </div>
+        )}
+
+        {/* Title Card */}
+        <Card className="mb-8 bg-white/80 backdrop-blur-sm border border-slate-300 shadow-lg">
+          <CardContent className="p-8 text-center">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                {student.avatar}
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-slate-700">{student.name}'s Learning Path</h1>
+                <p className="text-xl text-slate-600">Level {student.level} Explorer</p>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="bg-white rounded-2xl p-4 shadow-inner border border-slate-200 mb-6">
+              <div className="flex justify-between text-lg font-semibold mb-3 px-2">
+                <span className="text-slate-700">Today's Progress</span>
+                <span className="text-slate-700">
+                  {completedTasks}/{totalTasks}
+                </span>
+              </div>
+              <Progress value={(completedTasks / totalTasks) * 100} className="h-4 bg-slate-200" />
+            </div>
+
+            {/* Stats Display */}
+            <div className="flex justify-center gap-6">
+              <div className="bg-white rounded-xl px-6 py-4 shadow-md border border-green-200">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-6 h-6 text-green-600" />
+                  <span className="text-xl font-semibold text-slate-700">{todayXP} XP Today</span>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl px-6 py-4 shadow-md border border-blue-200">
+                <div className="flex items-center gap-2">
+                  <Star className="w-6 h-6 text-blue-600" />
+                  <span className="text-xl font-semibold text-slate-700">Level {student.level}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Task Buttons Grid */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {tasks.map((task) => {
+            const IconComponent = task.icon
+            return (
+              <button
+                key={task.id}
+                onClick={() => !task.completed && toggleTaskCompletion(task.id)}
+                className={`relative p-6 rounded-2xl border-2 transition-all duration-300 transform hover:scale-105 shadow-lg ${
+                  task.completed
+                    ? "bg-gradient-to-br from-green-100 to-green-200 border-green-400 shadow-green-200"
+                    : `bg-gradient-to-br ${task.color} border-2 shadow-xl hover:shadow-2xl`
+                } ${!task.completed ? "hover:scale-105 active:scale-95" : ""}`}
+                disabled={task.completed}
+              >
+                {/* Checkbox */}
+                <div className="absolute top-4 left-4">
+                  <div
+                    className={`w-6 h-6 border-2 rounded-md flex items-center justify-center ${
+                      task.completed ? "bg-green-500 border-green-600" : "bg-white border-slate-400"
+                    }`}
+                  >
+                    {task.completed && <CheckCircle2 className="w-4 h-4 text-white" />}
+                  </div>
+                </div>
+
+                {/* XP Badge */}
+                <div className="absolute top-4 right-4">
+                  <div className="bg-slate-600 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 shadow-md">
+                    <Trophy className="w-3 h-3" />
+                    {task.xpReward}
+                  </div>
+                </div>
+
+                {/* Task Content */}
+                <div className="flex items-center gap-4 mt-8">
+                  {/* Icon */}
+                  <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-md border border-slate-200">
+                    <IconComponent className="w-8 h-8 text-slate-600" />
+                  </div>
+
+                  {/* Task Text */}
+                  <div className="flex-1 text-left">
+                    <h3
+                      className={`text-2xl font-bold mb-1 ${
+                        task.completed ? "line-through text-slate-500" : "text-slate-700"
+                      }`}
+                    >
+                      {task.title}
+                    </h3>
+                    <p className="text-lg text-slate-600">{task.subject}</p>
+                  </div>
+                </div>
+
+                {/* Completion Overlay */}
+                {task.completed && (
+                  <div className="absolute inset-0 bg-green-500 bg-opacity-10 rounded-2xl flex items-center justify-center">
+                    <div className="bg-green-500 text-white px-4 py-2 rounded-xl text-lg font-semibold shadow-lg">
+                      ✓ Complete
+                    </div>
+                  </div>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Encouragement Message */}
+        <Card className="mt-8 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200">
+          <CardContent className="p-6 text-center">
+            <h3 className="text-2xl font-bold text-slate-700 mb-2">Keep Growing, {student.name}!</h3>
+            <p className="text-lg text-slate-600">
+              {completedTasks === totalTasks
+                ? "Excellent work! You've completed all your tasks today."
+                : `You're making great progress. ${totalTasks - completedTasks} more to go!`}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

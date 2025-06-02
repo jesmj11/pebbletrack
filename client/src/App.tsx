@@ -9,7 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
 import TeacherDashboard from "@/pages/TeacherDashboardNew";
-import StudentDashboard from "@/pages/StudentDashboard";
+import StudentDashboard from "@/pages/StudentDashboardNew";
 import Students from "@/pages/Students";
 import Classes from "@/pages/Classes";
 import Assignments from "@/pages/Assignments";
