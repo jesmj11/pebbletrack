@@ -32,26 +32,7 @@ const TeacherSidebar = () => {
               </a>
             </Link>
           </li>
-          <li className="mb-1">
-            <Link href="/classes">
-              <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${
-                isActive("/classes") ? "bg-neutral-light" : ""
-              }`}>
-                <BookOpen className={`${isActive("/classes") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
-                <span className="hidden md:inline">Classes</span>
-              </a>
-            </Link>
-          </li>
-          <li className="mb-1">
-            <Link href="/assignments">
-              <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${
-                isActive("/assignments") ? "bg-neutral-light" : ""
-              }`}>
-                <FileText className={`${isActive("/assignments") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
-                <span className="hidden md:inline">Assignments</span>
-              </a>
-            </Link>
-          </li>
+
           <li className="mb-1">
             <Link href="/reports">
               <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${

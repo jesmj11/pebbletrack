@@ -1,18 +1,29 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { PlusIcon, Search, Edit, Trash, MoreHorizontal, Users, GraduationCap } from "lucide-react";
+import { 
+  PlusIcon, 
+  Search, 
+  Edit, 
+  Trash, 
+  MoreHorizontal, 
+  Users, 
+  GraduationCap, 
+  BookOpen, 
+  Calendar, 
+  CheckCircle, 
+  Clock, 
+  ChevronRight,
+  ArrowLeft,
+  FileText,
+  Award,
+  TrendingUp
+} from "lucide-react";
 import { getAvatarForStudent, natureAvatars } from "@/lib/avatars";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,23 +39,31 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertStudentSchema } from "@shared/schema";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 interface Student {
   id: number;
@@ -59,416 +78,618 @@ interface Student {
   createdAt?: Date | null;
 }
 
-const studentFormSchema = z.object({
-  fullName: z.string().min(2, "Name must be at least 2 characters"),
-  gradeLevel: z.string().min(1, "Grade level is required"),
-  pin: z.string().optional().refine((val) => !val || (val.length >= 4 && val.length <= 6), {
-    message: "PIN must be between 4-6 digits if provided",
-  }),
-});
-
 const Students = () => {
-  const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [view, setView] = useState<'students' | 'classes' | 'assignments'>('students');
+  const { toast } = useToast();
 
-  // Get current user to ensure they're a parent
+  // Get current authenticated user
   const { data: currentUser } = useQuery({
     queryKey: ["/api/auth/user"],
     retry: false,
   });
 
-  // Fetch students for this parent
-  const { data: students, isLoading: isStudentsLoading } = useQuery<Student[]>({
+  // Fetch family students
+  const { data: students } = useQuery({
     queryKey: ["/api/auth/students"],
-    enabled: !!currentUser && currentUser.role === "parent",
+    enabled: !!currentUser && currentUser?.role === "parent",
   });
 
-  const form = useForm<z.infer<typeof studentFormSchema>>({
-    resolver: zodResolver(studentFormSchema),
+  // Mock data for student classes and assignments (would come from API)
+  const getStudentClasses = (studentId: number) => [
+    {
+      id: 1,
+      name: "Math",
+      description: "Arithmetic, Algebra, and Problem Solving",
+      progress: 85,
+      totalAssignments: 12,
+      completedAssignments: 10,
+      color: "#8BA88E"
+    },
+    {
+      id: 2,
+      name: "Science",
+      description: "Nature Studies and Simple Experiments",
+      progress: 72,
+      totalAssignments: 8,
+      completedAssignments: 6,
+      color: "#A8C7DD"
+    },
+    {
+      id: 3,
+      name: "Reading",
+      description: "Literature and Comprehension",
+      progress: 90,
+      totalAssignments: 15,
+      completedAssignments: 14,
+      color: "#D9E5D1"
+    },
+    {
+      id: 4,
+      name: "History",
+      description: "World History and Geography",
+      progress: 65,
+      totalAssignments: 10,
+      completedAssignments: 7,
+      color: "#F5F2EA"
+    }
+  ];
+
+  const getClassAssignments = (classId: number) => [
+    {
+      id: 1,
+      title: "Multiplication Tables Practice",
+      description: "Complete multiplication tables 1-12",
+      dueDate: "2025-01-05",
+      status: "completed",
+      type: "practice"
+    },
+    {
+      id: 2,
+      title: "Word Problems Set A",
+      description: "Solve 10 word problems involving addition and subtraction",
+      dueDate: "2025-01-07",
+      status: "pending",
+      type: "homework"
+    },
+    {
+      id: 3,
+      title: "Geometry Shapes Quiz",
+      description: "Identify and describe basic geometric shapes",
+      dueDate: "2025-01-08",
+      status: "pending",
+      type: "quiz"
+    },
+    {
+      id: 4,
+      title: "Fractions Introduction",
+      description: "Learn about halves, thirds, and quarters",
+      dueDate: "2025-01-10",
+      status: "not_started",
+      type: "lesson"
+    }
+  ];
+
+  const form = useForm({
+    resolver: zodResolver(insertStudentSchema),
     defaultValues: {
       fullName: "",
       gradeLevel: "",
+      avatar: "",
       pin: "",
     },
   });
-  
-  const createStudentMutation = useMutation({
-    mutationFn: async (studentData: z.infer<typeof studentFormSchema>) => {
-      return apiRequest("POST", "/api/auth/students", studentData);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/students"] });
-      setIsAddModalOpen(false);
-      form.reset();
-      toast({
-        title: "Student added",
-        description: "The student has been successfully added to your family.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Could not add the student",
-        variant: "destructive",
-      });
-    },
-  });
 
-  const updateStudentMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: z.infer<typeof studentFormSchema> }) => {
-      return apiRequest("PUT", `/api/auth/students/${id}`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/students"] });
-      setIsAddModalOpen(false);
-      setEditingStudent(null);
-      form.reset();
-      toast({
-        title: "Student updated",
-        description: "The student has been successfully updated.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Could not update the student",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteStudentMutation = useMutation({
-    mutationFn: async (studentId: number) => {
-      return apiRequest("DELETE", `/api/auth/students/${studentId}`, {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/students"] });
-      toast({
-        title: "Student removed",
-        description: "The student has been successfully removed from your family.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Could not remove the student",
-        variant: "destructive",
-      });
-    },
-  });
-  
-  const handleDeleteStudent = (studentId: number) => {
-    if (confirm("Are you sure you want to remove this student from your family?")) {
-      deleteStudentMutation.mutate(studentId);
-    }
-  };
-  
   const handleEditStudent = (student: Student) => {
     setEditingStudent(student);
     form.reset({
       fullName: student.fullName,
       gradeLevel: student.gradeLevel,
+      avatar: student.avatar || "",
       pin: student.pin || "",
     });
     setIsAddModalOpen(true);
   };
 
-  const onSubmit = (data: z.infer<typeof studentFormSchema>) => {
-    if (editingStudent) {
-      updateStudentMutation.mutate({ id: editingStudent.id, data });
-    } else {
-      createStudentMutation.mutate(data);
+  const resetForm = () => {
+    setEditingStudent(null);
+    form.reset({
+      fullName: "",
+      gradeLevel: "",
+      avatar: "",
+      pin: "",
+    });
+  };
+
+  // Handle navigation breadcrumbs
+  const getBreadcrumb = () => {
+    if (view === 'students') return 'Students';
+    if (view === 'classes') return `${selectedStudent?.fullName} > Classes`;
+    if (view === 'assignments') return `${selectedStudent?.fullName} > ${selectedClass?.name} > Assignments`;
+    return 'Students';
+  };
+
+  const handleBackClick = () => {
+    if (view === 'assignments') {
+      setView('classes');
+      setSelectedClass(null);
+    } else if (view === 'classes') {
+      setView('students');
+      setSelectedStudent(null);
     }
   };
 
-  const handleCloseModal = () => {
-    setIsAddModalOpen(false);
-    setEditingStudent(null);
-    form.reset();
-  };
-  
-  const filteredStudents = students
-    ? students.filter(student => 
-        student.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
-  
-  if (currentUser?.role !== "parent") {
+  const filteredStudents = students?.filter((student: any) =>
+    student.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  // Student List View
+  if (view === 'students') {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Restricted</h3>
-          <p className="text-gray-600">Only parents can manage students.</p>
+      <div className="space-y-6 p-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div>
+            <h2 className="text-3xl font-bold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+              Students
+            </h2>
+            <p className="text-[#7E8A97] mt-1">
+              Manage your family's learning journey
+            </p>
+          </div>
+          <Button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] hover:from-[#6E7A87] to-[#7B987E] text-white"
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Student
+          </Button>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#7E8A97] h-4 w-4" />
+          <Input
+            placeholder="Search students..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 border-[#D9E5D1] focus:border-[#8BA88E]"
+          />
+        </div>
+
+        {/* Students Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredStudents.map((student: any) => {
+            const avatar = getAvatarForStudent(student.fullName);
+            const studentClasses = getStudentClasses(student.id);
+            const overallProgress = Math.round(
+              studentClasses.reduce((acc, cls) => acc + cls.progress, 0) / studentClasses.length
+            );
+
+            return (
+              <Card 
+                key={student.id} 
+                className="border-[#D9E5D1] hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => {
+                  setSelectedStudent(student);
+                  setView('classes');
+                }}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div 
+                      className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
+                      style={{ backgroundColor: avatar.backgroundColor }}
+                    >
+                      {avatar.emoji}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+                        {student.fullName}
+                      </h3>
+                      <p className="text-[#7E8A97] text-sm">{student.gradeLevel}</p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditStudent(student);
+                        }}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600">
+                          <Trash className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-[#7E8A97]">Overall Progress</span>
+                      <span className="text-sm font-medium text-[#3E4A59]">{overallProgress}%</span>
+                    </div>
+                    <Progress value={overallProgress} className="h-2" />
+                    
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-[#7E8A97]">Active Classes</span>
+                      <span className="font-medium text-[#3E4A59]">{studentClasses.length}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-[#7E8A97]">Completed Tasks</span>
+                      <span className="font-medium text-[#3E4A59]">
+                        {studentClasses.reduce((acc, cls) => acc + cls.completedAssignments, 0)}/
+                        {studentClasses.reduce((acc, cls) => acc + cls.totalAssignments, 0)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-[#D9E5D1]">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-[#8BA88E] hover:bg-[#D9E5D1]"
+                    >
+                      View Classes
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Add/Edit Student Modal */}
+        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+                {editingStudent ? "Edit Student" : "Add New Student"}
+              </DialogTitle>
+              <DialogDescription>
+                {editingStudent ? "Update student information" : "Add a new student to your family"}
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter student's full name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="gradeLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Grade Level</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 3rd Grade, Kindergarten" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="avatar"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Avatar</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose an avatar" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {natureAvatars.map((avatar) => (
+                            <SelectItem key={avatar.id} value={avatar.id}>
+                              <div className="flex items-center space-x-2">
+                                <span>{avatar.emoji}</span>
+                                <span>{avatar.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="pin"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>PIN (Optional)</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="4-digit PIN for student login" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Optional PIN for student to access their own tasks
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] hover:from-[#6E7A87] to-[#7B987E] text-white"
+              >
+                {editingStudent ? "Update" : "Add"} Student
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
+
+  // Classes View for Selected Student
+  if (view === 'classes' && selectedStudent) {
+    const studentClasses = getStudentClasses(selectedStudent.id);
+    const avatar = getAvatarForStudent(selectedStudent.fullName);
+
+    return (
+      <div className="space-y-6 p-6">
+        {/* Header with Breadcrumb */}
+        <div className="flex items-center space-x-4 mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={handleBackClick}
+            className="text-[#7E8A97] hover:text-[#3E4A59]"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Students
+          </Button>
+        </div>
+
+        <div className="flex items-center space-x-4 mb-6">
+          <div 
+            className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
+            style={{ backgroundColor: avatar.backgroundColor }}
+          >
+            {avatar.emoji}
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+              {selectedStudent.fullName}'s Classes
+            </h2>
+            <p className="text-[#7E8A97] mt-1">
+              {selectedStudent.gradeLevel} • {studentClasses.length} Active Classes
+            </p>
+          </div>
+        </div>
+
+        {/* Classes Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {studentClasses.map((classItem) => (
+            <Card 
+              key={classItem.id}
+              className="border-[#D9E5D1] hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => {
+                setSelectedClass(classItem);
+                setView('assignments');
+              }}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div 
+                      className="w-12 h-12 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: classItem.color }}
+                    >
+                      <BookOpen className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+                        {classItem.name}
+                      </h3>
+                      <p className="text-sm text-[#7E8A97]">{classItem.description}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-[#7E8A97]">Progress</span>
+                    <span className="text-sm font-medium text-[#3E4A59]">{classItem.progress}%</span>
+                  </div>
+                  <Progress value={classItem.progress} className="h-2" />
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-[#7E8A97]">Completed</span>
+                      <p className="font-medium text-[#3E4A59]">{classItem.completedAssignments}</p>
+                    </div>
+                    <div>
+                      <span className="text-[#7E8A97]">Total</span>
+                      <p className="font-medium text-[#3E4A59]">{classItem.totalAssignments}</p>
+                    </div>
+                  </div>
+
+                  <Button 
+                    variant="ghost" 
+                    className="w-full text-[#8BA88E] hover:bg-[#D9E5D1] mt-4"
+                  >
+                    View Assignments
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <div className="mb-4 sm:mb-0">
-          <h2 className="text-3xl font-bold text-[#4B5563]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
-            My Students
-          </h2>
-          <p className="text-[#6B7280] mt-2">
-            Manage your homeschool students and their learning progress
-          </p>
+  // Assignments View for Selected Class
+  if (view === 'assignments' && selectedStudent && selectedClass) {
+    const assignments = getClassAssignments(selectedClass.id);
+    const avatar = getAvatarForStudent(selectedStudent.fullName);
+
+    return (
+      <div className="space-y-6 p-6">
+        {/* Header with Breadcrumb */}
+        <div className="flex items-center space-x-4 mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={handleBackClick}
+            className="text-[#7E8A97] hover:text-[#3E4A59]"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Classes
+          </Button>
         </div>
+
+        <div className="flex items-center space-x-4 mb-6">
+          <div 
+            className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
+            style={{ backgroundColor: avatar.backgroundColor }}
+          >
+            {avatar.emoji}
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+              {selectedClass.name} Assignments
+            </h2>
+            <p className="text-[#7E8A97] mt-1">
+              {selectedStudent.fullName} • {assignments.length} Assignments
+            </p>
+          </div>
+        </div>
+
+        {/* Assignments List */}
+        <div className="space-y-4">
+          {assignments.map((assignment) => {
+            const getStatusColor = (status: string) => {
+              switch (status) {
+                case 'completed': return 'bg-[#D9E5D1] text-[#8BA88E]';
+                case 'pending': return 'bg-yellow-100 text-yellow-700';
+                case 'not_started': return 'bg-gray-100 text-gray-700';
+                default: return 'bg-gray-100 text-gray-700';
+              }
+            };
+
+            const getStatusIcon = (status: string) => {
+              switch (status) {
+                case 'completed': return <CheckCircle className="h-4 w-4" />;
+                case 'pending': return <Clock className="h-4 w-4" />;
+                case 'not_started': return <Calendar className="h-4 w-4" />;
+                default: return <Calendar className="h-4 w-4" />;
+              }
+            };
+
+            const getTypeIcon = (type: string) => {
+              switch (type) {
+                case 'homework': return <FileText className="h-5 w-5" />;
+                case 'quiz': return <Award className="h-5 w-5" />;
+                case 'practice': return <TrendingUp className="h-5 w-5" />;
+                case 'lesson': return <BookOpen className="h-5 w-5" />;
+                default: return <FileText className="h-5 w-5" />;
+              }
+            };
+
+            return (
+              <Card key={assignment.id} className="border-[#D9E5D1]">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-4 flex-1">
+                      <div className="p-2 bg-[#F5F2EA] rounded-lg">
+                        {getTypeIcon(assignment.type)}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+                          {assignment.title}
+                        </h3>
+                        <p className="text-[#7E8A97] text-sm mb-2">{assignment.description}</p>
+                        <div className="flex items-center space-x-4 text-sm">
+                          <span className="text-[#7E8A97]">Due: {assignment.dueDate}</span>
+                          <Badge className={`text-xs ${getStatusColor(assignment.status)}`}>
+                            {getStatusIcon(assignment.status)}
+                            <span className="ml-1 capitalize">{assignment.status.replace('_', ' ')}</span>
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Assignment
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Mark Complete
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600">
+                          <Trash className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Add Assignment Button */}
         <Button 
-          onClick={() => {
-            setEditingStudent(null);
-            form.reset();
-            setIsAddModalOpen(true);
-          }} 
           className="bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] hover:from-[#6E7A87] to-[#7B987E] text-white"
-          size="lg"
         >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add Student
+          <PlusIcon className="h-4 w-4 mr-2" />
+          Add Assignment
         </Button>
       </div>
+    );
+  }
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{students?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Active in your homeschool
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Learners</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {students?.filter(s => s.level && s.level > 0).length || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Students with progress
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Learning Progress</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Active</div>
-            <p className="text-xs text-muted-foreground">
-              All students learning
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input 
-                placeholder="Search students by name..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isStudentsLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#9CA3AF] mx-auto"></div>
-              <p className="text-[#6B7280] mt-4">Loading your students...</p>
-            </div>
-          ) : !students || students.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Students Yet</h3>
-              <p className="text-gray-600 mb-6">Get started by adding your first student to begin their learning journey.</p>
-              <Button 
-                onClick={() => {
-                  setEditingStudent(null);
-                  form.reset();
-                  setIsAddModalOpen(true);
-                }}
-                className="bg-gradient-to-r from-[#7E8A97] to-[#8BA88E] hover:from-[#6E7A87] to-[#7B987E] text-white"
-              >
-                <PlusIcon className="h-5 w-5 mr-2" />
-                Add Your First Student
-              </Button>
-            </div>
-          ) : filteredStudents.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600">No students match your search.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredStudents.map(student => (
-                <Card key={student.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div 
-                          className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
-                          style={{ backgroundColor: getAvatarForStudent(student.fullName).backgroundColor }}
-                        >
-                          {getAvatarForStudent(student.fullName).emoji}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-[#4B5563]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
-                            {student.fullName}
-                          </h3>
-                          <p className="text-sm text-[#6B7280]">Level {student.level || 1}</p>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditStudent(student)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Student
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleDeleteStudent(student.id)}
-                            className="text-red-600"
-                          >
-                            <Trash className="mr-2 h-4 w-4" />
-                            Remove Student
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          {student.gradeLevel}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-[#6B7280]">XP Points</span>
-                        <span className="font-semibold text-[#4B5563]">{student.xp || 0}</span>
-                      </div>
-                      
-                      {student.pin && (
-                        <div className="text-xs text-[#6B7280]">
-                          Protected with PIN
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Add/Edit Student Modal */}
-      <Dialog open={isAddModalOpen} onOpenChange={handleCloseModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle style={{ fontFamily: 'Comic Sans MS, cursive' }}>
-              {editingStudent ? "Edit Student" : "Add New Student"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingStudent 
-                ? "Update your student's information." 
-                : "Add a new student to your homeschool family."
-              }
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Student Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter student's full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="gradeLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Grade Level</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 2nd Grade, 5th Grade" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="pin"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Student PIN (Optional)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="4-6 digit PIN for student access" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={handleCloseModal}>
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-gradient-to-r from-[#9CA3AF] to-[#A7B8A8] hover:from-[#8B9196] to-[#96A897] text-white"
-                  disabled={createStudentMutation.isPending || updateStudentMutation.isPending}
-                >
-                  {createStudentMutation.isPending || updateStudentMutation.isPending
-                    ? "Saving..." 
-                    : editingStudent 
-                      ? "Update Student" 
-                      : "Add Student"
-                  }
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+  return null;
 };
 
 export default Students;
