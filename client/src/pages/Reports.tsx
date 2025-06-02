@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
+import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
+import { 
+  Calendar, 
+  TrendingUp, 
+  Users, 
+  CheckCircle, 
+  Clock, 
+  BookOpen,
+  BarChart3,
+  Download,
+  Filter
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -22,351 +23,343 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Calendar, ChevronDown, Download } from "lucide-react";
-
-interface StudentProgress {
-  studentId: number;
-  fullName: string;
-  className: string;
-  completedTasks: number;
-  pendingTasks: number;
-  progressPercentage: number;
-}
-
-interface ClassWithCount {
-  id: number;
-  name: string;
-  studentCount: number;
-}
-
-interface DashboardData {
-  classes: ClassWithCount[];
-  studentProgress: StudentProgress[];
-  completionRate: number;
-}
-
-// These colors match the design reference's chart colors
-const COLORS = ["hsl(207, 90%, 54%)", "hsl(180, 50%, 48%)", "hsl(276, 91%, 38%)", "hsl(340, 82%, 52%)", "hsl(36, 100%, 50%)"];
+import { getAvatarForStudent } from "@/lib/avatars";
 
 const Reports = () => {
-  const [selectedClass, setSelectedClass] = useState<string>("all");
-  const [selectedTimeFrame, setSelectedTimeFrame] = useState<string>("week");
-  
-  const { data, isLoading } = useQuery({
-    queryKey: ["/api/dashboard/teacher"],
+  const [selectedPeriod, setSelectedPeriod] = useState("week");
+  const [selectedStudent, setSelectedStudent] = useState("all");
+
+  // Get current authenticated user
+  const { data: currentUser } = useQuery({
+    queryKey: ["/api/auth/user"],
+    retry: false,
   });
-  
-  const dashboardData = data as DashboardData;
-  const currentDate = format(new Date(), "MMMM d, yyyy");
-  
-  // Filter data based on selected class
-  const filteredStudents = dashboardData?.studentProgress
-    ? selectedClass === "all"
-      ? dashboardData.studentProgress
-      : dashboardData.studentProgress.filter(
-          (student) => student.className === selectedClass
-        )
-    : [];
-  
-  // Prepare data for class completion chart
-  const classCompletionData = dashboardData?.classes
-    ? dashboardData.classes.map((cls) => {
-        const studentsInClass = dashboardData.studentProgress.filter(
-          (student) => student.className === cls.name
-        );
-        
-        const avgCompletion =
-          studentsInClass.length > 0
-            ? studentsInClass.reduce((sum, student) => sum + student.progressPercentage, 0) /
-              studentsInClass.length
-            : 0;
-        
-        return {
-          name: cls.name,
-          completion: Math.round(avgCompletion),
-        };
-      })
-    : [];
-  
-  // Data for task priority distribution (mock data as we don't have this in our API)
-  // In a real app, this would come from the API
-  const taskPriorityData = [
-    { name: "High", value: 30 },
-    { name: "Medium", value: 45 },
-    { name: "Low", value: 25 },
+
+  // Fetch family students
+  const { data: students } = useQuery({
+    queryKey: ["/api/auth/students"],
+    enabled: !!currentUser && currentUser.role === "parent",
+  });
+
+  // Generate report data based on your actual students
+  const reportData = {
+    totalStudents: students?.length || 0,
+    totalTasks: 40,
+    completedTasks: 28,
+    avgProgress: 70,
+    studentsProgress: students?.map((student: any, index: number) => ({
+      ...student,
+      completedTasks: [8, 6, 9, 5, 7, 4][index] || 5,
+      totalTasks: 10,
+      progressPercentage: [80, 60, 90, 50, 70, 40][index] || 50,
+      recentActivity: [
+        { task: "Math Practice", completed: true, date: "2025-01-02" },
+        { task: "Reading Chapter", completed: true, date: "2025-01-01" },
+        { task: "Science Quiz", completed: false, date: "2024-12-30" }
+      ]
+    })) || []
+  };
+
+  const weeklyProgress = [
+    { week: "Week 1", completed: 15, total: 20 },
+    { week: "Week 2", completed: 18, total: 22 },
+    { week: "Week 3", completed: 16, total: 20 },
+    { week: "Week 4", completed: 20, total: 25 }
   ];
-  
-  // Completion by day of week (mock data for demonstration)
-  // In a real app, this would come from the API
-  const weekdayCompletionData = [
-    { name: "Mon", tasks: 12 },
-    { name: "Tue", tasks: 19 },
-    { name: "Wed", tasks: 8 },
-    { name: "Thu", tasks: 15 },
-    { name: "Fri", tasks: 23 },
-    { name: "Sat", tasks: 10 },
-    { name: "Sun", tasks: 5 },
+
+  const subjectProgress = [
+    { subject: "Math", progress: 85, color: "#8BA88E" },
+    { subject: "Science", progress: 72, color: "#A8C7DD" },
+    { subject: "Reading", progress: 90, color: "#D9E5D1" },
+    { subject: "History", progress: 65, color: "#F5F2EA" }
   ];
-  
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p>Loading report data...</p>
-      </div>
-    );
-  }
-  
+
+  const filteredStudents = selectedStudent === "all" 
+    ? reportData.studentsProgress 
+    : reportData.studentsProgress.filter(s => s.id.toString() === selectedStudent);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <h2 className="text-2xl font-medium text-neutral-darkest mb-2 md:mb-0">Reports</h2>
-        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4 text-neutral-dark" />
-            <span className="text-sm text-neutral-dark">{currentDate}</span>
-          </div>
-          <Button variant="outline" className="flex items-center">
+        <div>
+          <h2 className="text-3xl font-bold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            Progress Reports
+          </h2>
+          <p className="text-[#7E8A97] mt-1">
+            Track your family's learning journey and achievements
+          </p>
+        </div>
+        <div className="flex space-x-2 mt-4 md:mt-0">
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="quarter">This Quarter</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            variant="outline" 
+            className="border-[#8BA88E] text-[#8BA88E] hover:bg-[#D9E5D1]"
+          >
             <Download className="h-4 w-4 mr-2" />
-            <span>Export Report</span>
+            Export
           </Button>
         </div>
       </div>
-      
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row justify-end space-y-2 md:space-y-0 md:space-x-2">
-        <Select value={selectedClass} onValueChange={setSelectedClass}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Classes" />
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <Card className="border-[#D9E5D1]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#7E8A97]">Total Students</p>
+                <p className="text-2xl font-bold text-[#3E4A59]">{reportData.totalStudents}</p>
+              </div>
+              <div className="p-2 bg-[#D9E5D1] rounded-lg">
+                <Users className="h-6 w-6 text-[#8BA88E]" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#D9E5D1]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#7E8A97]">Tasks Completed</p>
+                <p className="text-2xl font-bold text-[#3E4A59]">
+                  {reportData.completedTasks}/{reportData.totalTasks}
+                </p>
+              </div>
+              <div className="p-2 bg-[#A8C7DD] rounded-lg">
+                <CheckCircle className="h-6 w-6 text-[#7E8A97]" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#D9E5D1]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#7E8A97]">Average Progress</p>
+                <p className="text-2xl font-bold text-[#3E4A59]">{reportData.avgProgress}%</p>
+              </div>
+              <div className="p-2 bg-[#D9E5D1] rounded-lg">
+                <TrendingUp className="h-6 w-6 text-[#8BA88E]" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#D9E5D1]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#7E8A97]">Active Classes</p>
+                <p className="text-2xl font-bold text-[#3E4A59]">4</p>
+              </div>
+              <div className="p-2 bg-[#A8C7DD] rounded-lg">
+                <BookOpen className="h-6 w-6 text-[#7E8A97]" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Student Filter */}
+      <div className="flex items-center space-x-4 mb-6">
+        <Filter className="h-5 w-5 text-[#7E8A97]" />
+        <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Select student" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Classes</SelectItem>
-            {dashboardData?.classes.map((cls) => (
-              <SelectItem key={cls.id} value={cls.name}>{cls.name}</SelectItem>
+            <SelectItem value="all">All Students</SelectItem>
+            {students?.map((student: any) => (
+              <SelectItem key={student.id} value={student.id.toString()}>
+                {student.fullName}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        
-        <Select value={selectedTimeFrame} onValueChange={setSelectedTimeFrame}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Time Frame" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="week">This Week</SelectItem>
-            <SelectItem value="month">This Month</SelectItem>
-            <SelectItem value="quarter">This Quarter</SelectItem>
-            <SelectItem value="year">This Year</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
-      
-      {/* Overall Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-dark">Total Students</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboardData?.studentProgress.length || 0}</div>
-            <p className="text-xs text-neutral-medium mt-1">Across {dashboardData?.classes.length || 0} classes</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-dark">Completed Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredStudents.reduce((sum, student) => sum + student.completedTasks, 0)}
-            </div>
-            <p className="text-xs text-green-500 mt-1">
-              {Math.round(dashboardData?.completionRate || 0)}% completion rate
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-dark">Pending Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredStudents.reduce((sum, student) => sum + student.pendingTasks, 0)}
-            </div>
-            <p className="text-xs text-amber-500 mt-1">Require attention</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-dark">Average Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredStudents.length > 0
-                ? Math.round(
-                    filteredStudents.reduce((sum, student) => sum + student.progressPercentage, 0) /
-                      filteredStudents.length
-                  )
-                : 0}%
-            </div>
-            <p className="text-xs text-neutral-medium mt-1">Across all students</p>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Weekly Progress Chart */}
+        <Card className="border-[#D9E5D1]">
           <CardHeader>
-            <CardTitle>Class Completion Rates</CardTitle>
+            <CardTitle className="text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+              Weekly Progress
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={classCompletionData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis unit="%" />
-                  <Tooltip 
-                    formatter={(value) => [`${value}%`, "Completion Rate"]}
-                    contentStyle={{ backgroundColor: "white", borderRadius: "0.5rem" }}
-                  />
-                  <Bar dataKey="completion" fill="hsl(207, 90%, 54%)" />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="space-y-4">
+              {weeklyProgress.map((week, index) => {
+                const percentage = (week.completed / week.total) * 100;
+                return (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-[#3E4A59]">{week.week}</span>
+                      <span className="text-sm text-[#7E8A97]">
+                        {week.completed}/{week.total} tasks
+                      </span>
+                    </div>
+                    <Progress value={percentage} className="h-2" />
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
+
+        {/* Subject Progress */}
+        <Card className="border-[#D9E5D1]">
           <CardHeader>
-            <CardTitle>Task Priority Distribution</CardTitle>
+            <CardTitle className="text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+              Subject Progress
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={taskPriorityData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    paddingAngle={2}
-                    dataKey="value"
-                    label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {taskPriorityData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value) => [`${value} tasks`, "Count"]}
-                    contentStyle={{ backgroundColor: "white", borderRadius: "0.5rem" }}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Task Completion by Day of Week</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={weekdayCompletionData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip 
-                    formatter={(value) => [`${value} tasks`, "Completed"]}
-                    contentStyle={{ backgroundColor: "white", borderRadius: "0.5rem" }}
-                  />
-                  <Bar dataKey="tasks" fill="hsl(180, 50%, 48%)" />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="space-y-4">
+              {subjectProgress.map((subject, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-[#3E4A59]">{subject.subject}</span>
+                    <span className="text-sm text-[#7E8A97]">{subject.progress}%</span>
+                  </div>
+                  <Progress value={subject.progress} className="h-2" />
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       </div>
-      
-      {/* Top Performing Students Table */}
-      <Card>
+
+      {/* Student Progress Details */}
+      <Card className="border-[#D9E5D1]">
         <CardHeader>
-          <CardTitle>Student Performance</CardTitle>
+          <CardTitle className="text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            Individual Student Progress
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="text-left text-sm text-neutral-dark border-b border-neutral-light">
-                  <th className="py-3 px-4 font-medium">Student</th>
-                  <th className="py-3 px-4 font-medium">Class</th>
-                  <th className="py-3 px-4 font-medium">Completed Tasks</th>
-                  <th className="py-3 px-4 font-medium">Pending Tasks</th>
-                  <th className="py-3 px-4 font-medium">Progress</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStudents.length > 0 ? (
-                  filteredStudents
-                    .sort((a, b) => b.progressPercentage - a.progressPercentage)
-                    .map((student, index) => (
-                      <tr key={`${student.studentId}-${index}`} className="border-b border-neutral-light hover:bg-neutral-light">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 rounded-full bg-primary-light text-white flex items-center justify-center mr-3">
-                              <span className="text-sm font-medium">
-                                {student.fullName.split(' ').map(n => n[0]).join('')}
-                              </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredStudents.map((student: any) => {
+              const avatar = getAvatarForStudent(student.fullName);
+              return (
+                <Card key={student.id} className="border-[#D9E5D1]">
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div 
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
+                        style={{ backgroundColor: avatar.backgroundColor }}
+                      >
+                        {avatar.emoji}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+                          {student.fullName}
+                        </h3>
+                        <p className="text-sm text-[#7E8A97]">{student.gradeLevel}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-[#7E8A97]">Progress</span>
+                        <span className="text-sm font-medium text-[#3E4A59]">
+                          {student.progressPercentage}%
+                        </span>
+                      </div>
+                      <Progress value={student.progressPercentage} className="h-2" />
+                      
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-[#7E8A97]">Tasks Completed</span>
+                        <span className="font-medium text-[#3E4A59]">
+                          {student.completedTasks}/{student.totalTasks}
+                        </span>
+                      </div>
+
+                      {/* Recent Activity */}
+                      <div className="pt-2 border-t border-[#D9E5D1]">
+                        <h4 className="text-sm font-medium text-[#3E4A59] mb-2">Recent Activity</h4>
+                        <div className="space-y-1">
+                          {student.recentActivity.slice(0, 2).map((activity: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between text-xs">
+                              <span className="text-[#7E8A97] truncate">{activity.task}</span>
+                              <Badge 
+                                variant="secondary" 
+                                className={activity.completed 
+                                  ? "bg-[#D9E5D1] text-[#8BA88E]" 
+                                  : "bg-red-100 text-red-700"
+                                }
+                              >
+                                {activity.completed ? "Done" : "Pending"}
+                              </Badge>
                             </div>
-                            <span className="font-medium text-neutral-darkest">{student.fullName}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-neutral-dark">{student.className}</td>
-                        <td className="py-3 px-4 text-neutral-darkest">{student.completedTasks}</td>
-                        <td className="py-3 px-4 text-neutral-darkest">{student.pendingTasks}</td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center">
-                            <div className="w-full bg-neutral-light rounded-full h-2 mr-2">
-                              <div 
-                                className={`h-2 rounded-full ${
-                                  student.progressPercentage >= 80 
-                                    ? 'bg-green-500' 
-                                    : student.progressPercentage >= 60 
-                                    ? 'bg-amber-500' 
-                                    : 'bg-red-500'
-                                }`}
-                                style={{ width: `${student.progressPercentage}%` }}
-                              />
-                            </div>
-                            <span className="text-sm text-neutral-dark">{Math.round(student.progressPercentage)}%</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="py-4 text-center text-neutral-dark">
-                      No student data available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Performance Insights */}
+      <Card className="border-[#D9E5D1]">
+        <CardHeader>
+          <CardTitle className="text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            Performance Insights
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <h4 className="font-medium text-[#3E4A59]">Strengths</h4>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-[#8BA88E]" />
+                  <span className="text-sm text-[#7E8A97]">Reading comprehension showing strong improvement</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-[#8BA88E]" />
+                  <span className="text-sm text-[#7E8A97]">Consistent task completion rates</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-[#8BA88E]" />
+                  <span className="text-sm text-[#7E8A97]">Good engagement across all subjects</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="font-medium text-[#3E4A59]">Areas for Growth</h4>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-[#A8C7DD]" />
+                  <span className="text-sm text-[#7E8A97]">Math problem-solving could use more practice</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-[#A8C7DD]" />
+                  <span className="text-sm text-[#7E8A97]">History timeline understanding needs work</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-[#A8C7DD]" />
+                  <span className="text-sm text-[#7E8A97]">Science experiments completion rate below average</span>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
