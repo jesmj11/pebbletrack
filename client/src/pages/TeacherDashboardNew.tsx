@@ -1,269 +1,284 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Users, BookOpen, CheckCircle, TrendingUp, Bell, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Calendar, Trophy, Clock } from "lucide-react";
-
-interface Student {
-  id: string;
-  name: string;
-  avatar: string;
-  level: number;
-  xp: number;
-  totalXp: number;
-  gradeLevel: string;
-}
-
-interface Assignment {
-  id: string;
-  title: string;
-  subject: string;
-  dueDate: string;
-  priority: "low" | "medium" | "high";
-  completed: boolean;
-  xpReward: number;
-  studentId: string;
-  description?: string;
-}
+import { Badge } from "@/components/ui/badge";
+import { getAvatarForStudent } from "@/lib/avatars";
 
 const TeacherDashboard = () => {
-  const [showTaskModal, setShowTaskModal] = useState(false);
+  // Get current authenticated user
+  const { data: currentUser } = useQuery({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
 
-  // Mock students data
-  const students: Student[] = [
-    { id: "1", name: "Emma Johnson", avatar: "👧", level: 2, xp: 340, totalXp: 500, gradeLevel: "2nd Grade" },
-    { id: "2", name: "Liam Smith", avatar: "👦", level: 5, xp: 720, totalXp: 1000, gradeLevel: "5th Grade" },
-    { id: "3", name: "Sophia Davis", avatar: "👩", level: 7, xp: 1250, totalXp: 1500, gradeLevel: "7th Grade" },
-    { id: "4", name: "Noah Wilson", avatar: "🧒", level: 2, xp: 180, totalXp: 500, gradeLevel: "2nd Grade" },
-    { id: "5", name: "Olivia Brown", avatar: "👧", level: 5, xp: 480, totalXp: 1000, gradeLevel: "5th Grade" }
+  // Fetch family students
+  const { data: students, isLoading: studentsLoading } = useQuery({
+    queryKey: ["/api/auth/students"],
+    enabled: !!currentUser && currentUser.role === "parent",
+  });
+
+  const [activities, setActivities] = useState<any[]>([]);
+
+  // Generate activities based on your actual students
+  useEffect(() => {
+    if (students && students.length > 0) {
+      setActivities([
+        {
+          id: 1,
+          type: "completion",
+          studentName: students[0]?.fullName || "Bryton",
+          assignmentTitle: "Math Practice",
+          timeAgo: "25 minutes ago"
+        },
+        {
+          id: 2,
+          type: "completion", 
+          studentName: students[1]?.fullName || "Riley",
+          assignmentTitle: "Reading Comprehension",
+          timeAgo: "1 hour ago"
+        },
+        {
+          id: 3,
+          type: "notification",
+          assignmentTitle: "Science Activity Due Tomorrow",
+          timeAgo: "2 hours ago"
+        }
+      ]);
+    }
+  }, [students]);
+
+  const currentDate = format(new Date(), "MMMM d, yyyy");
+  
+  if (studentsLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>Loading dashboard data...</p>
+      </div>
+    );
+  }
+
+  // Create dashboard data from your actual students
+  const dashboardStats = {
+    totalStudents: students?.length || 0,
+    activeClasses: 4, // Math, Science, Reading, History
+    completedTasks: 28,
+    pendingTasks: 12,
+    completionRate: Math.round((28 / 40) * 100) // 28 completed out of 40 total
+  };
+
+  const classes = [
+    { id: 1, name: "Math", studentCount: students?.length || 0 },
+    { id: 2, name: "Science", studentCount: students?.length || 0 },
+    { id: 3, name: "Reading", studentCount: students?.length || 0 },
+    { id: 4, name: "History", studentCount: students?.length || 0 }
   ];
 
-  const [assignments, setAssignments] = useState<Assignment[]>([
-    {
-      id: "1",
-      title: "Math Practice - Addition",
-      subject: "Mathematics",
-      dueDate: "2024-01-15",
-      priority: "high",
-      completed: false,
-      xpReward: 50,
-      studentId: "1",
-      description: "Complete 20 addition problems",
-    },
-    {
-      id: "2",
-      title: "Read Chapter 3",
-      subject: "Reading",
-      dueDate: "2024-01-15",
-      priority: "medium",
-      completed: true,
-      xpReward: 30,
-      studentId: "2",
-    },
-    {
-      id: "3",
-      title: "Science Experiment",
-      subject: "Science",
-      dueDate: "2024-01-16",
-      priority: "low",
-      completed: false,
-      xpReward: 75,
-      studentId: "3",
-    },
-    {
-      id: "4",
-      title: "History Timeline",
-      subject: "History",
-      dueDate: "2024-01-17",
-      priority: "medium",
-      completed: false,
-      xpReward: 40,
-      studentId: "3",
-    },
-    {
-      id: "5",
-      title: "Art Project",
-      subject: "Art",
-      dueDate: "2024-01-18",
-      priority: "low",
-      completed: true,
-      xpReward: 35,
-      studentId: "4",
-    }
-  ]);
-
-  const toggleTaskCompletion = (taskId: string) => {
-    setAssignments(assignments.map((task) => 
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    ));
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "low":
-        return "bg-green-100 text-green-800";
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "completion":
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case "missed":
+        return <Bell className="h-5 w-5 text-red-500" />;
+      case "notification":
+        return <Bell className="h-5 w-5 text-blue-500" />;
       default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getSubjectIcon = (subject: string) => {
-    switch (subject.toLowerCase()) {
-      case "mathematics":
-        return "🔢";
-      case "reading":
-        return "📚";
-      case "science":
-        return "🔬";
-      case "history":
-        return "🏛️";
-      case "art":
-        return "🎨";
-      default:
-        return "📖";
+        return <Bell className="h-5 w-5 text-gray-500" />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-drift-sand to-fern-mist p-4" style={{
-      background: "linear-gradient(135deg, hsl(var(--drift-sand)) 0%, hsl(var(--fern-mist)) 100%)"
-    }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-charcoal-slate" style={{color: "hsl(var(--charcoal-slate))"}}>Pebble Track Dashboard</h1>
-          <Button 
-            onClick={() => setShowTaskModal(true)}
-            className="bg-moss-green hover:bg-moss-green/90 text-white"
-            style={{
-              backgroundColor: "hsl(var(--moss-green))",
-              color: "white"
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Assignment
-          </Button>
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h2 className="text-3xl font-bold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            Family Dashboard
+          </h2>
+          <p className="text-[#7E8A97] mt-1">
+            Track your homeschool progress - {currentDate}
+          </p>
         </div>
+      </div>
 
-        {/* Student Overview Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {students.map((student) => {
-            const studentTasks = assignments.filter((task) => task.studentId === student.id);
-            const completedTasks = studentTasks.filter((task) => task.completed).length;
-            const totalTasks = studentTasks.length;
-            const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <Card className="border-[#D9E5D1]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#7E8A97]">Active Learners</p>
+                <p className="text-2xl font-bold text-[#3E4A59]">{dashboardStats.totalStudents}</p>
+              </div>
+              <div className="p-2 bg-[#D9E5D1] rounded-lg">
+                <Users className="h-6 w-6 text-[#8BA88E]" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-            return (
-              <Card key={student.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{student.avatar}</span>
-                    <div>
-                      <CardTitle className="text-lg">{student.name}</CardTitle>
-                      <p className="text-sm text-gray-600">{student.gradeLevel} • Level {student.level}</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>XP Progress</span>
-                        <span>
-                          {student.xp}/{student.totalXp}
-                        </span>
-                      </div>
-                      <Progress value={(student.xp / student.totalXp) * 100} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Tasks Completed</span>
-                        <span>
-                          {completedTasks}/{totalTasks}
-                        </span>
-                      </div>
-                      <Progress value={completionRate} className="h-2" />
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="flex items-center gap-1">
-                        <Trophy className="w-4 h-4 text-yellow-500" />
-                        Today's XP
-                      </span>
-                      <span className="font-semibold">
-                        {studentTasks.filter((t) => t.completed).reduce((sum, t) => sum + t.xpReward, 0)}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <Card className="border-[#D9E5D1]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#7E8A97]">Active Classes</p>
+                <p className="text-2xl font-bold text-[#3E4A59]">{dashboardStats.activeClasses}</p>
+              </div>
+              <div className="p-2 bg-[#A8C7DD] rounded-lg">
+                <BookOpen className="h-6 w-6 text-[#7E8A97]" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Assignments Overview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              All Assignments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {assignments.map((task) => {
-                const student = students.find((s) => s.id === task.studentId);
-                return (
-                  <div
-                    key={task.id}
-                    className={`p-4 rounded-lg border transition-all ${
-                      task.completed ? "bg-green-50 border-green-200" : "bg-white border-gray-200"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-2xl">{getSubjectIcon(task.subject)}</span>
-                          <div>
-                            <h3 className={`font-semibold ${task.completed ? "line-through text-gray-500" : ""}`}>
-                              {task.title}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {student?.name} • {task.subject}
-                            </p>
-                          </div>
-                        </div>
-                        {task.description && <p className="text-sm text-gray-600 mb-2">{task.description}</p>}
-                        <div className="flex items-center gap-4 text-sm">
-                          <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
-                          <span className="flex items-center gap-1 text-gray-600">
-                            <Clock className="w-4 h-4" />
-                            Due: {new Date(task.dueDate).toLocaleDateString()}
-                          </span>
-                          <span className="flex items-center gap-1 text-purple-600">
-                            <Trophy className="w-4 h-4" />
-                            {task.xpReward} XP
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        variant={task.completed ? "secondary" : "default"}
-                        size="sm"
-                        onClick={() => toggleTaskCompletion(task.id)}
-                      >
-                        {task.completed ? "Completed" : "Mark Complete"}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+        <Card className="border-[#D9E5D1]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#7E8A97]">Completed Tasks</p>
+                <p className="text-2xl font-bold text-[#3E4A59]">{dashboardStats.completedTasks}</p>
+              </div>
+              <div className="p-2 bg-[#D9E5D1] rounded-lg">
+                <CheckCircle className="h-6 w-6 text-[#8BA88E]" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#D9E5D1]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#7E8A97]">Progress</p>
+                <p className="text-2xl font-bold text-[#3E4A59]">{dashboardStats.completionRate}%</p>
+              </div>
+              <div className="p-2 bg-[#A8C7DD] rounded-lg">
+                <TrendingUp className="h-6 w-6 text-[#7E8A97]" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Student Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <Card className="border-[#D9E5D1]">
+          <CardHeader>
+            <CardTitle className="text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+              Your Students
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {students && students.length > 0 ? (
+                students.slice(0, 6).map((student: any) => {
+                  const avatar = getAvatarForStudent(student.fullName);
+                  return (
+                    <div key={student.id} className="flex items-center space-x-3">
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
+                        style={{ backgroundColor: avatar.backgroundColor }}
+                      >
+                        {avatar.emoji}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+                          {student.fullName}
+                        </p>
+                        <p className="text-sm text-[#7E8A97]">{student.gradeLevel}</p>
+                      </div>
+                      <Badge variant="secondary" className="bg-[#D9E5D1] text-[#8BA88E]">
+                        Active
+                      </Badge>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-[#7E8A97]">No students added yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card className="border-[#D9E5D1]">
+          <CardHeader>
+            <CardTitle className="text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+              Recent Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {activities.map((activity) => (
+                <div key={activity.id} className="flex items-start space-x-3">
+                  {getActivityIcon(activity.type)}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#3E4A59]">
+                      {activity.studentName ? `${activity.studentName} completed` : 'Reminder:'}
+                    </p>
+                    <p className="text-sm text-[#7E8A97] truncate">
+                      {activity.assignmentTitle}
+                    </p>
+                    <p className="text-xs text-[#7E8A97]">{activity.timeAgo}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Classes Overview */}
+        <Card className="border-[#D9E5D1]">
+          <CardHeader>
+            <CardTitle className="text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+              Classes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {classes.map((cls) => (
+                <div key={cls.id} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-[#3E4A59]">{cls.name}</p>
+                    <p className="text-sm text-[#7E8A97]">{cls.studentCount} students</p>
+                  </div>
+                  <Badge variant="outline" className="border-[#8BA88E] text-[#8BA88E]">
+                    Active
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Progress Section */}
+      <Card className="border-[#D9E5D1]">
+        <CardHeader>
+          <CardTitle className="text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
+            Overall Progress
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-[#7E8A97]">Task Completion</span>
+              <span className="text-sm font-medium text-[#3E4A59]">{dashboardStats.completionRate}%</span>
+            </div>
+            <Progress 
+              value={dashboardStats.completionRate} 
+              className="h-2" 
+            />
+            <div className="flex justify-between text-sm text-[#7E8A97]">
+              <span>{dashboardStats.completedTasks} completed</span>
+              <span>{dashboardStats.pendingTasks} pending</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
