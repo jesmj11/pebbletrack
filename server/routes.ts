@@ -110,6 +110,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Family Student Management Routes
+  app.get("/api/auth/students", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can access student data" });
+      }
+      
+      const students = await authStorage.getStudentsByParent(user.id);
+      res.json(students);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      res.status(500).json({ message: "Failed to fetch students" });
+    }
+  });
+
+  app.post("/api/auth/students", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can manage students" });
+      }
+
+      const studentData = {
+        ...req.body,
+        parentId: user.id,
+        level: 1,
+        xp: 0,
+        totalXp: 0,
+      };
+
+      const student = await authStorage.createStudent(studentData);
+      res.status(201).json(student);
+    } catch (error: any) {
+      console.error("Error creating student:", error);
+      res.status(400).json({ message: error.message || "Failed to create student" });
+    }
+  });
+
+  app.put("/api/auth/students/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can manage students" });
+      }
+
+      const studentId = parseInt(req.params.id);
+      const student = await authStorage.updateStudent(studentId, req.body);
+      
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+
+      res.json(student);
+    } catch (error: any) {
+      console.error("Error updating student:", error);
+      res.status(400).json({ message: error.message || "Failed to update student" });
+    }
+  });
+
+  app.delete("/api/auth/students/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can manage students" });
+      }
+
+      const studentId = parseInt(req.params.id);
+      const success = await authStorage.deleteStudent(studentId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+
+      res.json({ message: "Student removed successfully" });
+    } catch (error: any) {
+      console.error("Error deleting student:", error);
+      res.status(500).json({ message: error.message || "Failed to remove student" });
+    }
+  });
+
   // User routes
   app.get("/api/users", isAuthenticated, async (req, res) => {
     const users = await storage.getUsers();
