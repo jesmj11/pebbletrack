@@ -73,14 +73,14 @@ const Planner = () => {
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Monday start
   const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)); // Monday to Friday
 
-  // Mock planner data - would come from API
+  // Sample planner data with proper subject hierarchy
   const [plannerTasks, setPlannerTasks] = useState<PlannerTask[]>([
     {
       id: '1',
       studentId: 1, // Bryton
       day: 'Monday',
       time: '9:00 AM',
-      subject: 'Math',
+      subject: 'Math K-7',
       title: 'Multiplication Tables',
       description: 'Practice times tables 6-8',
       status: 'completed',
@@ -91,7 +91,7 @@ const Planner = () => {
       studentId: 1,
       day: 'Monday',
       time: '10:30 AM',
-      subject: 'Science',
+      subject: 'Elementary Science',
       title: 'Plant Growth',
       description: 'Observe and record plant changes',
       status: 'in_progress',
@@ -102,7 +102,7 @@ const Planner = () => {
       studentId: 2, // Riley
       day: 'Monday',
       time: '9:00 AM',
-      subject: 'Reading',
+      subject: 'Reading K-5',
       title: 'Chapter 3 Discussion',
       description: 'Read and discuss main characters',
       status: 'pending',
@@ -199,8 +199,8 @@ const Planner = () => {
         id: Date.now().toString(),
         studentId: selectedCell!.studentId,
         day: selectedCell!.day,
-        time: taskData.time || '9:00 AM',
-        subject: taskData.subject || 'General',
+        time: '9:00 AM', // Default time since we removed time selection
+        subject: taskData.subject || 'Math K-7',
         title: taskData.title || 'New Task',
         description: taskData.description || '',
         status: 'pending',
@@ -435,19 +435,60 @@ interface TaskModalProps {
 
 const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) => {
   const [formData, setFormData] = useState({
-    time: task?.time || '9:00 AM',
-    subject: task?.subject || 'Math',
+    subject: task?.subject || 'Math K-7',
     title: task?.title || '',
     description: task?.description || '',
     type: task?.type || 'lesson'
   });
 
-  const subjects = ['Math', 'Science', 'Reading', 'History', 'Art', 'Music', 'PE', 'General'];
-  const times = [
-    '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
-    '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM',
-    '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM'
-  ];
+  const subjectHierarchy = {
+    'Math': [
+      'Math K-7',
+      'Pre-Algebra',
+      'Algebra I',
+      'Geometry',
+      'Algebra II',
+      'Trigonometry',
+      'Pre-Calculus',
+      'Calculus'
+    ],
+    'Science': [
+      'Elementary Science',
+      'Earth Science',
+      'Life Science',
+      'Physical Science',
+      'Biology',
+      'Chemistry',
+      'Physics',
+      'Environmental Science'
+    ],
+    'ELA': [
+      'Reading K-5',
+      'Language Arts 6-8',
+      'English 9',
+      'English 10',
+      'English 11',
+      'English 12',
+      'Creative Writing',
+      'Literature'
+    ],
+    'Other': [
+      'History',
+      'Geography',
+      'Art',
+      'Music',
+      'PE',
+      'Foreign Language'
+    ]
+  };
+
+  // Get all subjects in a flat list for easy selection
+  const allSubjects = Object.entries(subjectHierarchy).reduce((acc, [category, subjects]) => {
+    subjects.forEach(subject => {
+      acc.push({ category, subject });
+    });
+    return acc;
+  }, [] as { category: string; subject: string }[]);
 
   const handleSave = () => {
     if (!formData.title.trim()) return;
@@ -467,34 +508,27 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-[#3E4A59]">Time</label>
-              <Select value={formData.time} onValueChange={(value) => setFormData(prev => ({ ...prev, time: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {times.map(time => (
-                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium text-[#3E4A59]">Subject</label>
-              <Select value={formData.subject} onValueChange={(value) => setFormData(prev => ({ ...prev, subject: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects.map(subject => (
-                    <SelectItem key={subject} value={subject}>{subject}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <label className="text-sm font-medium text-[#3E4A59]">Subject</label>
+            <Select value={formData.subject} onValueChange={(value) => setFormData(prev => ({ ...prev, subject: value }))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(subjectHierarchy).map(([category, subjects]) => (
+                  <div key={category}>
+                    <div className="px-2 py-1 text-xs font-semibold text-[#7E8A97] bg-[#F5F2EA]">
+                      {category}
+                    </div>
+                    {subjects.map(subject => (
+                      <SelectItem key={subject} value={subject} className="pl-4">
+                        {subject}
+                      </SelectItem>
+                    ))}
+                  </div>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div>
