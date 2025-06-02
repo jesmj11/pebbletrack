@@ -521,7 +521,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[400px] max-h-[80vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle style={{ fontFamily: 'Comic Sans MS, cursive' }}>
             {task ? 'Edit Task' : 'Add New Task'}
@@ -531,30 +531,30 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-3 overflow-y-auto">
           <div>
             <label className="text-sm font-medium text-[#3E4A59]">Subject</label>
-            <div className="border rounded-md p-2 max-h-64 overflow-y-auto bg-white">
+            <div className="border rounded-md p-2 max-h-32 overflow-y-auto bg-white text-xs">
               {Object.entries(subjectHierarchy).map(([category, subjects]) => (
-                <div key={category} className="mb-2">
+                <div key={category} className="mb-1">
                   <button
                     type="button"
                     onClick={() => toggleCategory(category)}
-                    className="flex items-center w-full text-left px-2 py-1 text-sm font-semibold text-[#3E4A59] bg-[#F5F2EA] rounded hover:bg-[#E8E2D5] transition-colors"
+                    className="flex items-center w-full text-left px-1 py-1 text-xs font-semibold text-[#3E4A59] bg-[#F5F2EA] rounded hover:bg-[#E8E2D5] transition-colors"
                   >
-                    <span className="mr-2">
+                    <span className="mr-1 text-xs">
                       {expandedCategories.includes(category) ? '▼' : '▶'}
                     </span>
                     {category}
                   </button>
                   {expandedCategories.includes(category) && (
-                    <div className="mt-1 ml-4 space-y-1">
+                    <div className="mt-1 ml-3 space-y-0.5">
                       {subjects.map(subject => (
                         <button
                           key={subject}
                           type="button"
                           onClick={() => setFormData(prev => ({ ...prev, subject }))}
-                          className={`block w-full text-left px-2 py-1 text-sm rounded transition-colors ${
+                          className={`block w-full text-left px-2 py-0.5 text-xs rounded transition-colors ${
                             formData.subject === subject
                               ? 'bg-[#C3A06D] text-white'
                               : 'hover:bg-gray-100 text-[#3E4A59]'
