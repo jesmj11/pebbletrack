@@ -11,6 +11,7 @@ import type {
 
 export interface IAuthStorage {
   // Authentication operations
+  getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(userData: InsertUser): Promise<User>;
   updateUserLastLogin(id: number): Promise<void>;
@@ -44,6 +45,11 @@ export interface IAuthStorage {
 
 export class AuthStorage implements IAuthStorage {
   
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
