@@ -521,8 +521,8 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px] max-h-[80vh] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[400px] max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle style={{ fontFamily: 'Comic Sans MS, cursive' }}>
             {task ? 'Edit Task' : 'Add New Task'}
           </DialogTitle>
@@ -531,7 +531,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-3 overflow-y-auto">
+        <div className="space-y-3 overflow-y-auto flex-1">
           <div>
             <label className="text-sm font-medium text-[#3E4A59]">Subject</label>
             <div className="border rounded-md p-2 max-h-32 overflow-y-auto bg-white text-xs">
@@ -610,7 +610,7 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
           </div>
         </div>
         
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 mt-4">
           <div className="flex justify-between w-full">
             {onDelete && (
               <Button
