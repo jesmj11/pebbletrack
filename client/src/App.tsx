@@ -14,6 +14,7 @@ import Students from "@/pages/Students";
 import Classes from "@/pages/Classes";
 import Assignments from "@/pages/Assignments";
 import Reports from "@/pages/Reports";
+import Planner from "@/pages/Planner";
 import StudentTasks from "@/pages/StudentTasks";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -123,6 +124,11 @@ function Router() {
       <Route path="/assignments">
         <Layout>
           <Assignments />
+        </Layout>
+      </Route>
+      <Route path="/planner">
+        <Layout>
+          <Planner />
         </Layout>
       </Route>
       <Route path="/reports">

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { PanelsTopLeft, Users, BookOpen, FileText, BarChart, Settings } from "lucide-react";
+import { PanelsTopLeft, Users, Calendar, BarChart, Settings } from "lucide-react";
 
 const TeacherSidebar = () => {
   const [location] = useLocation();
@@ -32,7 +32,16 @@ const TeacherSidebar = () => {
               </a>
             </Link>
           </li>
-
+          <li className="mb-1">
+            <Link href="/planner">
+              <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${
+                isActive("/planner") ? "bg-neutral-light" : ""
+              }`}>
+                <Calendar className={`${isActive("/planner") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
+                <span className="hidden md:inline">Planner</span>
+              </a>
+            </Link>
+          </li>
           <li className="mb-1">
             <Link href="/reports">
               <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${
