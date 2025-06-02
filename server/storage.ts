@@ -10,11 +10,12 @@ import {
 } from "@shared/schema";
 
 export interface IStorage {
-  // User operations
+  // User operations (for family accounts)
   getUsers(): Promise<User[]>;
   getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserLastLogin(id: number): Promise<void>;
   
   // Class operations
   getClasses(): Promise<Class[]>;
