@@ -442,6 +442,8 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
   });
 
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['Math']);
+  const [customSubject, setCustomSubject] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
 
   const subjectHierarchy = {
     'Math': [
@@ -459,7 +461,8 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
       'Algebra II',
       'Trigonometry',
       'Pre-Calculus',
-      'Calculus'
+      'Calculus',
+      'Custom Math Class'
     ],
     'Science': [
       'Science K',
@@ -477,7 +480,8 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
       'Biology',
       'Chemistry',
       'Physics',
-      'Environmental Science'
+      'Environmental Science',
+      'Custom Science Class'
     ],
     'ELA': [
       'Reading K',
@@ -494,15 +498,28 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
       'English 11',
       'English 12',
       'Creative Writing',
-      'Literature'
+      'Literature',
+      'Custom ELA Class'
     ],
-    'Other': [
-      'History',
-      'Geography',
+    'History': [
+      'History K-5',
+      'World History',
+      'American History',
+      'Ancient History',
+      'Modern History',
+      'Government',
+      'Economics',
+      'Custom History Class'
+    ],
+    'Electives': [
       'Art',
       'Music',
       'PE',
-      'Foreign Language'
+      'Foreign Language',
+      'Drama',
+      'Technology',
+      'Life Skills',
+      'Custom Elective'
     ]
   };
 
@@ -512,6 +529,24 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
         ? prev.filter(c => c !== category)
         : [...prev, category]
     );
+  };
+
+  const handleSubjectSelect = (subject: string) => {
+    if (subject.startsWith('Custom')) {
+      setShowCustomInput(true);
+      setCustomSubject('');
+    } else {
+      setFormData(prev => ({ ...prev, subject }));
+      setShowCustomInput(false);
+    }
+  };
+
+  const handleCustomSubjectSave = () => {
+    if (customSubject.trim()) {
+      setFormData(prev => ({ ...prev, subject: customSubject.trim() }));
+      setShowCustomInput(false);
+      setCustomSubject('');
+    }
   };
 
   const handleSave = () => {
@@ -553,10 +588,12 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
                         <button
                           key={subject}
                           type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, subject }))}
+                          onClick={() => handleSubjectSelect(subject)}
                           className={`block w-full text-left px-2 py-0.5 text-xs rounded transition-colors ${
                             formData.subject === subject
                               ? 'bg-[#C3A06D] text-white'
+                              : subject.startsWith('Custom')
+                              ? 'hover:bg-blue-100 text-blue-600 font-medium'
                               : 'hover:bg-gray-100 text-[#3E4A59]'
                           }`}
                         >
@@ -568,6 +605,36 @@ const TaskModal = ({ isOpen, onClose, task, onSave, onDelete }: TaskModalProps) 
                 </div>
               ))}
             </div>
+            {showCustomInput && (
+              <div className="mt-2 p-2 border rounded-md bg-blue-50">
+                <label className="text-xs font-medium text-blue-700">Enter Custom Class Name:</label>
+                <div className="flex gap-1 mt-1">
+                  <Input
+                    value={customSubject}
+                    onChange={(e) => setCustomSubject(e.target.value)}
+                    placeholder="e.g., Advanced Algebra, Marine Biology"
+                    className="text-xs"
+                    onKeyPress={(e) => e.key === 'Enter' && handleCustomSubjectSave()}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleCustomSubjectSave}
+                    disabled={!customSubject.trim()}
+                    className="text-xs px-2 py-1"
+                  >
+                    Add
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowCustomInput(false)}
+                    className="text-xs px-2 py-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="mt-1 text-xs text-[#7E8A97]">
               Selected: <span className="font-medium">{formData.subject}</span>
             </div>
