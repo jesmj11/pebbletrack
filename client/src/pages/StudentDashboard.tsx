@@ -48,13 +48,25 @@ const StudentDashboard = () => {
   // For demo purposes, provide mock data 
   const isLoading = false;
   const currentDate = format(new Date(), "MMMM d, yyyy");
+  
+  // State to track completed classes
+  const [completedClasses, setCompletedClasses] = useState<string[]>([]);
 
   // Function to handle class completion
   const handleClassComplete = (className: string, isCompleted: boolean) => {
-    toast({
-      title: isCompleted ? "Class Complete!" : "Class Reopened",
-      description: isCompleted ? `Great work on ${className}!` : `${className} has been reopened.`,
-    });
+    if (isCompleted) {
+      setCompletedClasses(prev => [...prev, className]);
+      toast({
+        title: "Class Complete!",
+        description: `Great work on ${className}!`,
+      });
+    } else {
+      setCompletedClasses(prev => prev.filter(c => c !== className));
+      toast({
+        title: "Class Reopened",
+        description: `${className} has been reopened.`,
+      });
+    }
   };
 
   // Function to get class icons
@@ -254,8 +266,8 @@ const StudentDashboard = () => {
         <h2 className="text-3xl font-bold text-center mb-8 text-secondary">Today's Classes</h2>
         
         <div className="grid md:grid-cols-2 gap-6">
-          {studentData.progress.map(classItem => {
-            const isCompleted = Math.random() > 0.5; // This will be replaced with real completion status
+          {studentData.progress.filter(classItem => !completedClasses.includes(classItem.className)).map(classItem => {
+            const isCompleted = false;
             return (
               <button
                 key={classItem.className}
@@ -322,22 +334,62 @@ const StudentDashboard = () => {
         )}
       </div>
       
-      {/* Celebration Section */}
-      {completedTasks.length > 0 && (
-        <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-xl p-6 shadow-lg border-2 border-green-200">
-          <h3 className="text-2xl font-bold text-green-700 mb-4 text-center">Recently Completed!</h3>
-          <div className="space-y-3">
-            {completedTasks.map(task => (
-              <div key={task.id} className="bg-white rounded-lg p-4 shadow-sm border border-green-200">
-                <div className="flex items-center">
-                  <div className="text-3xl mr-4">🎉</div>
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-800 line-through">{task.assignment.title}</h4>
-                    <p className="text-gray-600">{task.class.name} - Completed!</p>
+      {/* Recently Completed Section */}
+      {completedClasses.length > 0 && (
+        <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-green-300">
+          <h2 className="text-3xl font-bold text-center mb-8 text-green-700">Recently Completed! 🎉</h2>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {completedClasses.map(className => {
+              return (
+                <div
+                  key={className}
+                  className="relative p-6 rounded-3xl border-4 bg-green-500 border-green-700 shadow-green-400 shadow-lg min-h-[140px]"
+                >
+                  {/* Completed Checkbox */}
+                  <div className="absolute top-4 left-4">
+                    <div className="w-8 h-8 border-4 rounded-lg flex items-center justify-center bg-green-500 border-green-600">
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
                   </div>
+
+                  {/* Task Content */}
+                  <div className="flex items-center gap-4 mt-4">
+                    {/* Large Emoji */}
+                    <div className="text-6xl flex-shrink-0">{getClassIcon(className)}</div>
+
+                    {/* Task Text */}
+                    <div className="flex-1 text-left min-w-0">
+                      <h3
+                        className="text-2xl font-bold mb-1 line-through text-gray-600 truncate"
+                        style={{ fontFamily: "Comic Sans MS, cursive" }}
+                      >
+                        {className}
+                      </h3>
+                      <p className="text-lg text-white opacity-90 truncate" style={{ fontFamily: "Comic Sans MS, cursive" }}>
+                        Completed Today!
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Completion Overlay */}
+                  <div className="absolute inset-0 bg-green-400 bg-opacity-20 rounded-3xl flex items-center justify-center">
+                    <div className="bg-green-500 text-white px-6 py-3 rounded-2xl text-2xl font-bold shadow-lg">
+                      ✅ DONE!
+                    </div>
+                  </div>
+
+                  {/* Click to undo (hidden for now but could be enabled) */}
+                  <button
+                    onClick={() => handleClassComplete(className, false)}
+                    className="absolute top-4 right-4 bg-gray-500 hover:bg-gray-600 rounded-full p-2 opacity-50 hover:opacity-100 transition-opacity"
+                    title="Click to undo completion"
+                  >
+                    <span className="text-white text-sm">↶</span>
+                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
