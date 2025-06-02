@@ -13,51 +13,51 @@ const TeacherSidebar = () => {
       <nav className="py-4">
         <ul>
           <li className="mb-1">
-            <Link href="/teacher/dashboard">
+            <Link href="/">
               <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${
-                isActive("/teacher/dashboard") ? "bg-neutral-light" : ""
+                location === "/" ? "bg-neutral-light" : ""
               }`}>
-                <PanelsTopLeft className={`${isActive("/teacher/dashboard") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
-                <span className="hidden md:inline">PanelsTopLeft</span>
+                <PanelsTopLeft className={`${location === "/" ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
+                <span className="hidden md:inline">Dashboard</span>
               </a>
             </Link>
           </li>
           <li className="mb-1">
-            <Link href="/teacher/students">
+            <Link href="/students">
               <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${
-                isActive("/teacher/students") ? "bg-neutral-light" : ""
+                isActive("/students") ? "bg-neutral-light" : ""
               }`}>
-                <Users className={`${isActive("/teacher/students") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
+                <Users className={`${isActive("/students") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
                 <span className="hidden md:inline">Students</span>
               </a>
             </Link>
           </li>
           <li className="mb-1">
-            <Link href="/teacher/classes">
+            <Link href="/classes">
               <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${
-                isActive("/teacher/classes") ? "bg-neutral-light" : ""
+                isActive("/classes") ? "bg-neutral-light" : ""
               }`}>
-                <BookOpen className={`${isActive("/teacher/classes") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
+                <BookOpen className={`${isActive("/classes") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
                 <span className="hidden md:inline">Classes</span>
               </a>
             </Link>
           </li>
           <li className="mb-1">
-            <Link href="/teacher/assignments">
+            <Link href="/assignments">
               <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${
-                isActive("/teacher/assignments") ? "bg-neutral-light" : ""
+                isActive("/assignments") ? "bg-neutral-light" : ""
               }`}>
-                <FileText className={`${isActive("/teacher/assignments") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
+                <FileText className={`${isActive("/assignments") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
                 <span className="hidden md:inline">Assignments</span>
               </a>
             </Link>
           </li>
           <li className="mb-1">
-            <Link href="/teacher/reports">
+            <Link href="/reports">
               <a className={`flex items-center px-4 py-3 text-neutral-darkest hover:bg-neutral-light group transition-colors ${
-                isActive("/teacher/reports") ? "bg-neutral-light" : ""
+                isActive("/reports") ? "bg-neutral-light" : ""
               }`}>
-                <BarChart className={`${isActive("/teacher/reports") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
+                <BarChart className={`${isActive("/reports") ? "text-primary" : "text-neutral-dark"} mr-3 h-5 w-5 group-hover:text-primary`} />
                 <span className="hidden md:inline">Reports</span>
               </a>
             </Link>
