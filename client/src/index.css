@@ -19,6 +19,17 @@ button, a[role="button"] {
   touch-action: manipulation;
 }
 
+/* Mobile navigation spacing */
+@media (max-width: 768px) {
+  .mobile-header-spacing {
+    padding-top: 64px;
+  }
+  
+  .mobile-bottom-spacing {
+    padding-bottom: 80px;
+  }
+}
+
 :root {
     /* Pebble Track Color Palette - Updated with exact hex codes */
     --pebble-gray: #7E8A97;
