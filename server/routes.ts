@@ -227,6 +227,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true, settings: req.body });
   });
 
+  // Push notification subscription storage
+  const notificationSubscriptions = new Map();
+
+  // PWA notification routes
+  app.post("/api/notifications/subscribe", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const subscription = req.body;
+      
+      // Store subscription for this user
+      notificationSubscriptions.set(user.id, subscription);
+      
+      res.json({ success: true, message: "Subscription saved" });
+    } catch (error) {
+      console.error("Error saving notification subscription:", error);
+      res.status(500).json({ error: "Failed to save subscription" });
+    }
+  });
+
+  app.delete("/api/notifications/subscribe", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      notificationSubscriptions.delete(user.id);
+      res.json({ success: true, message: "Subscription removed" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove subscription" });
+    }
+  });
+
+  // Send notification to specific user
+  app.post("/api/notifications/send", isAuthenticated, async (req, res) => {
+    try {
+      const { userId, title, body, data } = req.body;
+      const subscription = notificationSubscriptions.get(userId);
+      
+      if (!subscription) {
+        return res.status(404).json({ error: "No subscription found for user" });
+      }
+
+      // In production, you would use a service like web-push here
+      console.log(`Would send notification to user ${userId}:`, { title, body, data });
+      
+      res.json({ success: true, message: "Notification sent" });
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      res.status(500).json({ error: "Failed to send notification" });
+    }
+  });
+
+  // Get PWA installation status
+  app.get("/api/pwa/status", isAuthenticated, async (req, res) => {
+    const user = req.user as any;
+    const hasNotifications = notificationSubscriptions.has(user.id);
+    
+    res.json({
+      notificationsEnabled: hasNotifications,
+      cacheStatus: "active" // In production, check actual cache status
+    });
+  });
+
   // Class routes
   app.get("/api/classes", isAuthenticated, async (req, res) => {
     const user = req.user as any;

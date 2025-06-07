@@ -4,6 +4,8 @@ import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import MobileNavigation from "@/components/MobileNavigation";
+import OfflineIndicator from "@/components/OfflineIndicator";
 
 // Pages
 import Layout from "@/components/Layout";
@@ -161,6 +163,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <OfflineIndicator />
+        <MobileNavigation />
         <Router />
         <Toaster />
       </TooltipProvider>

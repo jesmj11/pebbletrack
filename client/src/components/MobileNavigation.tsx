@@ -36,7 +36,7 @@ const MobileNavigation = () => {
     }
   };
 
-  const navigationItems = user?.role === "parent" ? [
+  const navigationItems = user?.role === "teacher" ? [
     { icon: Home, label: "Dashboard", path: "/" },
     { icon: Calendar, label: "Planner", path: "/planner" },
     { icon: Users, label: "Students", path: "/students" },
