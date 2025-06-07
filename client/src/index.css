@@ -2,107 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* PWA and Mobile Optimizations */
+/* Mobile and Touch Optimizations */
 html {
-  /* Prevent zoom on double-tap */
   touch-action: manipulation;
-  /* Better text rendering on mobile */
   -webkit-text-size-adjust: 100%;
 }
 
 body {
-  /* Prevent overscroll bounce on iOS */
   overscroll-behavior: none;
-  /* Improve scrolling performance */
   -webkit-overflow-scrolling: touch;
 }
 
-/* Touch-friendly interactive elements */
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-  position: relative;
-}
-
-/* Ensure proper touch targets for buttons */
-button, a, [role="button"] {
+/* Touch-friendly buttons */
+button, a[role="button"] {
   min-height: 44px;
   touch-action: manipulation;
-}
-
-/* Mobile-specific responsive padding */
-@media (max-width: 768px) {
-  .mobile-padding {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  .mobile-spacing {
-    margin-bottom: 1rem;
-  }
-  
-  /* Bottom navigation spacing */
-  .mobile-bottom-nav-spacing {
-    padding-bottom: 80px;
-  }
-  
-  /* Mobile header spacing */
-  .mobile-header-spacing {
-    padding-top: 64px;
-  }
-}
-
-/* Improved focus indicators for touch/keyboard navigation */
-.focus-ring:focus-visible {
-  outline: 2px solid var(--moss-green);
-  outline-offset: 2px;
-}
-
-/* Better touch feedback */
-.touch-feedback:active {
-  transform: scale(0.98);
-  transition: transform 0.1s ease-in-out;
-}
-
-/* Student interface optimizations */
-.student-card {
-  background: linear-gradient(135deg, var(--drift-sand) 0%, var(--fern-mist) 100%);
-  border: 2px solid var(--moss-green);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease-in-out;
-}
-
-.student-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* Nature-themed progress indicators */
-.progress-leaf {
-  background: linear-gradient(90deg, var(--moss-green) 0%, var(--stream-blue) 100%);
-  border-radius: 20px;
-  height: 8px;
-}
-
-/* Offline indicator animations */
-.offline-slide-down {
-  animation: slideDown 0.3s ease-out;
-}
-
-.offline-slide-up {
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(0); }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(0); }
-  to { transform: translateY(-100%); }
 }
 
 :root {
