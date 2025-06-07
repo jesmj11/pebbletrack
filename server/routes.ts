@@ -73,6 +73,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).json({ message: "Not authenticated" });
   };
 
+  // Development setup route to create test accounts
+  app.post("/api/setup", async (req, res) => {
+    try {
+      // Check if setup already done
+      const existingUser = await authStorage.getUserByEmail("parent@test.com");
+      if (existingUser) {
+        return res.json({ message: "Setup already completed", user: existingUser });
+      }
+
+      // Create test parent account
+      const parentUser = await authStorage.createUser({
+        email: "parent@test.com",
+        password: "password123",
+        fullName: "Test Parent",
+        role: "parent",
+        familyName: "Test Family"
+      });
+
+      res.json({ 
+        message: "Test account created", 
+        user: parentUser,
+        credentials: { email: "parent@test.com", password: "password123" }
+      });
+    } catch (error: any) {
+      console.error("Setup error:", error);
+      res.status(500).json({ message: error.message || "Setup failed" });
+    }
+  });
+
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
     try {

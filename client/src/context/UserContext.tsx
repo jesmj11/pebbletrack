@@ -3,9 +3,10 @@ import { apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: number;
-  username: string;
-  role: "teacher" | "student";
+  email: string;
+  role: "parent" | "student";
   fullName: string;
+  familyName?: string;
 }
 
 interface UserContextProps {
@@ -13,7 +14,7 @@ interface UserContextProps {
   setUser: (user: User | null) => void;
   isLoading: boolean;
   checkAuthentication: () => Promise<void>;
-  login: (username: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<User>;
 }
 
 const UserContext = createContext<UserContextProps | undefined>(undefined);
@@ -25,18 +26,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const checkAuthentication = useCallback(async () => {
     try {
       setIsLoading(true);
-      // For development, let's create a default user to make testing easier
-      // In a real application, this would make an API call to verify the session
-      setUser({
-        id: 1,
-        username: "teacher",
-        role: "teacher",
-        fullName: "Ms. Johnson"
-      });
-      
-      // Uncomment this for actual authentication
-      /*
-      const response = await fetch("/api/auth/status", {
+      const response = await fetch("/api/auth/user", {
         credentials: "include",
       });
 
@@ -47,7 +37,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // Not authenticated or session expired
         setUser(null);
       }
-      */
     } catch (error) {
       console.error("Auth check failed:", error);
       setUser(null);
@@ -56,38 +45,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (username: string, password: string): Promise<User> => {
+  const login = async (email: string, password: string): Promise<User> => {
     try {
-      // For development/demo purposes
-      if (username === "teacher") {
-        const userData = {
-          id: 1,
-          username: "teacher",
-          role: "teacher" as const,
-          fullName: "Ms. Johnson"
-        };
-        setUser(userData);
-        return userData;
-      } else if (username === "student") {
-        const userData = {
-          id: 2,
-          username: "student",
-          role: "student" as const,
-          fullName: "Alex Student"
-        };
-        setUser(userData);
-        return userData;
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Login failed");
       }
-      
-      // Uncomment for actual API login
-      /*
-      const response = await apiRequest("POST", "/api/auth/login", { username, password });
+
       const userData = await response.json();
       setUser(userData);
       return userData;
-      */
-      
-      throw new Error("Invalid credentials");
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
