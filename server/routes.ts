@@ -24,7 +24,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       secret: "edutask-secret-key",
       resave: false,
       saveUninitialized: false,
-      cookie: { secure: process.env.NODE_ENV === "production" },
+      cookie: { 
+        secure: false, // Allow non-HTTPS in development
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      },
       store: new SessionStore({ checkPeriod: 86400000 }) // prune expired entries every 24h
     })
   );
