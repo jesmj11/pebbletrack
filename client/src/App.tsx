@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
+import { queryClient, getQueryFn } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import MobileNav from "@/components/MobileNav";
@@ -38,6 +38,7 @@ function Router() {
   // Check authentication status
   const { data: authUser, isLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     retry: false,
   });
 

@@ -50,12 +50,15 @@ export default function Login() {
     },
     onSuccess: async () => {
       // Invalidate auth query to trigger re-fetch
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
-      });
-      setLocation("/");
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Wait a moment for the query to update
+      setTimeout(() => {
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully logged in.",
+        });
+        setLocation("/");
+      }, 100);
     },
     onError: (error: any) => {
       toast({
