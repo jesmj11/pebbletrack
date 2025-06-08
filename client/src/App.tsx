@@ -19,7 +19,9 @@ import Reports from "@/pages/Reports";
 import Planner from "@/pages/Planner";
 import StudentTasks from "@/pages/StudentTasks";
 import Settings from "@/pages/Settings";
-import Login from "@/pages/Login";
+import Home from "@/pages/Home";
+import ParentLogin from "@/pages/ParentLogin";
+import StudentLogin from "@/pages/StudentLogin";
 import Register from "@/pages/Register";
 
 // Family-based user interface
@@ -95,9 +97,11 @@ function Router() {
   if (!user) {
     return (
       <Switch>
-        <Route path="/register" component={Register} />
-        <Route path="/" component={Login} />
-        <Route component={Login} />
+        <Route path="/parent/login" component={ParentLogin} />
+        <Route path="/student/login" component={StudentLogin} />
+        <Route path="/parent/register" component={Register} />
+        <Route path="/" component={Home} />
+        <Route component={Home} />
       </Switch>
     );
   }
