@@ -129,6 +129,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(req.user);
   });
 
+  // Student PIN-based login
+  app.post("/api/auth/student-login", async (req, res) => {
+    try {
+      const { studentId, pin } = req.body;
+      
+      if (!studentId || !pin) {
+        return res.status(400).json({ message: "Student ID and PIN are required" });
+      }
+
+      const student = await authStorage.getStudent(studentId);
+      if (!student || student.pin !== pin) {
+        return res.status(401).json({ message: "Invalid PIN" });
+      }
+
+      // Create a student session
+      const studentUser = {
+        id: student.id,
+        email: `student_${student.id}@pebbletrack.local`,
+        role: "student",
+        fullName: student.fullName,
+        studentId: student.id
+      };
+
+      req.login(studentUser, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "Login failed" });
+        }
+        res.json(studentUser);
+      });
+    } catch (error: any) {
+      console.error("Student login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
   app.post("/api/auth/logout", (req, res) => {
     req.logout(() => {
       res.json({ message: "Logged out" });
@@ -140,6 +175,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(req.user);
     } else {
       res.status(401).json({ message: "Not authenticated" });
+    }
+  });
+
+  // Public route to get students for PIN login
+  app.get("/api/students", async (req, res) => {
+    try {
+      const students = await authStorage.getStudents();
+      // Only return essential info for login, not sensitive data
+      const publicStudentData = students.map(student => ({
+        id: student.id,
+        fullName: student.fullName,
+        gradeLevel: student.gradeLevel,
+        avatar: student.avatar
+      }));
+      res.json(publicStudentData);
+    } catch (error: any) {
+      console.error("Error fetching students:", error);
+      res.status(500).json({ message: "Failed to fetch students" });
     }
   });
 

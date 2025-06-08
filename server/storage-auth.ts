@@ -19,6 +19,8 @@ export interface IAuthStorage {
   hashPassword(password: string): Promise<string>;
   
   // Student operations for families
+  getStudent(id: number): Promise<Student | undefined>;
+  getStudents(): Promise<Student[]>;
   getStudentsByParent(parentId: number): Promise<Student[]>;
   createStudent(studentData: InsertStudent): Promise<Student>;
   updateStudent(id: number, studentData: Partial<InsertStudent>): Promise<Student | undefined>;
@@ -81,6 +83,15 @@ export class AuthStorage implements IAuthStorage {
 
   async validatePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  async getStudent(id: number): Promise<Student | undefined> {
+    const [student] = await db.select().from(students).where(eq(students.id, id));
+    return student;
+  }
+
+  async getStudents(): Promise<Student[]> {
+    return await db.select().from(students);
   }
 
   async getStudentsByParent(parentId: number): Promise<Student[]> {
