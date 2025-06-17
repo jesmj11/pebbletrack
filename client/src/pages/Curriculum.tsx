@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 import { BookOpen, Plus, Upload, Settings, Users, Calendar, Clock, Award } from "lucide-react"
 import { apiRequest } from "@/lib/queryClient"
 import type { Curriculum, CurriculumLesson, Student, StudentDailyLessons } from "@shared/schema"
+import AILessonExtractor from "@/components/AILessonExtractor"
 
 export default function CurriculumPage() {
   const { toast } = useToast()
@@ -22,6 +23,8 @@ export default function CurriculumPage() {
   const [selectedCurriculum, setSelectedCurriculum] = useState<Curriculum | null>(null)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [assignDialogOpen, setAssignDialogOpen] = useState(false)
+  const [extractedLessons, setExtractedLessons] = useState<any[]>([])
+  const [pendingCurriculumData, setPendingCurriculumData] = useState<any>(null)
 
   // Fetch curriculums
   const { data: curriculums = [], isLoading: curriculumsLoading } = useQuery({
@@ -36,12 +39,25 @@ export default function CurriculumPage() {
   // Create curriculum mutation
   const createCurriculumMutation = useMutation({
     mutationFn: async (data: any) => await apiRequest('/api/curriculums', 'POST', data),
-    onSuccess: () => {
+    onSuccess: async (curriculum) => {
+      // If we have extracted lessons, import them too
+      if (extractedLessons.length > 0) {
+        try {
+          await apiRequest(`/api/curriculums/${curriculum.id}/lessons`, 'POST', { lessons: extractedLessons })
+          setExtractedLessons([])
+          setPendingCurriculumData(null)
+        } catch (error) {
+          console.error("Failed to import lessons:", error)
+        }
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['/api/curriculums'] })
       setImportDialogOpen(false)
       toast({
         title: "Success",
-        description: "Curriculum imported successfully!"
+        description: extractedLessons.length > 0 
+          ? `Curriculum imported with ${extractedLessons.length} lessons!`
+          : "Curriculum imported successfully!"
       })
     },
     onError: (error: any) => {
@@ -407,23 +423,61 @@ export default function CurriculumPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Upload className="mr-2 h-5 w-5" />
-                  Import Curriculum Index
+                  AI-Powered Curriculum Import
                 </CardTitle>
                 <CardDescription>
-                  Upload your curriculum details to automatically generate daily lesson schedules
+                  Upload an image or paste text of your curriculum index and let AI extract all lessons automatically
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-blue-900 mb-2">How to Import Your Curriculum</h3>
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-900 mb-2">🤖 AI Lesson Extraction</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Enter your curriculum name and details</li>
-                      <li>• Specify the total number of lessons in your curriculum</li>
-                      <li>• Set the number of lessons per day for each student</li>
-                      <li>• The system will automatically schedule daily lessons</li>
+                      <li>• Upload a photo of your Teaching Textbooks lesson index</li>
+                      <li>• Paste text from any curriculum table of contents</li>
+                      <li>• AI automatically extracts lesson numbers, titles, and types</li>
+                      <li>• Review and edit before importing into your curriculum</li>
                     </ul>
                   </div>
+
+                  <AILessonExtractor onLessonsExtracted={(lessons, curriculumData) => {
+                    setExtractedLessons(lessons)
+                    setPendingCurriculumData(curriculumData)
+                    toast({
+                      title: "Lessons Ready",
+                      description: `${lessons.length} lessons extracted and ready to import`
+                    })
+                  }} />
+
+                  {/* Show extracted lessons preview */}
+                  {extractedLessons.length > 0 && (
+                    <Card className="border-green-200 bg-green-50">
+                      <CardHeader>
+                        <CardTitle className="text-green-800">Ready to Import</CardTitle>
+                        <CardDescription className="text-green-700">
+                          {extractedLessons.length} lessons extracted from {pendingCurriculumData?.name}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-green-700">
+                            Click "Import with AI Lessons" below to create the curriculum with all extracted lessons
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setExtractedLessons([])
+                              setPendingCurriculumData(null)
+                            }}
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   <form onSubmit={handleImportCurriculum} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

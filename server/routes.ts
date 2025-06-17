@@ -497,6 +497,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI-powered lesson extraction
+  app.post("/api/curriculums/extract-lessons", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can extract lessons" });
+      }
+
+      const { imageData, textContent, curriculumName, extractionType } = req.body;
+      
+      let lessons: any[] = [];
+      
+      if (extractionType === "image" && imageData) {
+        const { extractLessonsFromImage } = await import("./openai");
+        // Remove data URL prefix if present
+        const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+        lessons = await extractLessonsFromImage(base64Data, curriculumName);
+      } else if (extractionType === "text" && textContent) {
+        const { extractLessonsFromText } = await import("./openai");
+        lessons = await extractLessonsFromText(textContent, curriculumName);
+      } else {
+        return res.status(400).json({ message: "Invalid extraction type or missing data" });
+      }
+
+      res.json({ lessons, count: lessons.length });
+    } catch (error: any) {
+      console.error("Error extracting lessons:", error);
+      res.status(500).json({ message: error.message || "Failed to extract lessons" });
+    }
+  });
+
+  app.post("/api/curriculums/enhance-description", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can enhance descriptions" });
+      }
+
+      const { curriculumName, publisher, gradeLevel } = req.body;
+      const { enhanceCurriculumDescription } = await import("./openai");
+      
+      const description = await enhanceCurriculumDescription(curriculumName, publisher, gradeLevel);
+      res.json({ description });
+    } catch (error: any) {
+      console.error("Error enhancing description:", error);
+      res.status(500).json({ message: error.message || "Failed to enhance description" });
+    }
+  });
+
   // Class routes
   app.get("/api/classes", isAuthenticated, async (req, res) => {
     const user = req.user as any;
