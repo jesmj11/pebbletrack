@@ -1,12 +1,14 @@
 import { db } from "./db";
-import { users, students, classes, assignments, tasks } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { users, students, classes, assignments, tasks, curriculums, curriculumLessons, studentCurriculums, lessonProgress } from "@shared/schema";
+import { eq, and, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import type { 
   User, InsertUser, Student, InsertStudent, 
   Class, InsertClass, Assignment, InsertAssignment,
   Task, InsertTask, StudentWithUser, TaskWithAssignment,
-  ClassWithStudentCount, StudentProgress
+  ClassWithStudentCount, StudentProgress, Curriculum, InsertCurriculum,
+  CurriculumLesson, InsertCurriculumLesson, StudentCurriculum, InsertStudentCurriculum,
+  LessonProgress, InsertLessonProgress, StudentDailyLessons
 } from "@shared/schema";
 
 export interface IAuthStorage {
@@ -43,6 +45,16 @@ export interface IAuthStorage {
     totalTasks: number;
     completedTasks: number;
   }>;
+
+  // Curriculum management operations
+  getCurriculumsByParent(parentId: number): Promise<Curriculum[]>;
+  createCurriculum(curriculumData: InsertCurriculum): Promise<Curriculum>;
+  bulkCreateLessons(curriculumId: number, lessons: InsertCurriculumLesson[]): Promise<CurriculumLesson[]>;
+  updateCurriculumTotalLessons(curriculumId: number, totalLessons: number): Promise<void>;
+  getLessonsByCurriculum(curriculumId: number): Promise<CurriculumLesson[]>;
+  assignCurriculumToStudent(assignment: InsertStudentCurriculum): Promise<StudentCurriculum>;
+  getStudentDailyLessons(studentId: number): Promise<StudentDailyLessons>;
+  updateLessonProgress(lessonId: number, progressData: Partial<InsertLessonProgress>): Promise<LessonProgress>;
 }
 
 export class AuthStorage implements IAuthStorage {
@@ -203,6 +215,107 @@ export class AuthStorage implements IAuthStorage {
       totalTasks,
       completedTasks,
     };
+  }
+
+  // Curriculum management methods
+  async getCurriculumsByParent(parentId: number): Promise<Curriculum[]> {
+    return await db.select().from(curriculums).where(eq(curriculums.parentId, parentId));
+  }
+
+  async createCurriculum(curriculumData: InsertCurriculum): Promise<Curriculum> {
+    const [curriculum] = await db.insert(curriculums).values(curriculumData).returning();
+    return curriculum;
+  }
+
+  async bulkCreateLessons(curriculumId: number, lessons: InsertCurriculumLesson[]): Promise<CurriculumLesson[]> {
+    const lessonsWithCurriculumId = lessons.map(lesson => ({
+      ...lesson,
+      curriculumId
+    }));
+    return await db.insert(curriculumLessons).values(lessonsWithCurriculumId).returning();
+  }
+
+  async updateCurriculumTotalLessons(curriculumId: number, totalLessons: number): Promise<void> {
+    await db.update(curriculums)
+      .set({ totalLessons })
+      .where(eq(curriculums.id, curriculumId));
+  }
+
+  async getLessonsByCurriculum(curriculumId: number): Promise<CurriculumLesson[]> {
+    return await db.select().from(curriculumLessons)
+      .where(eq(curriculumLessons.curriculumId, curriculumId))
+      .orderBy(curriculumLessons.lessonNumber);
+  }
+
+  async assignCurriculumToStudent(assignment: InsertStudentCurriculum): Promise<StudentCurriculum> {
+    const [studentCurriculum] = await db.insert(studentCurriculums).values(assignment).returning();
+    return studentCurriculum;
+  }
+
+  async getStudentDailyLessons(studentId: number): Promise<StudentDailyLessons> {
+    // Get student's active curriculums
+    const studentCurriculumData = await db.select({
+      curriculum: curriculums,
+      studentCurriculum: studentCurriculums
+    })
+    .from(studentCurriculums)
+    .innerJoin(curriculums, eq(studentCurriculums.curriculumId, curriculums.id))
+    .where(and(
+      eq(studentCurriculums.studentId, studentId),
+      eq(studentCurriculums.isActive, true)
+    ));
+
+    const student = await this.getStudent(studentId);
+    if (!student) throw new Error("Student not found");
+
+    const curriculumsWithLessons = await Promise.all(
+      studentCurriculumData.map(async ({ curriculum, studentCurriculum }) => {
+        // Get today's lessons based on current lesson and lessons per day
+        const allLessons = await this.getLessonsByCurriculum(curriculum.id);
+        const currentLessonIndex = studentCurriculum.currentLesson - 1;
+        const todaysLessons = allLessons.slice(
+          currentLessonIndex,
+          currentLessonIndex + studentCurriculum.lessonsPerDay
+        );
+
+        return {
+          id: curriculum.id,
+          name: curriculum.name,
+          subject: curriculum.subject,
+          todaysLessons,
+          lessonsPerDay: studentCurriculum.lessonsPerDay,
+          progress: Math.round((studentCurriculum.currentLesson / curriculum.totalLessons) * 100)
+        };
+      })
+    );
+
+    return {
+      studentId: student.id,
+      studentName: student.fullName,
+      curriculums: curriculumsWithLessons
+    };
+  }
+
+  async updateLessonProgress(lessonId: number, progressData: Partial<InsertLessonProgress>): Promise<LessonProgress> {
+    // First, try to find existing progress record
+    const existingProgress = await db.select().from(lessonProgress)
+      .where(eq(lessonProgress.lessonId, lessonId))
+      .limit(1);
+
+    if (existingProgress.length > 0) {
+      // Update existing record
+      const [updated] = await db.update(lessonProgress)
+        .set(progressData)
+        .where(eq(lessonProgress.id, existingProgress[0].id))
+        .returning();
+      return updated;
+    } else {
+      // Create new progress record
+      const [created] = await db.insert(lessonProgress)
+        .values(progressData as InsertLessonProgress)
+        .returning();
+      return created;
+    }
   }
 }
 

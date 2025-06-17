@@ -373,6 +373,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Curriculum management routes
+  app.get("/api/curriculums", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can access curriculums" });
+      }
+      
+      const curriculums = await authStorage.getCurriculumsByParent(user.id);
+      res.json(curriculums);
+    } catch (error) {
+      console.error("Error fetching curriculums:", error);
+      res.status(500).json({ message: "Failed to fetch curriculums" });
+    }
+  });
+
+  app.post("/api/curriculums", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can create curriculums" });
+      }
+
+      const curriculumData = {
+        ...req.body,
+        parentId: user.id,
+      };
+
+      const curriculum = await authStorage.createCurriculum(curriculumData);
+      res.status(201).json(curriculum);
+    } catch (error: any) {
+      console.error("Error creating curriculum:", error);
+      res.status(400).json({ message: error.message || "Failed to create curriculum" });
+    }
+  });
+
+  app.post("/api/curriculums/:id/lessons", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can add lessons" });
+      }
+
+      const curriculumId = parseInt(req.params.id);
+      const lessons = req.body.lessons; // Array of lesson objects
+
+      const createdLessons = await authStorage.bulkCreateLessons(curriculumId, lessons);
+      await authStorage.updateCurriculumTotalLessons(curriculumId, lessons.length);
+      
+      res.status(201).json(createdLessons);
+    } catch (error: any) {
+      console.error("Error creating lessons:", error);
+      res.status(400).json({ message: error.message || "Failed to create lessons" });
+    }
+  });
+
+  app.get("/api/curriculums/:id/lessons", isAuthenticated, async (req, res) => {
+    try {
+      const curriculumId = parseInt(req.params.id);
+      const lessons = await authStorage.getLessonsByCurriculum(curriculumId);
+      res.json(lessons);
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+      res.status(500).json({ message: "Failed to fetch lessons" });
+    }
+  });
+
+  app.post("/api/students/:studentId/curriculums", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.role !== "parent") {
+        return res.status(403).json({ message: "Only parents can assign curriculums" });
+      }
+
+      const studentId = parseInt(req.params.studentId);
+      const { curriculumId, lessonsPerDay } = req.body;
+
+      const assignment = await authStorage.assignCurriculumToStudent({
+        studentId,
+        curriculumId,
+        lessonsPerDay: lessonsPerDay || 1,
+        startDate: new Date(),
+        isActive: true,
+        currentLesson: 1,
+      });
+
+      res.status(201).json(assignment);
+    } catch (error: any) {
+      console.error("Error assigning curriculum:", error);
+      res.status(400).json({ message: error.message || "Failed to assign curriculum" });
+    }
+  });
+
+  app.get("/api/students/:studentId/daily-lessons", isAuthenticated, async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.studentId);
+      const dailyLessons = await authStorage.getStudentDailyLessons(studentId);
+      res.json(dailyLessons);
+    } catch (error) {
+      console.error("Error fetching daily lessons:", error);
+      res.status(500).json({ message: "Failed to fetch daily lessons" });
+    }
+  });
+
+  app.put("/api/lesson-progress/:lessonId", isAuthenticated, async (req, res) => {
+    try {
+      const lessonId = parseInt(req.params.lessonId);
+      const { status, timeSpent, notes, score } = req.body;
+
+      const progress = await authStorage.updateLessonProgress(lessonId, {
+        status,
+        timeSpent,
+        notes,
+        score,
+        completedAt: status === "completed" ? new Date() : null,
+      });
+
+      res.json(progress);
+    } catch (error: any) {
+      console.error("Error updating lesson progress:", error);
+      res.status(400).json({ message: error.message || "Failed to update progress" });
+    }
+  });
+
   // Class routes
   app.get("/api/classes", isAuthenticated, async (req, res) => {
     const user = req.user as any;
