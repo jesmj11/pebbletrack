@@ -23,6 +23,7 @@ import Home from "@/pages/Home";
 import ParentLogin from "@/pages/ParentLogin";
 import StudentLogin from "@/pages/StudentLogin";
 import Register from "@/pages/Register";
+import Curriculum from "@/pages/Curriculum";
 
 // Family-based user interface
 interface User {
@@ -142,6 +143,11 @@ function Router() {
       <Route path="/reports">
         <Layout>
           <Reports />
+        </Layout>
+      </Route>
+      <Route path="/curriculum">
+        <Layout>
+          <Curriculum />
         </Layout>
       </Route>
       <Route path="/student">

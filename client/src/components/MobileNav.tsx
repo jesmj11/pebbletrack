@@ -30,6 +30,7 @@ const MobileNav = () => {
     { icon: Calendar, label: "Planner", path: "/planner" },
     { icon: Users, label: "Students", path: "/students" },
     { icon: BookOpen, label: "Classes", path: "/classes" },
+    { icon: BookOpen, label: "Curriculum", path: "/curriculum" },
     { icon: Settings, label: "Settings", path: "/settings" }
   ] : [
     { icon: Home, label: "My Tasks", path: "/student" },
