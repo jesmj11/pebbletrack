@@ -94,13 +94,14 @@ export default function CurriculumPage() {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     
-    const curriculumData = {
+    // Use pending curriculum data if available from AI extraction
+    const curriculumData = pendingCurriculumData || {
       name: formData.get('name') as string,
       subject: formData.get('subject') as string,
       publisher: formData.get('publisher') as string,
       gradeLevel: formData.get('gradeLevel') as string,
       description: formData.get('description') as string,
-      totalLessons: parseInt(formData.get('totalLessons') as string) || 0
+      totalLessons: parseInt(formData.get('totalLessons') as string) || extractedLessons.length || 0
     }
 
     createCurriculumMutation.mutate(curriculumData)
@@ -555,9 +556,14 @@ export default function CurriculumPage() {
                     <Button
                       type="submit"
                       disabled={createCurriculumMutation.isPending}
-                      className="w-full"
+                      className={`w-full ${extractedLessons.length > 0 ? 'bg-green-600 hover:bg-green-700' : ''}`}
                     >
-                      {createCurriculumMutation.isPending ? 'Importing...' : 'Import Curriculum'}
+                      {createCurriculumMutation.isPending 
+                        ? 'Importing...' 
+                        : extractedLessons.length > 0 
+                          ? `Import with ${extractedLessons.length} AI Lessons`
+                          : 'Import Curriculum'
+                      }
                     </Button>
                   </form>
                 </div>
