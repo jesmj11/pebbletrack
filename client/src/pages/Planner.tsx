@@ -66,9 +66,9 @@ const Planner = () => {
   });
 
   // Fetch family students
-  const { data: students } = useQuery({
+  const { data: students = [] } = useQuery({
     queryKey: ["/api/auth/students"],
-    enabled: !!currentUser && currentUser?.role === "parent",
+    enabled: !!currentUser && (currentUser as any)?.role === "parent",
   });
 
   // Get week dates
@@ -247,7 +247,7 @@ const Planner = () => {
     setCurrentWeek(prev => direction === 'next' ? addWeeks(prev, 1) : subWeeks(prev, 1));
   };
 
-  if (!students || students.length === 0) {
+  if (!students || (students as any[]).length === 0) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
@@ -326,12 +326,12 @@ const Planner = () => {
                   <th className="p-4 text-left font-semibold text-[#3E4A59] bg-[#F5F2EA] min-w-[120px]">
                     Day
                   </th>
-                  {students.map((student: any) => {
+                  {(students as any[]).map((student: any) => {
                     const avatar = getAvatarForStudent(student.fullName);
                     return (
                       <th 
                         key={student.id} 
-                        className="p-4 text-center font-semibold text-[#3E4A59] bg-[#F5F2EA] min-w-[280px]"
+                        className="p-4 text-center font-semibold text-[#3E4A59] bg-[#F5F2EA] min-w-[280px] student-header print-no-break"
                       >
                         <div className="flex items-center justify-center space-x-2">
                           <div 
@@ -361,7 +361,7 @@ const Planner = () => {
                           <div className="text-sm text-[#7E8A97]">{format(date, 'MMM d')}</div>
                         </div>
                       </td>
-                      {students.map((student: any) => {
+                      {(students as any[]).map((student: any) => {
                         const cellTasks = getTasksForCell(student.id, dayName);
                         return (
                           <td 

@@ -282,7 +282,7 @@ button, a[role="button"] {
   }
   
   /* Card styles */
-  .border-\\[\\#D9E5D1\\] {
+  .border-card {
     border: 1px solid #ccc !important;
   }
   
