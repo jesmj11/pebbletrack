@@ -56,6 +56,7 @@ const Planner = () => {
   const [editingTask, setEditingTask] = useState<PlannerTask | null>(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{studentId: number, day: string} | null>(null);
+  const [isPrintMode, setIsPrintMode] = useState(false);
   const { toast } = useToast();
 
   // Get current authenticated user
@@ -146,6 +147,14 @@ const Planner = () => {
       case 'pending': return 'bg-gray-100 text-gray-700 border-gray-300';
       default: return 'bg-gray-100 text-gray-700 border-gray-300';
     }
+  };
+
+  const handlePrint = () => {
+    setIsPrintMode(true);
+    setTimeout(() => {
+      window.print();
+      setIsPrintMode(false);
+    }, 100);
   };
 
   const getStatusIcon = (status: string) => {
@@ -250,9 +259,15 @@ const Planner = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div className="space-y-6 p-6 print-planner">
+      {/* Print Header - only visible when printing */}
+      <div className="hidden print:block print-header">
+        <h1>Weekly Learning Planner</h1>
+        <p>{format(weekStart, 'MMM d')} - {format(addDays(weekStart, 4), 'MMM d, yyyy')} (Week {format(weekStart, 'w')})</p>
+      </div>
+
+      {/* Screen Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 print:hidden">
         <div>
           <h2 className="text-3xl font-bold text-[#3E4A59]" style={{ fontFamily: 'Comic Sans MS, cursive' }}>
             Weekly Planner

@@ -30,6 +30,141 @@ button, a[role="button"] {
   }
 }
 
+/* Print Styles for Teacher Planner */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body {
+    background: white !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* Hide elements that shouldn't print */
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  /* Ensure the planner takes full width */
+  .print-planner {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 20px !important;
+  }
+  
+  /* Planner header styling */
+  .print-header {
+    text-align: center !important;
+    margin-bottom: 20px !important;
+    border-bottom: 2px solid #3E4A59 !important;
+    padding-bottom: 10px !important;
+  }
+  
+  .print-header h1 {
+    font-size: 24px !important;
+    font-weight: bold !important;
+    color: #3E4A59 !important;
+    margin: 0 !important;
+  }
+  
+  .print-header p {
+    font-size: 14px !important;
+    color: #7E8A97 !important;
+    margin: 5px 0 0 0 !important;
+  }
+  
+  /* Planner grid styling */
+  .print-grid {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 20px !important;
+  }
+  
+  .print-grid th,
+  .print-grid td {
+    border: 1px solid #3E4A59 !important;
+    padding: 8px !important;
+    vertical-align: top !important;
+    font-size: 11px !important;
+  }
+  
+  .print-grid th {
+    background-color: #D9E5D1 !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    color: #3E4A59 !important;
+  }
+  
+  .print-grid .student-header {
+    background-color: #F5F2EA !important;
+    font-weight: bold !important;
+    color: #3E4A59 !important;
+  }
+  
+  /* Task styling in print */
+  .print-task {
+    margin-bottom: 8px !important;
+    padding: 4px !important;
+    border-left: 3px solid #8BA88E !important;
+    background-color: #f9f9f9 !important;
+  }
+  
+  .print-task.completed {
+    border-left-color: #8BA88E !important;
+    background-color: #D9E5D1 !important;
+  }
+  
+  .print-task.in_progress {
+    border-left-color: #FCD34D !important;
+    background-color: #FEF3C7 !important;
+  }
+  
+  .print-task.pending {
+    border-left-color: #9CA3AF !important;
+    background-color: #F3F4F6 !important;
+  }
+  
+  .print-task-title {
+    font-weight: bold !important;
+    font-size: 11px !important;
+    margin-bottom: 2px !important;
+  }
+  
+  .print-task-subject {
+    font-size: 10px !important;
+    color: #7E8A97 !important;
+    margin-bottom: 2px !important;
+  }
+  
+  .print-task-time {
+    font-size: 9px !important;
+    color: #3E4A59 !important;
+  }
+  
+  /* Page break controls */
+  .print-page-break {
+    page-break-before: always !important;
+  }
+  
+  .print-no-break {
+    page-break-inside: avoid !important;
+  }
+  
+  /* Footer for print */
+  .print-footer {
+    margin-top: 30px !important;
+    text-align: center !important;
+    font-size: 10px !important;
+    color: #7E8A97 !important;
+    border-top: 1px solid #D9E5D1 !important;
+    padding-top: 10px !important;
+  }
+}
+
 :root {
     /* Pebble Track Color Palette - Updated with exact hex codes */
     --pebble-gray: #7E8A97;
