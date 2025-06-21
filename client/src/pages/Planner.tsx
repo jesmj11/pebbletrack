@@ -71,6 +71,9 @@ const Planner = () => {
     enabled: !!currentUser && (currentUser as any)?.role === "parent",
   });
 
+  // Ensure students is always an array
+  const studentList = Array.isArray(students) ? students : [];
+
   // Get week dates
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Monday start
   const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)); // Monday to Friday
@@ -247,7 +250,7 @@ const Planner = () => {
     setCurrentWeek(prev => direction === 'next' ? addWeeks(prev, 1) : subWeeks(prev, 1));
   };
 
-  if (!students || (students as any[]).length === 0) {
+  if (studentList.length === 0) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
@@ -320,13 +323,13 @@ const Planner = () => {
       <Card className="border-[#D9E5D1]">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full print-grid">
               <thead>
                 <tr className="border-b border-[#D9E5D1]">
                   <th className="p-4 text-left font-semibold text-[#3E4A59] bg-[#F5F2EA] min-w-[120px]">
                     Day
                   </th>
-                  {(students as any[]).map((student: any) => {
+                  {studentList.map((student: any) => {
                     const avatar = getAvatarForStudent(student.fullName);
                     return (
                       <th 
@@ -361,18 +364,18 @@ const Planner = () => {
                           <div className="text-sm text-[#7E8A97]">{format(date, 'MMM d')}</div>
                         </div>
                       </td>
-                      {(students as any[]).map((student: any) => {
+                      {studentList.map((student: any) => {
                         const cellTasks = getTasksForCell(student.id, dayName);
                         return (
                           <td 
                             key={`${dayIndex}-${student.id}`} 
-                            className="p-2 align-top min-h-[200px] bg-white hover:bg-[#F5F2EA] transition-colors border-r border-[#D9E5D1]"
+                            className="p-2 align-top min-h-[200px] bg-white hover:bg-[#F5F2EA] transition-colors border-r border-[#D9E5D1] print-no-break"
                           >
                             <div className="space-y-2 min-h-[180px]">
                               {cellTasks.map((task) => (
                                 <div
                                   key={task.id}
-                                  className="p-3 rounded-lg border cursor-pointer hover:shadow-sm transition-shadow"
+                                  className={`p-3 rounded-lg border cursor-pointer hover:shadow-sm transition-shadow print-task print-task-${task.status}`}
                                   style={{ 
                                     backgroundColor: `${getSubjectColor(task.subject)}15`,
                                     borderColor: getSubjectColor(task.subject)
@@ -382,7 +385,7 @@ const Planner = () => {
                                   <div className="flex items-start justify-between mb-2">
                                     <div className="flex items-center space-x-2">
                                       <Badge 
-                                        className={`text-xs px-2 py-1 ${getStatusColor(task.status)}`}
+                                        className={`text-xs px-2 py-1 ${getStatusColor(task.status)} print:hidden`}
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           const nextStatus = task.status === 'pending' ? 'in_progress' 
@@ -394,21 +397,25 @@ const Planner = () => {
                                         {getStatusIcon(task.status)}
                                         <span className="ml-1 capitalize">{task.status.replace('_', ' ')}</span>
                                       </Badge>
+                                      {/* Print-only status indicator */}
+                                      <span className="hidden print:inline-block print-task-time text-xs">
+                                        {task.status === 'completed' ? '✓' : task.status === 'in_progress' ? '●' : '○'} {task.time}
+                                      </span>
                                     </div>
-                                    <span className="text-xs text-[#7E8A97]">{task.time}</span>
+                                    <span className="text-xs text-[#7E8A97] print:hidden">{task.time}</span>
                                   </div>
                                   
                                   <div className="space-y-1">
                                     <div className="flex items-center space-x-2">
                                       <div 
-                                        className="w-3 h-3 rounded-full" 
+                                        className="w-3 h-3 rounded-full print:hidden" 
                                         style={{ backgroundColor: getSubjectColor(task.subject) }}
                                       />
-                                      <span className="text-xs font-medium text-[#7E8A97]">{task.subject}</span>
+                                      <span className="text-xs font-medium text-[#7E8A97] print-task-subject">{task.subject}</span>
                                     </div>
-                                    <h4 className="font-medium text-[#3E4A59] text-sm">{task.title}</h4>
+                                    <h4 className="font-medium text-[#3E4A59] text-sm print-task-title">{task.title}</h4>
                                     {task.description && (
-                                      <p className="text-xs text-[#7E8A97] line-clamp-2">{task.description}</p>
+                                      <p className="text-xs text-[#7E8A97] line-clamp-2 print:line-clamp-none">{task.description}</p>
                                     )}
                                   </div>
                                 </div>
@@ -435,6 +442,11 @@ const Planner = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Print Footer - only visible when printing */}
+      <div className="hidden print:block print-footer">
+        <p>Generated by Pebble Track • {format(new Date(), 'MMMM d, yyyy')}</p>
+      </div>
 
       {/* Task Modal */}
       <TaskModal 
