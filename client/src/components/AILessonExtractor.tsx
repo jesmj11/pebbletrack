@@ -41,12 +41,17 @@ export default function AILessonExtractor({ onLessonsExtracted }: AILessonExtrac
 
   // Extract lessons mutation
   const extractLessonsMutation = useMutation({
-    mutationFn: async (data: any) => await apiRequest('/api/curriculums/extract-lessons', 'POST', data),
-    onSuccess: (data: any) => {
-      setExtractedLessons(data.lessons || [])
+    mutationFn: async (data: any) => {
+      const response = await apiRequest('/api/curriculums/extract-lessons', 'POST', data)
+      return response
+    },
+    onSuccess: (response: any) => {
+      const lessons = response?.lessons || []
+      const count = response?.count || lessons.length
+      setExtractedLessons(lessons)
       toast({
         title: "Success!",
-        description: `Extracted ${data.count || data.lessons?.length || 0} lessons from your curriculum index`
+        description: `Extracted ${count} lessons from your curriculum index`
       })
     },
     onError: (error: any) => {
@@ -60,9 +65,13 @@ export default function AILessonExtractor({ onLessonsExtracted }: AILessonExtrac
 
   // Enhance description mutation
   const enhanceDescriptionMutation = useMutation({
-    mutationFn: async (data: any) => await apiRequest('/api/curriculums/enhance-description', 'POST', data),
-    onSuccess: (data: any) => {
-      setCurriculumData(prev => ({ ...prev, description: data.description || "" }))
+    mutationFn: async (data: any) => {
+      const response = await apiRequest('/api/curriculums/enhance-description', 'POST', data)
+      return response
+    },
+    onSuccess: (response: any) => {
+      const description = response?.description || ""
+      setCurriculumData(prev => ({ ...prev, description }))
       toast({
         title: "Description Enhanced",
         description: "AI has generated a curriculum description for you"
