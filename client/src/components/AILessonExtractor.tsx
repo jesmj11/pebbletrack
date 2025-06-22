@@ -41,6 +41,15 @@ export default function AILessonExtractor({ onLessonsExtracted }: AILessonExtrac
   const [isExtracting, setIsExtracting] = useState(false)
   const [textInput, setTextInput] = useState("")
 
+  // Define type colors for lesson badges
+  const typeColors: Record<string, string> = {
+    lesson: "bg-blue-100 text-blue-800 border-blue-300",
+    quiz: "bg-yellow-100 text-yellow-800 border-yellow-300", 
+    test: "bg-red-100 text-red-800 border-red-300",
+    review: "bg-green-100 text-green-800 border-green-300",
+    exam: "bg-purple-100 text-purple-800 border-purple-300"
+  }
+
   // Extract lessons mutation
   const extractLessonsMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -209,13 +218,7 @@ export default function AILessonExtractor({ onLessonsExtracted }: AILessonExtrac
     })
   }
 
-  const typeColors: Record<string, string> = {
-    lesson: "bg-blue-100 text-blue-800",
-    quiz: "bg-orange-100 text-orange-800",
-    test: "bg-red-100 text-red-800",
-    review: "bg-green-100 text-green-800",
-    exam: "bg-purple-100 text-purple-800"
-  }
+
 
   return (
     <div className="space-y-6">
