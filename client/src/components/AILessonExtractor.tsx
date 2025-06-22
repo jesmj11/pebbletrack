@@ -1,6 +1,4 @@
-'use client'
-
-import { useState, useRef } from "react"
+import React, { useState, useRef } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,7 +25,11 @@ interface AILessonExtractorProps {
 
 export default function AILessonExtractor({ onLessonsExtracted }: AILessonExtractorProps) {
   const { toast } = useToast()
+  
+  // Initialize useRef with proper error handling
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+
   const [extractedLessons, setExtractedLessons] = useState<Lesson[]>([])
   const [curriculumData, setCurriculumData] = useState({
     name: "",
