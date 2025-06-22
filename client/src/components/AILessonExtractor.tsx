@@ -42,11 +42,11 @@ export default function AILessonExtractor({ onLessonsExtracted }: AILessonExtrac
   // Extract lessons mutation
   const extractLessonsMutation = useMutation({
     mutationFn: async (data: any) => await apiRequest('/api/curriculums/extract-lessons', 'POST', data),
-    onSuccess: (data) => {
-      setExtractedLessons(data.lessons)
+    onSuccess: (data: any) => {
+      setExtractedLessons(data.lessons || [])
       toast({
         title: "Success!",
-        description: `Extracted ${data.count} lessons from your curriculum index`
+        description: `Extracted ${data.count || data.lessons?.length || 0} lessons from your curriculum index`
       })
     },
     onError: (error: any) => {
@@ -61,8 +61,8 @@ export default function AILessonExtractor({ onLessonsExtracted }: AILessonExtrac
   // Enhance description mutation
   const enhanceDescriptionMutation = useMutation({
     mutationFn: async (data: any) => await apiRequest('/api/curriculums/enhance-description', 'POST', data),
-    onSuccess: (data) => {
-      setCurriculumData(prev => ({ ...prev, description: data.description }))
+    onSuccess: (data: any) => {
+      setCurriculumData(prev => ({ ...prev, description: data.description || "" }))
       toast({
         title: "Description Enhanced",
         description: "AI has generated a curriculum description for you"
@@ -88,13 +88,23 @@ export default function AILessonExtractor({ onLessonsExtracted }: AILessonExtrac
     try {
       const reader = new FileReader()
       reader.onload = async (e) => {
-        const imageData = e.target?.result as string
-        
-        extractLessonsMutation.mutate({
-          imageData,
-          curriculumName: curriculumData.name || "curriculum",
-          extractionType: "image"
+        if (e.target && e.target.result) {
+          const imageData = e.target.result as string
+          
+          extractLessonsMutation.mutate({
+            imageData,
+            curriculumName: curriculumData.name || "curriculum",
+            extractionType: "image"
+          })
+        }
+      }
+      reader.onerror = () => {
+        toast({
+          title: "Error",
+          description: "Failed to read image file",
+          variant: "destructive"
         })
+        setIsExtracting(false)
       }
       reader.readAsDataURL(file)
     } catch (error) {
@@ -301,7 +311,11 @@ export default function AILessonExtractor({ onLessonsExtracted }: AILessonExtrac
                   className="hidden"
                 />
                 <Button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.click()
+                    }
+                  }}
                   disabled={isExtracting || extractLessonsMutation.isPending}
                 >
                   <Upload className="mr-2 h-4 w-4" />
