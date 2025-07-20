@@ -53,6 +53,7 @@ A comprehensive task management and e-learning platform optimized for homeschool
 - Application serving on port 5000 with database connected
 - OAuth authentication configured but experiencing token exchange errors
 - React runtime error plugin causing persistent useRef errors across all component types
+- **SIMPLIFIED**: Reverted to basic planner functionality without complex UI dependencies to resolve runtime errors
 
 ## User Preferences
 - Project uses PostgreSQL for production data persistence
