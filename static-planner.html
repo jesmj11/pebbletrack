@@ -522,7 +522,7 @@
                     <textarea id="classDescription" name="classDescription" rows="3"></textarea>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                    <button type="button" class="btn-secondary" onclick="closeClassModal()">Cancel</button>
                     <button type="submit" class="btn-primary">Add Class</button>
                 </div>
             </form>
@@ -696,6 +696,8 @@
         }
 
         function openClassModal(day, studentIndex) {
+            console.log('Opening class modal for:', day, studentIndex); // Debug log
+            
             currentTaskDay = day;
             currentTaskStudent = studentIndex;
             
@@ -708,11 +710,16 @@
             document.getElementById('classTitle').focus();
         }
 
-        function closeTaskModal() {
+        function closeClassModal() {
             document.getElementById('classModal').style.display = 'none';
             document.getElementById('classForm').reset();
             currentTaskDay = '';
             currentTaskStudent = -1;
+        }
+        
+        // Legacy function name for compatibility
+        function closeTaskModal() {
+            closeClassModal();
         }
 
         // Task management
@@ -871,7 +878,7 @@
                     formData.get('classDescription')
                 );
                 
-                closeTaskModal();
+                closeClassModal();
             });
 
             // Modal clicks
@@ -880,7 +887,7 @@
                     closeStudentModal();
                 }
                 if (e.target === document.getElementById('classModal')) {
-                    closeTaskModal();
+                    closeClassModal();
                 }
             });
         });
