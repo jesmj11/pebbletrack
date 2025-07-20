@@ -49,7 +49,6 @@ export const students = pgTable("students", {
   parentId: text("parent_id").notNull(), // references users.id (parent)
   fullName: text("full_name").notNull(),
   gradeLevel: text("grade_level").notNull(), // "2nd Grade", "5th Grade", etc.
-  avatar: text("avatar").default("👧"), // emoji avatar
   level: integer("level").default(1), // gamification level
   xp: integer("xp").default(0), // experience points
   totalXp: integer("total_xp").default(500), // XP needed for next level
@@ -159,7 +158,6 @@ export const insertStudentSchema = createInsertSchema(students).pick({
   parentId: true,
   fullName: true,
   gradeLevel: true,
-  avatar: true,
   level: true,
   xp: true,
   totalXp: true,

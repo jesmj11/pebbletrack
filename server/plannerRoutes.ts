@@ -129,7 +129,6 @@ router.post("/students", async (req, res) => {
       parentId: "demo-parent", // For demo purposes
       fullName: req.body.fullName,
       gradeLevel: req.body.gradeLevel,
-      avatar: req.body.avatar || "👧",
     };
 
     const newStudent = await storage.createStudent(studentData);

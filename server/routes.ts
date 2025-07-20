@@ -595,9 +595,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             background: #eff6ff;
         }
 
-        .student-avatar {
-            font-size: 2rem;
-        }
+
 
         .student-info h3 {
             margin: 0 0 0.25rem 0;
@@ -784,8 +782,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else {
                 // Default sample students
                 students = [
-                    { id: 1, fullName: "Emma Johnson", gradeLevel: "3rd Grade", avatar: "👧" },
-                    { id: 2, fullName: "Liam Johnson", gradeLevel: "5th Grade", avatar: "👦" }
+                    { id: 1, fullName: "Emma Johnson", gradeLevel: "3rd Grade" },
+                    { id: 2, fullName: "Liam Johnson", gradeLevel: "5th Grade" }
                 ];
                 saveStudentsToLocalStorage();
             }
@@ -927,7 +925,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 container.innerHTML = students.map(student => 
                     '<div class="student-card" onclick="selectStudent(' + student.id + ')">' +
                         '<button class="student-delete" onclick="deleteStudent(' + student.id + '); event.stopPropagation();">×</button>' +
-                        '<div class="student-avatar">' + student.avatar + '</div>' +
                         '<div class="student-info">' +
                             '<h3>' + student.fullName + '</h3>' +
                             '<p>' + student.gradeLevel + '</p>' +
@@ -954,8 +951,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const newStudent = {
                 id: Date.now(),
                 fullName: fullName,
-                gradeLevel: gradeLevel,
-                avatar: Math.random() > 0.5 ? "👧" : "👦"
+                gradeLevel: gradeLevel
             };
 
             if (isOnline) {
