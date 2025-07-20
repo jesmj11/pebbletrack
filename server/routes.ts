@@ -768,7 +768,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         <option value="6th Grade">6th Grade</option>
                         <option value="7th Grade">7th Grade</option>
                         <option value="8th Grade">8th Grade</option>
-                        <option value="High School">High School</option>
+                        <option value="9th Grade">9th Grade</option>
+                        <option value="10th Grade">10th Grade</option>
+                        <option value="11th Grade">11th Grade</option>
+                        <option value="12th Grade">12th Grade</option>
                     </select>
                 </div>
                 <button type="submit">Add Student</button>
