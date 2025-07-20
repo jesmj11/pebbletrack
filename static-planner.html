@@ -500,7 +500,7 @@
             <h2 id="classModalTitle">Add Class</h2>
             <form id="classForm">
                 <div class="form-group">
-                    <label for="classTitle">Task Title</label>
+                    <label for="classTitle">Class Title</label>
                     <input type="text" id="classTitle" name="classTitle" required>
                 </div>
                 <div class="form-group">
@@ -820,6 +820,7 @@
             updateWeekDisplay();
             loadStudents();
             loadTasks();
+            renderTasks(); // Initialize grid with placeholder text
 
             // Student form
             document.getElementById('studentForm').addEventListener('submit', async function(e) {
