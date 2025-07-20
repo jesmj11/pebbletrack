@@ -5,6 +5,7 @@ import { queryClient, getQueryFn } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import MobileNav from "@/components/MobileNav";
+import { useAuth } from "@/hooks/useAuth";
 
 
 // Pages
@@ -20,14 +21,12 @@ import Planner from "@/pages/Planner";
 import StudentTasks from "@/pages/StudentTasks";
 import Settings from "@/pages/Settings";
 import Home from "@/pages/Home";
-import ParentLogin from "@/pages/ParentLogin";
-import StudentLogin from "@/pages/StudentLogin";
-import Register from "@/pages/Register";
+import Landing from "@/pages/Landing";
 import Curriculum from "@/pages/Curriculum";
 
 // Family-based user interface
 interface User {
-  id: number;
+  id: string;
   email: string;
   role: "parent" | "student";
   fullName: string;
@@ -35,54 +34,25 @@ interface User {
 }
 
 function Router() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isLoading, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
-  
-  // Check authentication status
-  const { data: authUser, isLoading, error } = useQuery({
-    queryKey: ["/api/auth/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-    retry: false,
-  });
 
-  useEffect(() => {
-    if (authUser) {
-      setUser(authUser as User);
-    } else if (error) {
-      setUser(null);
-    }
-  }, [authUser, error]);
-
-  // Handle role switching for demo purposes (parent can view as student)
-  const handleRoleSwitch = (role: "parent" | "student") => {
-    if (role === "parent") {
-      setUser({
-        ...user!,
-        role: "parent"
-      });
-    } else {
-      setUser({
-        ...user!,
-        role: "student",
-        fullName: "Alex Student"
-      });
-    }
-  };
-  
-  // Make user and role switching available globally
-  (window as any).switchRole = handleRoleSwitch;
+  // Make user available globally for debugging
   (window as any).currentUser = user;
   
   // Redirect to the appropriate dashboard based on user role
   useEffect(() => {
-    if (!isLoading && user) {
-      if (location === "/" && user.role === "parent") {
+    if (!isLoading && isAuthenticated && user) {
+      // Set default role to parent if not set
+      const userRole = user.role || "parent";
+      
+      if (location === "/" && userRole === "parent") {
         setLocation("/teacher/dashboard");
-      } else if (location === "/" && user.role === "student") {
+      } else if (location === "/" && userRole === "student") {
         setLocation("/student");
       }
     }
-  }, [user, isLoading, location, setLocation]);
+  }, [user, isLoading, isAuthenticated, location, setLocation]);
 
   // Show login page if not authenticated
   if (isLoading) {
@@ -95,16 +65,8 @@ function Router() {
     );
   }
 
-  if (!user) {
-    return (
-      <Switch>
-        <Route path="/parent/login" component={ParentLogin} />
-        <Route path="/student/login" component={StudentLogin} />
-        <Route path="/parent/register" component={Register} />
-        <Route path="/" component={Home} />
-        <Route component={Home} />
-      </Switch>
-    );
+  if (!isAuthenticated) {
+    return <Landing />;
   }
 
   return (

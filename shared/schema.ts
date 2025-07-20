@@ -1,29 +1,52 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  timestamp,
+  jsonb,
+  index,
+  serial,
+  integer,
+  boolean,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Replit Auth
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
   role: text("role").notNull().default("parent"), // "parent" or "student"
-  fullName: text("full_name").notNull(),
   familyName: text("family_name"), // e.g., "The Johnson Family"
   createdAt: timestamp("created_at").defaultNow(),
-  lastLogin: timestamp("last_login"),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const classes = pgTable("classes", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  teacherId: integer("teacher_id").notNull(),
+  teacherId: text("teacher_id").notNull(), // references users.id
   gradeLevel: text("grade_level"),
   description: text("description"),
 });
 
 export const students = pgTable("students", {
   id: serial("id").primaryKey(),
-  parentId: integer("parent_id").notNull(), // references users.id (parent)
+  parentId: text("parent_id").notNull(), // references users.id (parent)
   fullName: text("full_name").notNull(),
   gradeLevel: text("grade_level").notNull(), // "2nd Grade", "5th Grade", etc.
   avatar: text("avatar").default("👧"), // emoji avatar
@@ -41,13 +64,13 @@ export const assignments = pgTable("assignments", {
   classId: integer("class_id").notNull(),
   dueDate: timestamp("due_date").notNull(),
   priority: text("priority").notNull().default("medium"), // "low", "medium", "high"
-  createdBy: integer("created_by").notNull(), // teacher's userId
+  createdBy: text("created_by").notNull(), // teacher's userId - references users.id
 });
 
 // Curriculum tables for lesson management
 export const curriculums = pgTable("curriculums", {
   id: serial("id").primaryKey(),
-  parentId: integer("parent_id").notNull(), // who uploaded this curriculum
+  parentId: text("parent_id").notNull(), // who uploaded this curriculum - references users.id
   name: text("name").notNull(), // "Saxon Math 7/6", "Teaching Textbooks Algebra 1"
   subject: text("subject").notNull(), // "Math", "Science", "History", etc.
   publisher: text("publisher"), // "Saxon", "Teaching Textbooks", etc.
@@ -100,11 +123,21 @@ export const tasks = pgTable("tasks", {
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
+  id: true,
   email: true,
-  password: true,
+  firstName: true,
+  lastName: true,
+  profileImageUrl: true,
   role: true,
-  fullName: true,
   familyName: true,
+});
+
+export const upsertUserSchema = createInsertSchema(users).pick({
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  profileImageUrl: true,
 });
 
 export const insertStudentSchema = createInsertSchema(students).pick({
@@ -185,6 +218,7 @@ export const insertLessonProgressSchema = createInsertSchema(lessonProgress).pic
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = z.infer<typeof upsertUserSchema>;
 
 export type Class = typeof classes.$inferSelect;
 export type InsertClass = z.infer<typeof insertClassSchema>;
