@@ -226,29 +226,58 @@
     </div>
 
     <script>
-        let tasks = [
-            {
-                id: "1",
-                title: "Math Practice - Addition",
-                subject: "Math",
-                completed: false,
-                dueDate: "2025-01-21"
-            },
-            {
-                id: "2", 
-                title: "Read Chapter 3",
-                subject: "Reading",
-                completed: true,
-                dueDate: "2025-01-20"
-            },
-            {
-                id: "3",
-                title: "Science Experiment - Plants",
-                subject: "Science", 
-                completed: false,
-                dueDate: "2025-01-22"
+        let tasks = [];
+        
+        // Fetch tasks from the database
+        async function loadTasks() {
+            try {
+                const response = await fetch('/api/planner/tasks');
+                if (response.ok) {
+                    tasks = await response.json();
+                    renderTasks();
+                } else {
+                    console.error('Failed to load tasks');
+                    // Load sample data if database fails
+                    tasks = [
+                        {
+                            id: "1",
+                            title: "Math Practice - Addition",
+                            subject: "Math",
+                            completed: false,
+                            dueDate: "2025-01-21"
+                        },
+                        {
+                            id: "2", 
+                            title: "Read Chapter 3",
+                            subject: "Reading",
+                            completed: true,
+                            dueDate: "2025-01-20"
+                        },
+                        {
+                            id: "3",
+                            title: "Science Experiment - Plants",
+                            subject: "Science", 
+                            completed: false,
+                            dueDate: "2025-01-22"
+                        }
+                    ];
+                    renderTasks();
+                }
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                // Load sample data as fallback
+                tasks = [
+                    {
+                        id: "1",
+                        title: "Math Practice - Addition",
+                        subject: "Math",
+                        completed: false,
+                        dueDate: "2025-01-21"
+                    }
+                ];
+                renderTasks();
             }
-        ];
+        }
 
         function formatDate(dateString) {
             return new Date(dateString).toLocaleDateString();
@@ -289,7 +318,7 @@
             updateStats();
         }
 
-        function addTask(e) {
+        async function addTask(e) {
             e.preventDefault();
             
             const title = document.getElementById('taskTitle').value;
@@ -297,39 +326,87 @@
             const dueDate = document.getElementById('taskDate').value || new Date().toISOString().split('T')[0];
 
             if (title && subject) {
-                const task = {
-                    id: Date.now().toString(),
-                    title: title,
-                    subject: subject,
-                    completed: false,
-                    dueDate: dueDate
-                };
+                try {
+                    const response = await fetch('/api/planner/tasks', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            title: title,
+                            subject: subject,
+                            dueDate: dueDate
+                        })
+                    });
 
-                tasks.push(task);
-                renderTasks();
+                    if (response.ok) {
+                        const newTask = await response.json();
+                        tasks.push(newTask);
+                        renderTasks();
 
-                // Clear form
-                document.getElementById('taskTitle').value = '';
-                document.getElementById('taskSubject').value = '';
-                document.getElementById('taskDate').value = '';
+                        // Clear form
+                        document.getElementById('taskTitle').value = '';
+                        document.getElementById('taskSubject').value = '';
+                        document.getElementById('taskDate').value = '';
+                    } else {
+                        console.error('Failed to create task');
+                        alert('Failed to create task. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error creating task:', error);
+                    alert('Error creating task. Please try again.');
+                }
             }
         }
 
-        function toggleTask(id) {
-            tasks = tasks.map(task => 
-                task.id === id ? { ...task, completed: !task.completed } : task
-            );
-            renderTasks();
+        async function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            try {
+                const response = await fetch(`/api/planner/tasks/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        completed: !task.completed
+                    })
+                });
+
+                if (response.ok) {
+                    tasks = tasks.map(task => 
+                        task.id === id ? { ...task, completed: !task.completed } : task
+                    );
+                    renderTasks();
+                } else {
+                    console.error('Failed to update task');
+                }
+            } catch (error) {
+                console.error('Error updating task:', error);
+            }
         }
 
-        function deleteTask(id) {
-            tasks = tasks.filter(task => task.id !== id);
-            renderTasks();
+        async function deleteTask(id) {
+            try {
+                const response = await fetch(`/api/planner/tasks/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    tasks = tasks.filter(task => task.id !== id);
+                    renderTasks();
+                } else {
+                    console.error('Failed to delete task');
+                }
+            } catch (error) {
+                console.error('Error deleting task:', error);
+            }
         }
 
         // Initialize
         document.getElementById('taskForm').addEventListener('submit', addTask);
-        renderTasks();
+        loadTasks(); // Load tasks from database on startup
     </script>
 </body>
 </html>

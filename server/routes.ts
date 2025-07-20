@@ -345,6 +345,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     `);
   });
 
+  // Add planner API routes for the HTML planner  
+  const { default: plannerRoutes } = await import("./plannerRoutes.js");
+  app.use("/api/planner", plannerRoutes);
+
   const httpServer = createServer(app);
   return httpServer;
 }
