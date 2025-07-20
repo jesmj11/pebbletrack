@@ -36,12 +36,23 @@ A comprehensive task management and e-learning platform optimized for homeschool
 - Lesson progress tracking
 
 ## Recent Changes
-**July 20, 2025**
-- ✅ **Fixed Critical Storage Import Issue**: Updated `server/replitAuth.ts` to import from `./storage-replit` instead of `./storage`
-- ✅ **Removed Legacy Storage**: Deleted outdated `server/storage.ts` file that was causing TypeScript errors
-- ✅ **Database Migration**: Verified PostgreSQL schema is properly set up with `npm run db:push`
-- ✅ **Application Startup**: Successfully resolved "storage.upsertUser is not a function" error
-- ✅ **Server Running**: Application now starts successfully on port 5000
+
+### January 20, 2025
+- **Fixed Storage Layer**: Corrected imports from `./storage` to `./storage-replit`
+- **Database Setup**: Properly configured Drizzle ORM, resolved "storage.upsertUser is not a function" error
+- **OAuth Configuration**: Added ISSUER_URL environment variable for authentication
+- **Runtime Error Investigation**: Systematically investigated React "Cannot read properties of null (reading 'useRef')" error
+  - Disabled React StrictMode
+  - Removed TooltipProvider component  
+  - Temporarily disabled AILessonExtractor component
+  - Created minimal React apps to isolate the issue
+  - Identified that the error persists even with vanilla React class components
+  - Root cause appears to be the Vite runtime error plugin conflicting with React hooks
+
+### Current Status
+- Application serving on port 5000 with database connected
+- OAuth authentication configured but experiencing token exchange errors
+- React runtime error plugin causing persistent useRef errors across all component types
 
 ## User Preferences
 - Project uses PostgreSQL for production data persistence

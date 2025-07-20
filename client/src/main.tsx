@@ -1,6 +1,10 @@
-// import { StrictMode } from "react"; // Removed unused import
 import { createRoot } from "react-dom/client";
-import MinimalApp from "./MinimalApp";
+import ErrorBoundary from "./ErrorBoundary";
+import VanillaApp from "./VanillaApp";
 
-// Remove all imports that might cause issues
-createRoot(document.getElementById("root")!).render(<MinimalApp />);
+// Add error boundary to catch any React errors
+createRoot(document.getElementById("root")!).render(
+  <ErrorBoundary>
+    <VanillaApp />
+  </ErrorBoundary>
+);
