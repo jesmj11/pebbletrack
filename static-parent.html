@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard</title>
+    <style>
+        /* Pebble Track Color Palette */
+        :root {
+            --pebble-gray: #7E8A97;
+            --moss-green: #8BA88E;
+            --stream-blue: #A8C7DD;
+            --drift-sand: #F5F2EA;
+            --charcoal-slate: #3E4A59;
+            --fern-mist: #D9E5D1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--drift-sand);
+            color: var(--charcoal-slate);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: white;
+            border-bottom: 2px solid var(--fern-mist);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            color: var(--charcoal-slate);
+            font-size: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--pebble-gray);
+            text-decoration: none;
+            font-weight: 500;
+            margin-left: 2rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--moss-green);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .student-overview {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--fern-mist);
+        }
+
+        .quick-stats {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--fern-mist);
+        }
+
+        .student-card {
+            background: var(--fern-mist);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .student-card:hover {
+            border-color: var(--stream-blue);
+        }
+
+        .student-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .student-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--charcoal-slate);
+        }
+
+        .student-grade {
+            color: var(--pebble-gray);
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            background: var(--drift-sand);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            background: var(--moss-green);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .student-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--moss-green);
+        }
+
+        .stat-label {
+            color: var(--pebble-gray);
+        }
+
+        .reports-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--fern-mist);
+            margin-bottom: 2rem;
+        }
+
+        .report-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--stream-blue);
+            color: var(--charcoal-slate);
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--moss-green);
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: var(--charcoal-slate);
+            color: white;
+        }
+
+        .assignment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .assignment-item {
+            background: var(--fern-mist);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .assignment-info h4 {
+            color: var(--charcoal-slate);
+            margin-bottom: 0.25rem;
+        }
+
+        .assignment-meta {
+            color: var(--pebble-gray);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: var(--moss-green);
+            color: white;
+        }
+
+        .status-pending {
+            background: var(--stream-blue);
+            color: var(--charcoal-slate);
+        }
+
+        .status-overdue {
+            background: var(--charcoal-slate);
+            color: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            background: var(--moss-green);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--charcoal-slate);
+        }
+
+        .btn-secondary {
+            background: var(--stream-blue);
+            color: var(--charcoal-slate);
+        }
+
+        .btn-secondary:hover {
+            background: var(--pebble-gray);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .student-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Parent Dashboard</h1>
+        <div class="nav-links">
+            <a href="/static-dashboard">Dashboard</a>
+            <a href="/static-planner">Planner</a>
+            <a href="/student-view">Student View</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 style="margin-bottom: 2rem; color: var(--charcoal-slate);">Student Progress Overview</h1>
+
+        <div class="overview-grid">
+            <div class="student-overview">
+                <h2 style="margin-bottom: 1.5rem; color: var(--charcoal-slate);">Student Performance</h2>
+                <div id="studentCards">
+                    <!-- Student cards will be loaded here -->
+                </div>
+            </div>
+
+            <div class="quick-stats">
+                <h3 style="margin-bottom: 1rem; color: var(--charcoal-slate);">Quick Stats</h3>
+                <div class="stat-item" style="margin-bottom: 1rem;">
+                    <div class="stat-number" id="totalAssignments">15</div>
+                    <div class="stat-label">Total Assignments</div>
+                </div>
+                <div class="stat-item" style="margin-bottom: 1rem;">
+                    <div class="stat-number" id="completionRate">82%</div>
+                    <div class="stat-label">Completion Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="averageGrade">B+</div>
+                    <div class="stat-label">Average Performance</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="reports-section">
+            <h2 style="margin-bottom: 1rem; color: var(--charcoal-slate);">Assignment Reports</h2>
+            
+            <div class="report-filters">
+                <button class="filter-btn active" onclick="filterTasks('all')">All Tasks</button>
+                <button class="filter-btn" onclick="filterTasks('completed')">Completed</button>
+                <button class="filter-btn" onclick="filterTasks('pending')">Pending</button>
+                <button class="filter-btn" onclick="filterTasks('overdue')">Overdue</button>
+            </div>
+
+            <div class="assignment-list" id="assignmentList">
+                <!-- Assignments will be loaded here -->
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="/static-planner" class="btn">Create New Assignment</a>
+            <a href="/static-planner" class="btn btn-secondary">Manage Students</a>
+            <button class="btn btn-secondary" onclick="exportReport()">Export Report</button>
+        </div>
+    </div>
+
+    <script>
+        let students = [];
+        let tasks = [];
+        let currentFilter = 'all';
+
+        async function loadParentData() {
+            try {
+                // Load students
+                const studentsResponse = await fetch('/api/planner/students');
+                if (studentsResponse.ok) {
+                    students = await studentsResponse.json();
+                }
+
+                // Load tasks
+                const tasksResponse = await fetch('/api/planner/tasks');
+                if (tasksResponse.ok) {
+                    tasks = await tasksResponse.json();
+                }
+
+                renderStudentCards();
+                renderAssignments();
+                updateQuickStats();
+            } catch (error) {
+                console.warn('Using offline data');
+                loadOfflineData();
+            }
+        }
+
+        function loadOfflineData() {
+            const savedStudents = localStorage.getItem('homeschool_students');
+            const savedTasks = localStorage.getItem('homeschool_tasks');
+            
+            if (savedStudents) students = JSON.parse(savedStudents);
+            if (savedTasks) tasks = JSON.parse(savedTasks);
+            
+            renderStudentCards();
+            renderAssignments();
+            updateQuickStats();
+        }
+
+        function renderStudentCards() {
+            const container = document.getElementById('studentCards');
+            
+            if (students.length === 0) {
+                container.innerHTML = '<p style="color: var(--pebble-gray); text-align: center;">No students found</p>';
+                return;
+            }
+
+            container.innerHTML = students.map(student => {
+                const studentTasks = tasks.filter(task => task.studentId === student.id);
+                const completedTasks = studentTasks.filter(task => task.completed);
+                const progress = studentTasks.length > 0 ? (completedTasks.length / studentTasks.length) * 100 : 0;
+
+                return `
+                    <div class="student-card">
+                        <div class="student-header">
+                            <div>
+                                <div class="student-name">${student.fullName}</div>
+                                <div class="student-grade">${student.gradeLevel}</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="student-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">${completedTasks.length}</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${studentTasks.length - completedTasks.length}</div>
+                                <div class="stat-label">Pending</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${Math.round(progress)}%</div>
+                                <div class="stat-label">Progress</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAssignments() {
+            const container = document.getElementById('assignmentList');
+            let filteredTasks = tasks;
+
+            if (currentFilter === 'completed') {
+                filteredTasks = tasks.filter(task => task.completed);
+            } else if (currentFilter === 'pending') {
+                filteredTasks = tasks.filter(task => !task.completed && new Date(task.dueDate) >= new Date());
+            } else if (currentFilter === 'overdue') {
+                filteredTasks = tasks.filter(task => !task.completed && new Date(task.dueDate) < new Date());
+            }
+
+            if (filteredTasks.length === 0) {
+                container.innerHTML = '<p style="color: var(--pebble-gray); text-align: center;">No assignments found</p>';
+                return;
+            }
+
+            container.innerHTML = filteredTasks.map(task => {
+                const student = students.find(s => s.id === task.studentId);
+                const isOverdue = !task.completed && new Date(task.dueDate) < new Date();
+                const statusClass = task.completed ? 'status-completed' : (isOverdue ? 'status-overdue' : 'status-pending');
+                const statusText = task.completed ? 'Completed' : (isOverdue ? 'Overdue' : 'Pending');
+
+                return `
+                    <div class="assignment-item">
+                        <div class="assignment-info">
+                            <h4>${task.title}</h4>
+                            <div class="assignment-meta">
+                                ${task.subject} • ${student ? student.fullName : 'All Students'} • Due: ${formatDate(task.dueDate)}
+                            </div>
+                        </div>
+                        <div class="status-badge ${statusClass}">${statusText}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+            
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            renderAssignments();
+        }
+
+        function updateQuickStats() {
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(task => task.completed).length;
+            const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            document.getElementById('totalAssignments').textContent = totalTasks;
+            document.getElementById('completionRate').textContent = completionRate + '%';
+            
+            // Mock average grade calculation
+            const grades = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+'];
+            const randomGrade = grades[Math.floor(completionRate / 15) % grades.length];
+            document.getElementById('averageGrade').textContent = randomGrade;
+        }
+
+        function exportReport() {
+            // Simple CSV export
+            const csvContent = [
+                ['Student', 'Task', 'Subject', 'Status', 'Due Date'],
+                ...tasks.map(task => {
+                    const student = students.find(s => s.id === task.studentId);
+                    return [
+                        student ? student.fullName : 'All Students',
+                        task.title,
+                        task.subject,
+                        task.completed ? 'Completed' : 'Pending',
+                        task.dueDate
+                    ];
+                })
+            ].map(row => row.join(',')).join('\\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'homeschool-report.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        // Load data when page loads
+        loadParentData();
+    </script>
+</body>
+</html>

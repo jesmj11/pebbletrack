@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <style>
+        /* Pebble Track Color Palette */
+        :root {
+            --pebble-gray: #7E8A97;
+            --moss-green: #8BA88E;
+            --stream-blue: #A8C7DD;
+            --drift-sand: #F5F2EA;
+            --charcoal-slate: #3E4A59;
+            --fern-mist: #D9E5D1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--drift-sand);
+            color: var(--charcoal-slate);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: white;
+            border-bottom: 2px solid var(--fern-mist);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            color: var(--charcoal-slate);
+            font-size: 1.5rem;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--moss-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--fern-mist);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .welcome-card h1 {
+            color: var(--charcoal-slate);
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-card p {
+            color: var(--pebble-gray);
+            font-size: 1.1rem;
+        }
+
+        .task-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--fern-mist);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--charcoal-slate);
+        }
+
+        .progress-badge {
+            background: var(--stream-blue);
+            color: var(--charcoal-slate);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .task-card {
+            background: var(--fern-mist);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .task-card:hover {
+            border-color: var(--stream-blue);
+        }
+
+        .task-card.completed {
+            background: var(--drift-sand);
+            opacity: 0.7;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--charcoal-slate);
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+        }
+
+        .complete-btn {
+            background: var(--moss-green);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .complete-btn:hover {
+            background: var(--charcoal-slate);
+        }
+
+        .complete-btn:disabled {
+            background: var(--pebble-gray);
+            cursor: not-allowed;
+        }
+
+        .task-meta {
+            color: var(--pebble-gray);
+            font-size: 0.9rem;
+        }
+
+        .subject-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--stream-blue);
+            color: var(--charcoal-slate);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+        }
+
+        .achievement-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--fern-mist);
+            text-align: center;
+        }
+
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .achievement-card {
+            background: var(--fern-mist);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .achievement-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--moss-green);
+        }
+
+        .achievement-label {
+            color: var(--pebble-gray);
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: var(--pebble-gray);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background: var(--charcoal-slate);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .task-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>My Learning Dashboard</h1>
+        <div class="student-info">
+            <div class="student-avatar" id="studentAvatar">E</div>
+            <span id="studentName">Emma Johnson</span>
+            <a href="/static-dashboard" class="logout-btn">Back to Main</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-card">
+            <h1>Welcome back, <span id="welcomeName">Emma</span>!</h1>
+            <p>Ready to learn something new today?</p>
+        </div>
+
+        <div class="task-section">
+            <div class="section-header">
+                <h2 class="section-title">Today's Tasks</h2>
+                <div class="progress-badge" id="progressBadge">3 of 5 completed</div>
+            </div>
+            <div class="task-list" id="taskList">
+                <!-- Tasks will be loaded here -->
+            </div>
+        </div>
+
+        <div class="achievement-section">
+            <h2 style="color: var(--charcoal-slate); margin-bottom: 1rem;">Your Achievements</h2>
+            <div class="achievement-grid">
+                <div class="achievement-card">
+                    <div class="achievement-number" id="completedToday">3</div>
+                    <div class="achievement-label">Completed Today</div>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-number" id="weekStreak">5</div>
+                    <div class="achievement-label">Day Streak</div>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-number" id="totalPoints">125</div>
+                    <div class="achievement-label">Total Points</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStudent = null;
+        let tasks = [];
+
+        // Load student data and tasks
+        async function loadStudentData() {
+            try {
+                // Get current student (in real app, this would come from login)
+                const studentsResponse = await fetch('/api/planner/students');
+                if (studentsResponse.ok) {
+                    const students = await studentsResponse.json();
+                    currentStudent = students[0]; // First student for demo
+                    
+                    if (currentStudent) {
+                        document.getElementById('studentName').textContent = currentStudent.fullName;
+                        document.getElementById('welcomeName').textContent = currentStudent.fullName.split(' ')[0];
+                        document.getElementById('studentAvatar').textContent = currentStudent.fullName.charAt(0);
+                    }
+                }
+
+                // Load tasks
+                const tasksResponse = await fetch('/api/planner/tasks');
+                if (tasksResponse.ok) {
+                    tasks = await tasksResponse.json();
+                    // Filter tasks for current student or unassigned tasks
+                    if (currentStudent) {
+                        tasks = tasks.filter(task => 
+                            !task.studentId || task.studentId === currentStudent.id
+                        );
+                    }
+                    renderTasks();
+                    updateProgress();
+                }
+            } catch (error) {
+                console.warn('Using offline mode');
+                loadOfflineData();
+            }
+        }
+
+        function loadOfflineData() {
+            // Load from localStorage or use defaults
+            const savedTasks = localStorage.getItem('homeschool_tasks');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+                renderTasks();
+                updateProgress();
+            }
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--pebble-gray);">No tasks assigned yet!</p>';
+                return;
+            }
+
+            container.innerHTML = tasks.map(task => `
+                <div class="task-card ${task.completed ? 'completed' : ''}">
+                    <div class="task-header">
+                        <div>
+                            <div class="task-title ${task.completed ? 'completed' : ''}">${task.title}</div>
+                            <div class="task-meta">
+                                <span class="subject-tag">${task.subject}</span>
+                                Due: ${formatDate(task.dueDate)}
+                            </div>
+                        </div>
+                        <button class="complete-btn" 
+                                onclick="toggleTask('${task.id}')" 
+                                ${task.completed ? 'disabled' : ''}>
+                            ${task.completed ? 'Completed!' : 'Mark Complete'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function toggleTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            task.completed = !task.completed;
+
+            try {
+                const response = await fetch(`/api/planner/tasks/${taskId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: task.completed })
+                });
+
+                if (!response.ok) throw new Error('API request failed');
+            } catch (error) {
+                console.warn('Saving locally');
+                localStorage.setItem('homeschool_tasks', JSON.stringify(tasks));
+            }
+
+            renderTasks();
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const completed = tasks.filter(t => t.completed).length;
+            const total = tasks.length;
+            
+            document.getElementById('progressBadge').textContent = `${completed} of ${total} completed`;
+            document.getElementById('completedToday').textContent = completed;
+            
+            // Update achievements (mock data)
+            document.getElementById('weekStreak').textContent = Math.min(completed + 2, 7);
+            document.getElementById('totalPoints').textContent = completed * 25;
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        // Load data when page loads
+        loadStudentData();
+    </script>
+</body>
+</html>

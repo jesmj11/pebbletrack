@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeschool Dashboard</title>
+    <style>
+        /* Pebble Track Color Palette */
+        :root {
+            --pebble-gray: #7E8A97;
+            --moss-green: #8BA88E;
+            --stream-blue: #A8C7DD;
+            --drift-sand: #F5F2EA;
+            --charcoal-slate: #3E4A59;
+            --fern-mist: #D9E5D1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--drift-sand);
+            color: var(--charcoal-slate);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: white;
+            border-bottom: 2px solid var(--fern-mist);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            color: var(--charcoal-slate);
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--pebble-gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--moss-green);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--fern-mist);
+        }
+
+        .card h2 {
+            color: var(--charcoal-slate);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--moss-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--pebble-gray);
+            font-size: 1rem;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-btn {
+            background: var(--moss-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+        }
+
+        .action-btn:hover {
+            background: var(--charcoal-slate);
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--fern-mist);
+        }
+
+        .activity-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--fern-mist);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-text {
+            color: var(--charcoal-slate);
+        }
+
+        .activity-time {
+            color: var(--pebble-gray);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Homeschool Management</h1>
+        <div class="nav-links">
+            <a href="/static-dashboard" class="active">Dashboard</a>
+            <a href="/static-planner">Planner</a>
+            <a href="/parent-view">Parent View</a>
+            <a href="/student-view">Student View</a>
+            <a href="/login">Login</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 style="margin-bottom: 2rem; color: var(--charcoal-slate);">Welcome to Your Dashboard</h1>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2>Students</h2>
+                <div class="stat-number" id="studentCount">2</div>
+                <div class="stat-label">Active Students</div>
+            </div>
+
+            <div class="card">
+                <h2>Tasks Today</h2>
+                <div class="stat-number" id="todayTasks">5</div>
+                <div class="stat-label">Pending Tasks</div>
+            </div>
+
+            <div class="card">
+                <h2>Completed This Week</h2>
+                <div class="stat-number" id="weeklyCompleted">12</div>
+                <div class="stat-label">Tasks Completed</div>
+            </div>
+
+            <div class="card">
+                <h2>Overall Progress</h2>
+                <div class="stat-number" id="overallProgress">85%</div>
+                <div class="stat-label">Completion Rate</div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <a href="/static-planner" class="action-btn">Add New Task</a>
+            <a href="/student-view" class="action-btn">Student Login</a>
+            <a href="/parent-view" class="action-btn">Parent Reports</a>
+            <a href="/static-planner" class="action-btn">Manage Students</a>
+        </div>
+
+        <div class="recent-activity">
+            <h2 style="margin-bottom: 1.5rem; color: var(--charcoal-slate);">Recent Activity</h2>
+            <div id="activityContainer">
+                <div class="activity-item">
+                    <div class="activity-text">Emma completed Math worksheet</div>
+                    <div class="activity-time">2 hours ago</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-text">New reading assignment added for Liam</div>
+                    <div class="activity-time">4 hours ago</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-text">Science project submitted by Emma</div>
+                    <div class="activity-time">1 day ago</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-text">Parent-teacher conference scheduled</div>
+                    <div class="activity-time">2 days ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load students
+                const studentsResponse = await fetch('/api/planner/students');
+                if (studentsResponse.ok) {
+                    const students = await studentsResponse.json();
+                    document.getElementById('studentCount').textContent = students.length;
+                }
+
+                // Load tasks
+                const tasksResponse = await fetch('/api/planner/tasks');
+                if (tasksResponse.ok) {
+                    const tasks = await tasksResponse.json();
+                    const pendingTasks = tasks.filter(t => !t.completed);
+                    const completedTasks = tasks.filter(t => t.completed);
+                    
+                    document.getElementById('todayTasks').textContent = pendingTasks.length;
+                    document.getElementById('weeklyCompleted').textContent = completedTasks.length;
+                    
+                    const progressPercent = tasks.length > 0 ? 
+                        Math.round((completedTasks.length / tasks.length) * 100) : 0;
+                    document.getElementById('overallProgress').textContent = progressPercent + '%';
+                }
+            } catch (error) {
+                console.warn('Using offline data for dashboard');
+                // Use localStorage fallback or default values
+            }
+        }
+
+        // Load data when page loads
+        loadDashboardData();
+    </script>
+</body>
+</html>

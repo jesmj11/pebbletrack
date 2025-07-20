@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeschool Management - Login</title>
+    <style>
+        /* Pebble Track Color Palette */
+        :root {
+            --pebble-gray: #7E8A97;
+            --moss-green: #8BA88E;
+            --stream-blue: #A8C7DD;
+            --drift-sand: #F5F2EA;
+            --charcoal-slate: #3E4A59;
+            --fern-mist: #D9E5D1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--drift-sand) 0%, var(--fern-mist) 100%);
+            color: var(--charcoal-slate);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.6;
+        }
+
+        .login-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--fern-mist);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: var(--moss-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: var(--charcoal-slate);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: var(--pebble-gray);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .login-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-btn {
+            background: var(--moss-green);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            font-weight: 500;
+        }
+
+        .login-btn:hover {
+            background: var(--charcoal-slate);
+            transform: translateY(-2px);
+        }
+
+        .login-btn.secondary {
+            background: var(--stream-blue);
+            color: var(--charcoal-slate);
+        }
+
+        .login-btn.secondary:hover {
+            background: var(--pebble-gray);
+            color: white;
+        }
+
+        .login-btn.outline {
+            background: transparent;
+            color: var(--charcoal-slate);
+            border: 2px solid var(--fern-mist);
+        }
+
+        .login-btn.outline:hover {
+            background: var(--fern-mist);
+            border-color: var(--moss-green);
+        }
+
+        .role-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .divider {
+            margin: 2rem 0;
+            text-align: center;
+            color: var(--pebble-gray);
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--fern-mist);
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+        }
+
+        .features {
+            text-align: left;
+            background: var(--drift-sand);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .features h3 {
+            color: var(--charcoal-slate);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .features ul {
+            list-style: none;
+            color: var(--pebble-gray);
+        }
+
+        .features li {
+            padding: 0.25rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--moss-green);
+            font-weight: bold;
+        }
+
+        .demo-note {
+            background: var(--fern-mist);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--charcoal-slate);
+        }
+
+        @media (max-width: 500px) {
+            .login-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .login-btn {
+                padding: 0.875rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">H</div>
+        <h1>Homeschool Management</h1>
+        <p class="subtitle">Choose your role to get started</p>
+
+        <div class="login-options">
+            <a href="/static-dashboard" class="login-btn">
+                <div class="role-icon">T</div>
+                Teacher/Parent Dashboard
+            </a>
+            
+            <a href="/static-student" class="login-btn secondary">
+                <div class="role-icon">S</div>
+                Student Portal
+            </a>
+            
+            <a href="/static-parent" class="login-btn outline">
+                <div class="role-icon">P</div>
+                Parent Reports
+            </a>
+        </div>
+
+        <div class="divider">
+            <span>Or</span>
+        </div>
+
+        <a href="/static-planner" class="login-btn outline">
+            <div class="role-icon">✏</div>
+            Go to Planner
+        </a>
+
+        <div class="features">
+            <h3>Platform Features</h3>
+            <ul>
+                <li>Student progress tracking</li>
+                <li>Assignment management</li>
+                <li>Parent reporting dashboard</li>
+                <li>Offline-capable design</li>
+                <li>Professional grade tracking</li>
+            </ul>
+        </div>
+
+        <div class="demo-note">
+            <strong>Demo Mode:</strong> This is a demonstration of the homeschool management platform. All data is stored locally and can be synchronized with the database when available.
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive feedback
+        document.querySelectorAll('.login-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // Add a brief loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = this.innerHTML.replace(/(Teacher\/Parent Dashboard|Student Portal|Parent Reports|Go to Planner)/, 'Loading...');
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 500);
+            });
+        });
+
+        // Check if we have any data to show stats
+        function checkForExistingData() {
+            const students = localStorage.getItem('homeschool_students');
+            const tasks = localStorage.getItem('homeschool_tasks');
+            
+            if (students || tasks) {
+                const demoNote = document.querySelector('.demo-note');
+                demoNote.innerHTML = '<strong>Welcome back!</strong> You have saved data from your previous session. Click above to continue where you left off.';
+                demoNote.style.background = 'var(--fern-mist)';
+            }
+        }
+
+        // Initialize
+        checkForExistingData();
+    </script>
+</body>
+</html>

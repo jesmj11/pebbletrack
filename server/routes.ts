@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from 'fs/promises';
 import { storage } from "./storage-replit";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { z } from "zod";
@@ -353,6 +354,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add planner API routes for the HTML planner  
   const { default: plannerRoutes } = await import("./plannerRoutes.js");
   app.use("/api/planner", plannerRoutes);
+
+  // Serve static login page
+  app.get('/login', async (req, res) => {
+    try {
+      const filePath = path.join(__dirname, '..', 'static-login.html');
+      const htmlContent = await fs.readFile(filePath, 'utf8');
+      res.send(htmlContent);
+    } catch (error) {
+      console.error('Error serving login page:', error);
+      res.status(500).send('Error loading login page');
+    }
+  });
+
+  // Serve static dashboard
+  app.get('/static-dashboard', async (req, res) => {
+    try {
+      const filePath = path.join(__dirname, '..', 'static-dashboard.html');
+      const htmlContent = await fs.readFile(filePath, 'utf8');
+      res.send(htmlContent);
+    } catch (error) {
+      console.error('Error serving dashboard:', error);
+      res.status(500).send('Error loading dashboard');
+    }
+  });
+
+  // Serve static student view
+  app.get('/student-view', async (req, res) => {
+    try {
+      const filePath = path.join(__dirname, '..', 'static-student.html');
+      const htmlContent = await fs.readFile(filePath, 'utf8');
+      res.send(htmlContent);
+    } catch (error) {
+      console.error('Error serving student view:', error);
+      res.status(500).send('Error loading student view');
+    }
+  });
+
+  // Serve static parent view
+  app.get('/parent-view', async (req, res) => {
+    try {
+      const filePath = path.join(__dirname, '..', 'static-parent.html');
+      const htmlContent = await fs.readFile(filePath, 'utf8');
+      res.send(htmlContent);
+    } catch (error) {
+      console.error('Error serving parent view:', error);
+      res.status(500).send('Error loading parent view');
+    }
+  });
 
   // Serve static planner that bypasses Vite completely
   app.get('/static-planner', (req, res) => {
