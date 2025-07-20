@@ -3,7 +3,7 @@ import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { queryClient, getQueryFn } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
+// import { TooltipProvider } from "@/components/ui/tooltip"; // Temporarily disabled due to useRef error
 import MobileNav from "@/components/MobileNav";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -153,11 +153,9 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <MobileNav />
-        <Router />
-        <Toaster />
-      </TooltipProvider>
+      <MobileNav />
+      <Router />
+      <Toaster />
     </QueryClientProvider>
   );
 }

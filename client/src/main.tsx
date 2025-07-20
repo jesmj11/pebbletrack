@@ -9,9 +9,7 @@ import { registerServiceWorker } from "./lib/pwa";
 registerServiceWorker();
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <UserProvider>
-      <App />
-    </UserProvider>
-  </StrictMode>
+  <UserProvider>
+    <App />
+  </UserProvider>
 );

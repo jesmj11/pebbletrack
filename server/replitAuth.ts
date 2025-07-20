@@ -102,14 +102,40 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    // Use the first domain from REPLIT_DOMAINS if hostname doesn't match any configured domains
+    const domains = process.env.REPLIT_DOMAINS!.split(",");
+    let targetDomain = domains.find(domain => domain.includes(req.hostname));
+    
+    // Fallback to first domain if no match found (for localhost/development)
+    if (!targetDomain) {
+      targetDomain = domains[0];
+    }
+    
+    const strategyName = `replitauth:${targetDomain}`;
+    
+    console.log(`Attempting login with strategy: ${strategyName} for hostname: ${req.hostname}`);
+    
+    passport.authenticate(strategyName, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    // Use the first domain from REPLIT_DOMAINS if hostname doesn't match any configured domains
+    const domains = process.env.REPLIT_DOMAINS!.split(",");
+    let targetDomain = domains.find(domain => domain.includes(req.hostname));
+    
+    // Fallback to first domain if no match found (for localhost/development)
+    if (!targetDomain) {
+      targetDomain = domains[0];
+    }
+    
+    const strategyName = `replitauth:${targetDomain}`;
+    
+    console.log(`Attempting callback with strategy: ${strategyName} for hostname: ${req.hostname}`);
+    
+    passport.authenticate(strategyName, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
     })(req, res, next);
