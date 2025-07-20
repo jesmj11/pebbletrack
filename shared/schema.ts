@@ -115,10 +115,25 @@ export const lessonProgress = pgTable("lesson_progress", {
 
 export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),
-  assignmentId: integer("assignment_id").notNull(),
-  studentId: integer("student_id").notNull(),
+  assignmentId: integer("assignment_id"),
+  studentId: integer("student_id"),
+  title: text("title").notNull(),
+  subject: text("subject").notNull(),
+  dueDate: timestamp("due_date").notNull(),
   completed: boolean("completed").notNull().default(false),
   completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Simplified task schema for the static planner
+export const plannerTasks = pgTable("planner_tasks", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  subject: text("subject").notNull(),
+  dueDate: text("due_date").notNull(),
+  completed: boolean("completed").notNull().default(false),
+  studentId: integer("student_id"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Insert schemas
@@ -170,8 +185,20 @@ export const insertAssignmentSchema = createInsertSchema(assignments).pick({
 export const insertTaskSchema = createInsertSchema(tasks).pick({
   assignmentId: true,
   studentId: true,
+  title: true,
+  subject: true,
+  dueDate: true,
   completed: true,
   completedAt: true,
+});
+
+// Simplified planner task schema
+export const insertPlannerTaskSchema = createInsertSchema(plannerTasks).pick({
+  title: true,
+  subject: true,
+  dueDate: true,
+  completed: true,
+  studentId: true,
 });
 
 // New curriculum schemas
@@ -231,6 +258,9 @@ export type InsertAssignment = z.infer<typeof insertAssignmentSchema>;
 
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
+
+export type PlannerTask = typeof plannerTasks.$inferSelect;
+export type InsertPlannerTask = z.infer<typeof insertPlannerTaskSchema>;
 
 // Curriculum types
 export type Curriculum = typeof curriculums.$inferSelect;

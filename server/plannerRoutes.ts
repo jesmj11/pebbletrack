@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { storage } from "./storage-replit";
-import { insertTaskSchema } from "../shared/schema";
+import { insertPlannerTaskSchema } from "../shared/schema";
 
 const router = Router();
 
@@ -36,12 +36,12 @@ router.post("/tasks", async (req, res) => {
     const taskData = {
       title: validatedData.title,
       subject: validatedData.subject,
-      dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : new Date(),
+      dueDate: validatedData.dueDate || new Date().toISOString().split('T')[0],
       completed: false,
       studentId: validatedData.studentId || null,
     };
 
-    const newTask = await storage.createTask(taskData);
+    const newTask = await storage.createPlannerTask(taskData);
     res.json(newTask);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -59,7 +59,7 @@ router.patch("/tasks/:id", async (req, res) => {
     const taskId = req.params.id;
     const validatedData = updateTaskSchema.parse(req.body);
 
-    const updatedTask = await storage.updateTask(taskId, { completed: validatedData.completed });
+    const updatedTask = await storage.updatePlannerTask(taskId, { completed: validatedData.completed });
     
     if (!updatedTask) {
       return res.status(404).json({ error: "Task not found" });
@@ -80,7 +80,7 @@ router.patch("/tasks/:id", async (req, res) => {
 router.delete("/tasks/:id", async (req, res) => {
   try {
     const taskId = req.params.id;
-    const deleted = await storage.deleteTask(taskId);
+    const deleted = await storage.deletePlannerTask(taskId);
 
     if (!deleted) {
       return res.status(404).json({ error: "Task not found" });
@@ -108,6 +108,52 @@ router.get("/stats", async (req, res) => {
   } catch (error) {
     console.error("Error fetching stats:", error);
     res.status(500).json({ error: "Failed to fetch statistics" });
+  }
+});
+
+// Get all students
+router.get("/students", async (req, res) => {
+  try {
+    const allStudents = await storage.getStudents();
+    res.json(allStudents);
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    res.status(500).json({ error: "Failed to fetch students" });
+  }
+});
+
+// Create a new student
+router.post("/students", async (req, res) => {
+  try {
+    const studentData = {
+      parentId: "demo-parent", // For demo purposes
+      fullName: req.body.fullName,
+      gradeLevel: req.body.gradeLevel,
+      avatar: req.body.avatar || "👧",
+    };
+
+    const newStudent = await storage.createStudent(studentData);
+    res.json(newStudent);
+  } catch (error) {
+    console.error("Error creating student:", error);
+    res.status(500).json({ error: "Failed to create student" });
+  }
+});
+
+// Delete a student
+router.delete("/students/:id", async (req, res) => {
+  try {
+    const studentId = parseInt(req.params.id);
+    const deleted = await storage.deleteStudent(studentId);
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    res.json({ message: "Student deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting student:", error);
+    res.status(500).json({ error: "Failed to delete student" });
   }
 });
 

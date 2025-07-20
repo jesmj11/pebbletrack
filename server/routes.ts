@@ -578,6 +578,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
             font-weight: 500;
         }
 
+        .student-card {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .student-card.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .student-avatar {
+            font-size: 2rem;
+        }
+
+        .student-info h3 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .student-info p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .student-delete {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -608,6 +658,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
             </p>
         </header>
 
+        <!-- Student Management -->
+        <div class="card">
+            <h2 style="margin-bottom: 1rem; color: #374151;">Students</h2>
+            <div id="studentContainer" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <!-- Students will be rendered here -->
+            </div>
+            <form id="studentForm" style="display: flex; gap: 1rem; align-items: end;">
+                <div>
+                    <input type="text" id="studentName" placeholder="Student name" required style="width: 200px;">
+                </div>
+                <div>
+                    <select id="studentGrade" required style="padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="">Select Grade</option>
+                        <option value="Pre-K">Pre-K</option>
+                        <option value="Kindergarten">Kindergarten</option>
+                        <option value="1st Grade">1st Grade</option>
+                        <option value="2nd Grade">2nd Grade</option>
+                        <option value="3rd Grade">3rd Grade</option>
+                        <option value="4th Grade">4th Grade</option>
+                        <option value="5th Grade">5th Grade</option>
+                        <option value="6th Grade">6th Grade</option>
+                        <option value="7th Grade">7th Grade</option>
+                        <option value="8th Grade">8th Grade</option>
+                        <option value="High School">High School</option>
+                    </select>
+                </div>
+                <button type="submit">Add Student</button>
+            </form>
+        </div>
+
         <!-- Add New Task Form -->
         <div class="card">
             <h2 style="margin-bottom: 1rem; color: #374151;">Add New Task</h2>
@@ -615,6 +695,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 <div class="form-row">
                     <input type="text" id="taskTitle" placeholder="Task title" required>
                     <input type="text" id="taskSubject" placeholder="Subject" required>
+                    <select id="taskStudent" style="padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="">All Students</option>
+                        <!-- Students will be populated here -->
+                    </select>
                     <input type="date" id="taskDate">
                 </div>
                 <button type="submit">Add Task</button>
@@ -650,6 +734,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     <script>
         let tasks = [];
+        let students = [];
         let isOnline = false;
         
         // Check if we can connect to the API
@@ -669,6 +754,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 statusEl.textContent = 'Offline Mode';
                 statusEl.className = 'status-indicator status-offline';
             }
+        }
+
+        // Load students from API or localStorage
+        async function loadStudents() {
+            if (isOnline) {
+                try {
+                    const response = await fetch('/api/planner/students');
+                    if (response.ok) {
+                        students = await response.json();
+                        localStorage.setItem('homeschool_students', JSON.stringify(students));
+                    } else {
+                        throw new Error('API request failed');
+                    }
+                } catch (error) {
+                    console.warn('Failed to load students from API, using localStorage');
+                    loadStudentsFromLocalStorage();
+                }
+            } else {
+                loadStudentsFromLocalStorage();
+            }
+            renderStudents();
+        }
+
+        function loadStudentsFromLocalStorage() {
+            const saved = localStorage.getItem('homeschool_students');
+            if (saved) {
+                students = JSON.parse(saved);
+            } else {
+                // Default sample students
+                students = [
+                    { id: 1, fullName: "Emma Johnson", gradeLevel: "3rd Grade", avatar: "👧" },
+                    { id: 2, fullName: "Liam Johnson", gradeLevel: "5th Grade", avatar: "👦" }
+                ];
+                saveStudentsToLocalStorage();
+            }
+        }
+
+        function saveStudentsToLocalStorage() {
+            localStorage.setItem('homeschool_students', JSON.stringify(students));
         }
 
         // Load tasks from API or localStorage
@@ -760,6 +884,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return colors[subject] || '#f1f5f9';
         }
 
+        function getStudentName(studentId) {
+            const student = students.find(s => s.id === studentId);
+            return student ? student.fullName : 'Unknown';
+        }
+
         function renderTasks() {
             const container = document.getElementById('taskContainer');
             
@@ -777,6 +906,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                         '<div class="task-title ' + (task.completed ? 'completed' : '') + '">' + task.title + '</div>' +
                         '<div class="task-meta">' +
                             '<span class="subject-tag" style="background-color: ' + getSubjectColor(task.subject) + '">' + task.subject + '</span>' +
+                            (task.studentId ? ' • ' + getStudentName(task.studentId) : '') +
                             ' • Due: ' + formatDate(task.dueDate) +
                         '</div>' +
                     '</div>' +
@@ -787,11 +917,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
             updateStats();
         }
 
+        function renderStudents() {
+            const container = document.getElementById('studentContainer');
+            const select = document.getElementById('taskStudent');
+            
+            if (students.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280;">No students added yet.</p>';
+            } else {
+                container.innerHTML = students.map(student => 
+                    '<div class="student-card" onclick="selectStudent(' + student.id + ')">' +
+                        '<button class="student-delete" onclick="deleteStudent(' + student.id + '); event.stopPropagation();">×</button>' +
+                        '<div class="student-avatar">' + student.avatar + '</div>' +
+                        '<div class="student-info">' +
+                            '<h3>' + student.fullName + '</h3>' +
+                            '<p>' + student.gradeLevel + '</p>' +
+                        '</div>' +
+                    '</div>'
+                ).join('');
+            }
+
+            // Update task form student dropdown
+            select.innerHTML = '<option value="">All Students</option>' + 
+                students.map(student => 
+                    '<option value="' + student.id + '">' + student.fullName + '</option>'
+                ).join('');
+        }
+
+        async function addStudent(e) {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('studentName').value.trim();
+            const gradeLevel = document.getElementById('studentGrade').value;
+            
+            if (!fullName || !gradeLevel) return;
+
+            const newStudent = {
+                id: Date.now(),
+                fullName: fullName,
+                gradeLevel: gradeLevel,
+                avatar: Math.random() > 0.5 ? "👧" : "👦"
+            };
+
+            if (isOnline) {
+                try {
+                    const response = await fetch('/api/planner/students', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newStudent)
+                    });
+
+                    if (response.ok) {
+                        const createdStudent = await response.json();
+                        students.push(createdStudent);
+                    } else {
+                        throw new Error('API request failed');
+                    }
+                } catch (error) {
+                    console.warn('Failed to save student online, saving locally');
+                    students.push(newStudent);
+                }
+            } else {
+                students.push(newStudent);
+            }
+
+            saveStudentsToLocalStorage();
+            renderStudents();
+
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentGrade').value = '';
+        }
+
+        async function deleteStudent(id) {
+            if (isOnline) {
+                try {
+                    const response = await fetch('/api/planner/students/' + id, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) throw new Error('API request failed');
+                } catch (error) {
+                    console.warn('Failed to delete student online, deleting locally');
+                }
+            }
+
+            students = students.filter(student => student.id !== id);
+            saveStudentsToLocalStorage();
+            renderStudents();
+        }
+
         async function addTask(e) {
             e.preventDefault();
             
             const title = document.getElementById('taskTitle').value.trim();
             const subject = document.getElementById('taskSubject').value.trim();
+            const studentId = document.getElementById('taskStudent').value;
             const dueDate = document.getElementById('taskDate').value || new Date().toISOString().split('T')[0];
 
             if (!title || !subject) return;
@@ -801,7 +1020,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 title: title,
                 subject: subject,
                 completed: false,
-                dueDate: dueDate
+                dueDate: dueDate,
+                studentId: studentId ? parseInt(studentId) : null
             };
 
             if (isOnline) {
@@ -832,6 +1052,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Clear form
             document.getElementById('taskTitle').value = '';
             document.getElementById('taskSubject').value = '';
+            document.getElementById('taskStudent').value = '';
             document.getElementById('taskDate').value = '';
         }
 
@@ -880,8 +1101,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Initialize
         document.getElementById('taskForm').addEventListener('submit', addTask);
+        document.getElementById('studentForm').addEventListener('submit', addStudent);
         
-        // Load tasks on startup
+        // Load data on startup
+        loadStudents();
         loadTasks();
 
         // Check connection periodically

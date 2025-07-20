@@ -5,6 +5,7 @@ import {
   classes,
   assignments,
   tasks,
+  plannerTasks,
   curriculums,
   curriculumLessons,
   studentCurriculums,
@@ -19,6 +20,8 @@ import {
   type InsertAssignment,
   type Task,
   type InsertTask,
+  type PlannerTask,
+  type InsertPlannerTask,
   type StudentWithUser,
   type TaskWithAssignment,
   type ClassWithStudentCount,
@@ -73,6 +76,13 @@ export interface IStorage {
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, taskData: Partial<InsertTask>): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
+
+  // Planner task operations (simplified)
+  getAllTasks(): Promise<PlannerTask[]>;
+  getPlannerTask(id: string): Promise<PlannerTask | undefined>;
+  createPlannerTask(task: InsertPlannerTask): Promise<PlannerTask>;
+  updatePlannerTask(id: string, taskData: Partial<InsertPlannerTask>): Promise<PlannerTask | undefined>;
+  deletePlannerTask(id: string): Promise<boolean>;
   
   // Curriculum operations
   getCurriculums(): Promise<Curriculum[]>;
@@ -391,6 +401,42 @@ export class DatabaseStorage implements IStorage {
   async getTaskCompletionRate(teacherId: string): Promise<number> {
     // This would require SQL aggregation
     return 0;
+  }
+
+  // Planner task operations (simplified)
+  async getAllTasks(): Promise<PlannerTask[]> {
+    return await db.select().from(plannerTasks);
+  }
+
+  async getPlannerTask(id: string): Promise<PlannerTask | undefined> {
+    const [task] = await db.select().from(plannerTasks).where(eq(plannerTasks.id, id));
+    return task;
+  }
+
+  async createPlannerTask(taskData: InsertPlannerTask): Promise<PlannerTask> {
+    const taskWithId = {
+      ...taskData,
+      id: Date.now().toString(),
+    };
+    const [task] = await db.insert(plannerTasks).values(taskWithId).returning();
+    return task;
+  }
+
+  async updatePlannerTask(id: string, taskData: Partial<InsertPlannerTask>): Promise<PlannerTask | undefined> {
+    const [updatedTask] = await db
+      .update(plannerTasks)
+      .set(taskData)
+      .where(eq(plannerTasks.id, id))
+      .returning();
+    return updatedTask;
+  }
+
+  async deletePlannerTask(id: string): Promise<boolean> {
+    const [deletedTask] = await db
+      .delete(plannerTasks)
+      .where(eq(plannerTasks.id, id))
+      .returning();
+    return !!deletedTask;
   }
 }
 
