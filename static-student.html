@@ -43,6 +43,32 @@
             font-size: 1.5rem;
         }
 
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--pebble-gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 2px solid transparent;
+        }
+
+        .nav-links a:hover {
+            color: var(--moss-green);
+            background-color: var(--fern-mist);
+        }
+
+        .nav-links a.active {
+            color: var(--moss-green);
+            background-color: var(--fern-mist);
+            border-color: var(--moss-green);
+        }
+
         .student-info {
             display: flex;
             align-items: center;
@@ -259,10 +285,12 @@
 <body>
     <nav class="navbar">
         <h1>My Learning Dashboard</h1>
-        <div class="student-info">
-            <div class="student-avatar" id="studentAvatar">E</div>
-            <span id="studentName">Emma Johnson</span>
-            <a href="/login" class="logout-btn" onclick="logout()">Logout</a>
+        <div class="nav-links">
+            <a href="/static-dashboard">Dashboard</a>
+            <a href="/static-planner">Weekly Planner</a>
+            <a href="/static-student" class="active">Student View</a>
+            <a href="/static-parent">Parent View</a>
+            <a href="/login" onclick="logout()">Logout</a>
         </div>
     </nav>
 
