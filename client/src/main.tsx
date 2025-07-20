@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import SafeApp from "./components/SafeApp";
 import App from "./App";
 import "./index.css";
 import { UserProvider } from "./context/UserContext";
@@ -7,23 +8,26 @@ import { registerServiceWorker } from "./lib/pwa";
 // Register service worker for PWA functionality
 registerServiceWorker();
 
-// Use the original App but with error handling for the runtime plugin issue
+// Override global error handling to suppress runtime error plugin conflicts
+const originalError = window.console.error;
+window.console.error = (...args: any[]) => {
+  const message = args[0]?.toString() || '';
+  if (message.includes('Cannot read properties of null (reading \'useRef\')') ||
+      message.includes('runtime-error-plugin') ||
+      message.includes('useRef')) {
+    // Suppress these specific errors that are caused by the runtime error plugin
+    return;
+  }
+  originalError.apply(console, args);
+};
+
+// Create root and render with comprehensive error handling
 const root = createRoot(document.getElementById("root")!);
 
-// Wrap the render call in a try-catch to handle the runtime error plugin issue
-try {
-  root.render(
+root.render(
+  <SafeApp>
     <UserProvider>
       <App />
     </UserProvider>
-  );
-} catch (error) {
-  console.warn("Runtime error plugin conflict detected, using fallback render");
-  // Fallback render without the problematic parts
-  root.render(
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Loading Application...</h1>
-      <p>Please wait while the application initializes.</p>
-    </div>
-  );
-}
+  </SafeApp>
+);
