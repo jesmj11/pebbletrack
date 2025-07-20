@@ -123,6 +123,153 @@
             background: var(--charcoal-slate);
         }
 
+        .ai-btn {
+            background: linear-gradient(135deg, var(--stream-blue), var(--moss-green));
+        }
+
+        .ai-btn:hover {
+            background: linear-gradient(135deg, var(--moss-green), var(--stream-blue));
+        }
+
+        /* AI Interface Modal */
+        .ai-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .ai-modal-content {
+            background: var(--drift-sand);
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .ai-modal h2 {
+            color: var(--charcoal-slate);
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--pebble-gray);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--moss-green);
+            background-color: var(--fern-mist);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--moss-green);
+            background-color: var(--fern-mist);
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+
+        .analysis-results {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--fern-mist);
+            border-radius: 8px;
+        }
+
+        .lesson-item {
+            background: white;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 6px;
+            border-left: 4px solid var(--moss-green);
+        }
+
+        .lesson-title {
+            font-weight: bold;
+            color: var(--charcoal-slate);
+        }
+
+        .lesson-meta {
+            font-size: 0.9rem;
+            color: var(--pebble-gray);
+            margin-top: 0.5rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--moss-green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--charcoal-slate);
+        }
+
+        .btn-secondary {
+            background: var(--pebble-gray);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--charcoal-slate);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--pebble-gray);
+        }
+
+        .loading:after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--pebble-gray);
+            border-top: 2px solid var(--moss-green);
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .recent-activity {
             background: white;
             border-radius: 12px;
@@ -214,6 +361,7 @@
 
         <div class="quick-actions">
             <a href="/static-planner" class="action-btn">Add New Task</a>
+            <button class="action-btn ai-btn" onclick="openAIInterface()">📸 AI Curriculum Import</button>
             <a href="/student-view" class="action-btn">Student Login</a>
             <a href="/parent-view" class="action-btn">Parent Reports</a>
             <a href="/static-planner" class="action-btn">Manage Students</a>
@@ -238,6 +386,35 @@
                     <div class="activity-text">Parent-teacher conference scheduled</div>
                     <div class="activity-time">2 days ago</div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Curriculum Analysis Modal -->
+    <div id="aiModal" class="ai-modal">
+        <div class="ai-modal-content">
+            <h2>AI Curriculum Import</h2>
+            <p>Upload an image of your curriculum index or table of contents to automatically extract and add lessons to your planner.</p>
+            
+            <div class="file-upload-area" id="uploadArea">
+                <div id="uploadContent">
+                    <p><strong>Click to select an image</strong></p>
+                    <p>or drag and drop here</p>
+                    <small>Supports: JPG, PNG, PDF pages</small>
+                </div>
+                <img id="previewImage" class="preview-image" style="display: none;">
+            </div>
+            
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            
+            <div id="analysisResults" class="analysis-results" style="display: none;">
+                <h3>Extracted Lessons:</h3>
+                <div id="lessonsList"></div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeAIInterface()">Cancel</button>
+                <button class="btn btn-primary" id="addLessonsBtn" onclick="addLessonsToPlanner()" style="display: none;">Add to Planner</button>
             </div>
         </div>
     </div>
@@ -289,6 +466,177 @@
             localStorage.removeItem('userRole');
             localStorage.removeItem('isLoggedIn');
         }
+
+        // AI Curriculum Interface
+        let extractedLessons = [];
+
+        function openAIInterface() {
+            document.getElementById('aiModal').style.display = 'flex';
+        }
+
+        function closeAIInterface() {
+            document.getElementById('aiModal').style.display = 'none';
+            document.getElementById('previewImage').style.display = 'none';
+            document.getElementById('uploadContent').style.display = 'block';
+            document.getElementById('analysisResults').style.display = 'none';
+            document.getElementById('addLessonsBtn').style.display = 'none';
+            extractedLessons = [];
+        }
+
+        // File upload handling
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const previewImage = document.getElementById('previewImage');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        function handleFileUpload(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                document.getElementById('uploadContent').style.display = 'none';
+                analyzeCurriculum(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function analyzeCurriculum(imageData) {
+            const resultsDiv = document.getElementById('analysisResults');
+            const lessonsList = document.getElementById('lessonsList');
+            
+            resultsDiv.style.display = 'block';
+            lessonsList.innerHTML = '<div class="loading">Analyzing curriculum image...</div>';
+
+            try {
+                const response = await fetch('/api/curriculum/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to analyze image');
+                }
+
+                const data = await response.json();
+                extractedLessons = data.lessons || [];
+
+                if (extractedLessons.length === 0) {
+                    lessonsList.innerHTML = '<p>No lessons found in the image. Please try with a clearer image of a curriculum index.</p>';
+                    return;
+                }
+
+                lessonsList.innerHTML = extractedLessons.map(lesson => `
+                    <div class="lesson-item">
+                        <div class="lesson-title">${lesson.title}</div>
+                        <div class="lesson-meta">
+                            Subject: ${lesson.subject} | Grade: ${lesson.gradeLevel}
+                            ${lesson.description ? ` | ${lesson.description}` : ''}
+                            ${lesson.estimatedDuration ? ` | Duration: ${lesson.estimatedDuration}` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('addLessonsBtn').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error analyzing curriculum:', error);
+                lessonsList.innerHTML = '<p style="color: red;">Error analyzing image. Please try again or check your connection.</p>';
+            }
+        }
+
+        async function addLessonsToPlanner() {
+            if (extractedLessons.length === 0) return;
+
+            const addBtn = document.getElementById('addLessonsBtn');
+            const originalText = addBtn.textContent;
+            addBtn.textContent = 'Adding...';
+            addBtn.disabled = true;
+
+            try {
+                // Add lessons as tasks to the planner
+                for (const lesson of extractedLessons) {
+                    const task = {
+                        id: Date.now() + Math.random(),
+                        title: lesson.title,
+                        subject: lesson.subject,
+                        description: lesson.description || '',
+                        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 week from now
+                        completed: false,
+                        studentId: '', // All students
+                        gradeLevel: lesson.gradeLevel
+                    };
+
+                    // Try to save online first
+                    try {
+                        const response = await fetch('/api/planner/tasks', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(task)
+                        });
+                        
+                        if (!response.ok) throw new Error('API request failed');
+                    } catch (error) {
+                        console.warn('Failed to save online, saving locally');
+                        // Save to localStorage as fallback
+                        const tasks = JSON.parse(localStorage.getItem('homeschool_tasks') || '[]');
+                        tasks.push(task);
+                        localStorage.setItem('homeschool_tasks', JSON.stringify(tasks));
+                    }
+                }
+
+                alert(`Successfully added ${extractedLessons.length} lessons to your planner!`);
+                closeAIInterface();
+
+            } catch (error) {
+                console.error('Error adding lessons:', error);
+                alert('Error adding lessons. Please try again.');
+            } finally {
+                addBtn.textContent = originalText;
+                addBtn.disabled = false;
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('aiModal').addEventListener('click', (e) => {
+            if (e.target.id === 'aiModal') {
+                closeAIInterface();
+            }
+        });
 
         // Load data when page loads
         if (checkAuth()) {

@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from 'fs/promises';
+import { analyzeCurriculumImage } from './anthropic.js';
 import { storage } from "./storage-replit";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { z } from "zod";
@@ -354,6 +355,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add planner API routes for the HTML planner  
   const { default: plannerRoutes } = await import("./plannerRoutes.js");
   app.use("/api/planner", plannerRoutes);
+
+  // AI Curriculum Analysis endpoint
+  app.post('/api/curriculum/analyze', async (req, res) => {
+    try {
+      const { image } = req.body;
+      
+      if (!image) {
+        return res.status(400).json({ error: 'Image data is required' });
+      }
+
+      // Remove data URL prefix if present
+      const base64Image = image.replace(/^data:image\/[a-z]+;base64,/, '');
+      
+      const lessons = await analyzeCurriculumImage(base64Image);
+      
+      res.json({ lessons });
+    } catch (error) {
+      console.error('Error analyzing curriculum:', error);
+      res.status(500).json({ error: error.message || 'Failed to analyze curriculum image' });
+    }
+  });
 
   // Serve static login page
   app.get('/login', async (req, res) => {

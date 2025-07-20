@@ -44,6 +44,11 @@ A comprehensive task management and e-learning platform optimized for homeschool
 - **UI Refinement**: Removed standalone parent reports button, integrated functionality into parent dashboard
 - **Professional Design**: Consistent Pebble Track color palette across all interfaces
 - **Static HTML Solution**: Successfully bypassed React/Vite runtime errors with pure HTML/CSS/JavaScript implementation
+- **AI Curriculum Import**: Added Claude-powered image analysis to automatically extract lessons from curriculum photos
+  - Teachers can upload images of curriculum indexes/table of contents
+  - AI automatically extracts lesson titles, subjects, and grade levels
+  - Lessons are added directly to the planner with appropriate scheduling
+  - Uses Anthropic's latest Claude model for accurate text recognition and educational content analysis
 
 ### Authentication System
 - Teachers access dashboard and planner functionality
@@ -66,13 +71,15 @@ A comprehensive task management and e-learning platform optimized for homeschool
 - Use shadcn/ui components for UI consistency
 
 ## Current Status
-✅ **Complete Multi-Page Homeschool Management System**
+✅ **Complete Multi-Page Homeschool Management System with AI Integration**
 - Server running on port 5000 with PostgreSQL database
 - **Login Page** (`/login`): Professional role-based entry point
-- **Dashboard** (`/static-dashboard`): Overview with statistics and quick actions
+- **Dashboard** (`/static-dashboard`): Overview with statistics, quick actions, and AI curriculum import
 - **Student View** (`/student-view`): Dedicated student portal with task completion
 - **Parent View** (`/parent-view`): Comprehensive reporting and progress tracking
 - **Planner** (`/static-planner`): Full-featured task and student management
+- **AI Curriculum Import**: Upload curriculum images to auto-generate lesson plans
 - All pages use Pebble Track color palette for cohesive professional design
 - Complete offline/online synchronization with localStorage fallback
 - Database persistence for both tasks and students across all interfaces
+- Anthropic API integration for intelligent curriculum analysis
