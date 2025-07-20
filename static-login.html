@@ -319,6 +319,36 @@
             text-decoration: underline;
         }
 
+        .form-links span {
+            color: var(--pebble-gray);
+            margin: 0 0.5rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--charcoal-slate);
+            font-weight: 500;
+        }
+
+        .form-group label input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .form-group input[type="checkbox"] + a {
+            margin-left: 0;
+        }
+
         .success-message {
             background: var(--fern-mist);
             color: var(--charcoal-slate);
@@ -385,6 +415,8 @@
                 
                 <div class="form-links">
                     <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+                    <span> | </span>
+                    <a href="#" onclick="showCreateAccount()">Create Account</a>
                 </div>
             </form>
         </div>
@@ -404,6 +436,57 @@
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Send Reset Link</button>
                     <button type="button" class="btn btn-secondary" onclick="closeForgotPassword()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Account Modal -->
+    <div id="createAccountModal" class="login-modal">
+        <div class="login-modal-content">
+            <h2 id="createAccountTitle">Create Teacher/Parent Account</h2>
+            <p>Join the Homeschool Management platform to organize your educational journey.</p>
+            <form id="createAccountForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="firstName" required placeholder="First name">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" required placeholder="Last name">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="createEmail">Email Address</label>
+                    <input type="email" id="createEmail" name="createEmail" required placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="createPassword">Password</label>
+                    <input type="password" id="createPassword" name="createPassword" required placeholder="Choose a strong password" minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Confirm your password">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="agreeTerms" required>
+                        I agree to the <a href="#" style="color: var(--moss-green);">Terms of Service</a> and <a href="#" style="color: var(--moss-green);">Privacy Policy</a>
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="createAccountBtn">Create Account</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateAccount()">Cancel</button>
+                </div>
+                
+                <div class="form-links">
+                    <a href="#" onclick="backToLogin()">Already have an account? Sign In</a>
                 </div>
             </form>
         </div>
@@ -450,6 +533,36 @@
         function closeForgotPassword() {
             document.getElementById('forgotModal').style.display = 'none';
             document.getElementById('forgotForm').reset();
+        }
+
+        function showCreateAccount() {
+            document.getElementById('loginModal').style.display = 'none';
+            const modal = document.getElementById('createAccountModal');
+            const title = document.getElementById('createAccountTitle');
+            
+            if (currentRole === 'teacher') {
+                title.textContent = 'Create Teacher/Parent Account';
+            } else {
+                title.textContent = 'Create Student Account';
+            }
+            
+            modal.style.display = 'flex';
+            
+            // Focus on first name input
+            setTimeout(() => {
+                document.getElementById('firstName').focus();
+            }, 100);
+        }
+
+        function closeCreateAccount() {
+            document.getElementById('createAccountModal').style.display = 'none';
+            document.getElementById('createAccountForm').reset();
+        }
+
+        function backToLogin() {
+            document.getElementById('createAccountModal').style.display = 'none';
+            document.getElementById('createAccountForm').reset();
+            document.getElementById('loginModal').style.display = 'flex';
         }
 
         // Handle login form submission
@@ -518,10 +631,83 @@
             `;
         });
 
+        // Handle create account form submission
+        document.getElementById('createAccountForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('createEmail').value;
+            const password = document.getElementById('createPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+            const submitBtn = document.getElementById('createAccountBtn');
+            
+            // Validate inputs
+            if (!firstName || !lastName || !email || !password || !confirmPassword) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters long');
+                return;
+            }
+
+            if (!agreeTerms) {
+                alert('Please agree to the Terms of Service and Privacy Policy');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.textContent = 'Creating Account...';
+            submitBtn.disabled = true;
+
+            // Simulate account creation (in a real app, this would be an API call)
+            setTimeout(() => {
+                // Store user session (for demo purposes)
+                localStorage.setItem('userRole', currentRole);
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userEmail', email);
+                localStorage.setItem('userName', `${firstName} ${lastName}`);
+                
+                // Show success and redirect
+                const form = this;
+                form.innerHTML = `
+                    <div class="success-message">
+                        <strong>Account Created Successfully!</strong><br>
+                        Welcome to Homeschool Management, ${firstName}!
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary" onclick="proceedToDashboard()">Continue to Dashboard</button>
+                    </div>
+                `;
+            }, 1500);
+        });
+
+        function proceedToDashboard() {
+            switch(currentRole) {
+                case 'teacher':
+                    window.location.href = '/static-dashboard';
+                    break;
+                case 'student':
+                    window.location.href = '/student-view';
+                    break;
+                default:
+                    window.location.href = '/static-dashboard';
+            }
+        }
+
         // Close modals when clicking outside
         document.addEventListener('click', function(e) {
             const loginModal = document.getElementById('loginModal');
             const forgotModal = document.getElementById('forgotModal');
+            const createAccountModal = document.getElementById('createAccountModal');
             
             if (e.target === loginModal) {
                 closeLoginForm();
@@ -530,6 +716,10 @@
             if (e.target === forgotModal) {
                 closeForgotPassword();
             }
+            
+            if (e.target === createAccountModal) {
+                closeCreateAccount();
+            }
         });
 
         // Handle escape key
@@ -537,6 +727,7 @@
             if (e.key === 'Escape') {
                 closeLoginForm();
                 closeForgotPassword();
+                closeCreateAccount();
             }
         });
 
