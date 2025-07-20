@@ -77,5 +77,5 @@ A comprehensive task management and e-learning platform optimized for homeschool
 - Full student management: add, view, delete students
 - Task assignment to specific students or all students
 - Online/offline synchronization with localStorage fallback
-- Clean text-based UI with student cards and enhanced task display
+- Professional Pebble Track color palette with cohesive design
 - Database persistence for both tasks and students

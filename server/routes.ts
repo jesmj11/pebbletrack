@@ -363,6 +363,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Homeschool Planner - Static Version</title>
     <style>
+        /* Pebble Track Color Palette */
+        :root {
+            --pebble-gray: #7E8A97;
+            --moss-green: #8BA88E;
+            --stream-blue: #A8C7DD;
+            --drift-sand: #F5F2EA;
+            --charcoal-slate: #3E4A59;
+            --fern-mist: #D9E5D1;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -371,7 +381,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         body {
             font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f8fafc;
+            background-color: var(--drift-sand);
+            color: var(--charcoal-slate);
             min-height: 100vh;
             line-height: 1.6;
         }
@@ -390,12 +401,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         h1 {
             font-size: 2.5rem;
             font-weight: bold;
-            color: #1e293b;
+            color: var(--charcoal-slate);
             margin-bottom: 0.5rem;
         }
         
         .subtitle {
-            color: #64748b;
+            color: var(--pebble-gray);
             font-size: 1.1rem;
         }
         
@@ -416,10 +427,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         input {
             padding: 0.75rem;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--fern-mist);
             border-radius: 6px;
             font-size: 1rem;
             font-family: inherit;
+            background-color: white;
         }
         
         input[type="text"]:first-child {
@@ -433,7 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         button {
-            background-color: #3b82f6;
+            background-color: var(--moss-green);
             color: white;
             padding: 0.75rem 1.5rem;
             border: none;
@@ -445,7 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         button:hover {
-            background-color: #2563eb;
+            background-color: var(--charcoal-slate);
         }
         
         .delete-btn {
@@ -467,16 +479,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         .task-header {
             padding: 1.5rem;
-            background-color: #f8fafc;
-            border-bottom: 1px solid #e5e7eb;
-            color: #374151;
+            background-color: var(--fern-mist);
+            border-bottom: 1px solid var(--stream-blue);
+            color: var(--charcoal-slate);
             margin: 0;
             font-size: 1.25rem;
         }
         
         .task-item {
             padding: 1rem 1.5rem;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--fern-mist);
             display: flex;
             align-items: center;
             gap: 1rem;
@@ -488,7 +500,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         .task-item.completed {
-            background-color: #f0f9ff;
+            background-color: var(--fern-mist);
         }
         
         .task-content {
@@ -503,13 +515,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         .task-title.completed {
             text-decoration: line-through;
-            color: #6b7280;
+            color: var(--pebble-gray);
             font-weight: normal;
         }
         
         .task-meta {
             font-size: 0.9rem;
-            color: #6b7280;
+            color: var(--pebble-gray);
         }
         
         .stats {
@@ -559,40 +571,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         .status-online {
-            background-color: #dcfce7;
-            color: #166534;
+            background-color: var(--fern-mist);
+            color: var(--charcoal-slate);
         }
 
         .status-offline {
-            background-color: #fef2f2;
-            color: #991b1b;
+            background-color: var(--stream-blue);
+            color: var(--charcoal-slate);
         }
 
         .subject-tag {
             display: inline-block;
             padding: 0.25rem 0.5rem;
-            background-color: #f1f5f9;
-            color: #475569;
+            background-color: var(--stream-blue);
+            color: var(--charcoal-slate);
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 500;
         }
 
         .student-card {
-            background: #f8fafc;
+            background: white;
             padding: 1rem;
             border-radius: 8px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--fern-mist);
             display: flex;
             align-items: center;
             gap: 0.75rem;
             min-width: 200px;
             position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .student-card:hover {
+            border-color: var(--stream-blue);
+            background: var(--drift-sand);
         }
 
         .student-card.selected {
-            border-color: #3b82f6;
-            background: #eff6ff;
+            border-color: var(--moss-green);
+            background: var(--fern-mist);
         }
 
 
@@ -606,7 +624,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .student-info p {
             margin: 0;
             font-size: 0.85rem;
-            color: #6b7280;
+            color: var(--pebble-gray);
         }
 
         .student-delete {
@@ -872,14 +890,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         function getSubjectColor(subject) {
             const colors = {
-                'Math': '#fef3c7',
-                'Reading': '#dbeafe', 
-                'Science': '#dcfce7',
-                'History': '#fce7f3',
-                'Art': '#f3e8ff',
-                'PE': '#fed7d7'
+                'Math': 'var(--stream-blue)',
+                'Reading': 'var(--fern-mist)', 
+                'Science': 'var(--moss-green)',
+                'History': 'var(--drift-sand)',
+                'Art': 'var(--pebble-gray)',
+                'PE': 'var(--charcoal-slate)'
             };
-            return colors[subject] || '#f1f5f9';
+            return colors[subject] || 'var(--stream-blue)';
         }
 
         function getStudentName(studentId) {
