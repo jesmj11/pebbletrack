@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import path from "path";
 import { storage } from "./storage-replit";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { z } from "zod";
@@ -348,6 +349,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add planner API routes for the HTML planner  
   const { default: plannerRoutes } = await import("./plannerRoutes.js");
   app.use("/api/planner", plannerRoutes);
+
+  // Serve static planner that bypasses Vite completely
+  app.get('/static-planner', (req, res) => {
+    res.sendFile(path.join(__dirname, '../static-planner.html'));
+  });
 
   const httpServer = createServer(app);
   return httpServer;
