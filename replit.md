@@ -1,53 +1,64 @@
-# Homeschool Task Management Platform
+# Task Management & E-Learning Platform
 
 ## Overview
-A comprehensive task management and e-learning platform optimized for homeschool environments, with an advanced teacher planner and dynamic student tracking system.
-
-## Key Technologies
-- PostgreSQL for persistent data storage
-- TypeScript for robust type-checking
-- Drizzle ORM for database interactions
+A comprehensive task management and e-learning platform optimized for homeschool environments, featuring:
+- Advanced teacher planner with dynamic student tracking
+- PostgreSQL database for persistent data storage
+- TypeScript with Drizzle ORM for robust type-checking
 - React frontend with Tailwind CSS
 - Express.js backend with modular architecture
-- Replit Auth for authentication
-- Responsive design with dynamic UI components
-
-## Features
-- Customizable weekly planner with student-centric task management
-- AI-powered lesson extraction from curriculum materials
-- Student progress tracking and reporting
+- Replit authentication integration
+- Responsive design with customizable weekly planner
 - Printable planner functionality
-- Role-based access (parent/teacher and student views)
 
 ## Project Architecture
-- Frontend: React with Wouter routing in `client/src/`
-- Backend: Express.js server in `server/`
-- Database: PostgreSQL with Drizzle ORM
-- Authentication: Replit Auth with OpenID Connect
-- Shared schema: `shared/schema.ts`
+
+### Backend
+- **Express.js** server with Replit authentication
+- **PostgreSQL** database via Neon with Drizzle ORM
+- **Storage Layer**: `server/storage-replit.ts` - PostgreSQL implementation
+- **Authentication**: Replit OAuth with session management
+- **API Routes**: RESTful endpoints for all CRUD operations
+
+### Frontend
+- **React** with TypeScript
+- **TanStack Query** for data fetching and caching
+- **Wouter** for client-side routing
+- **Tailwind CSS** with shadcn/ui components
+- **PWA** capabilities with service worker
+
+### Database Schema
+- Users (Replit auth integration)
+- Students (with gamification features)
+- Classes and Assignments
+- Tasks with completion tracking
+- Curriculum management system
+- Lesson progress tracking
 
 ## Recent Changes
-- 2025-01-20: Fixed compilation error in AILessonExtractor.tsx (duplicate typeColors declaration)
-- 2025-01-20: Server successfully running on port 5000
-- 2025-01-20: PostgreSQL database provisioned
-- 2025-01-20: **MAJOR**: Replaced local authentication system with Replit Auth
-- 2025-01-20: Fixed login redirection issue by implementing proper Replit OpenID Connect flow
-- 2025-01-20: Added Landing page with authentication flow and forgot password functionality
-- 2025-01-20: Updated database schema to support text-based user IDs (Replit Auth requirement)
-- 2025-01-20: Created comprehensive authentication infrastructure (useAuth hook, authUtils)
-
-## Resolved Issues
-- ✅ Login redirection loop fixed - now uses Replit Auth system
-- ✅ Forgot password functionality added at /forgot-password route
-- ✅ Database schema migrated to support Replit Auth (text IDs instead of integers)
-- ✅ Authentication infrastructure completely rebuilt for reliability
-
-## Current State
-- Application successfully running with Replit Auth integration
-- Landing page displays for unauthenticated users
-- Login flow redirects to Replit's secure authentication
-- Database properly configured with sessions table for auth persistence
+**July 20, 2025**
+- ✅ **Fixed Critical Storage Import Issue**: Updated `server/replitAuth.ts` to import from `./storage-replit` instead of `./storage`
+- ✅ **Removed Legacy Storage**: Deleted outdated `server/storage.ts` file that was causing TypeScript errors
+- ✅ **Database Migration**: Verified PostgreSQL schema is properly set up with `npm run db:push`
+- ✅ **Application Startup**: Successfully resolved "storage.upsertUser is not a function" error
+- ✅ **Server Running**: Application now starts successfully on port 5000
 
 ## User Preferences
-- Keep responses focused and technical when debugging
-- Prioritize working authentication system
+- Project uses PostgreSQL for production data persistence
+- Prefers TypeScript for type safety
+- Uses Drizzle ORM for database operations
+- Follows fullstack JavaScript development guidelines
+
+## Development Guidelines
+- Always use `npm run db:push` for schema changes (never manual SQL migrations)
+- Import storage from `./storage-replit` for database operations
+- Follow existing TypeScript patterns and schemas
+- Maintain consistency with Replit authentication flow
+- Use shadcn/ui components for UI consistency
+
+## Current Status
+✅ **Application is running successfully**
+- Server started on port 5000
+- Database connected and schema deployed
+- Authentication system ready
+- All TypeScript errors resolved
