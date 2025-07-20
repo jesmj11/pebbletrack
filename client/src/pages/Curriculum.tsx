@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 import { BookOpen, Plus, Upload, Settings, Users, Calendar, Clock, Award } from "lucide-react"
 import { apiRequest } from "@/lib/queryClient"
 import type { Curriculum, CurriculumLesson, Student, StudentDailyLessons } from "@shared/schema"
-import AILessonExtractor from "@/components/AILessonExtractor"
+// import AILessonExtractor from "@/components/AILessonExtractor" // Temporarily disabled due to useRef error
 
 export default function CurriculumPage() {
   const { toast } = useToast()
@@ -442,14 +442,12 @@ export default function CurriculumPage() {
                     </ul>
                   </div>
 
-                  <AILessonExtractor onLessonsExtracted={(lessons, curriculumData) => {
-                    setExtractedLessons(lessons)
-                    setPendingCurriculumData(curriculumData)
-                    toast({
-                      title: "Lessons Ready",
-                      description: `${lessons.length} lessons extracted and ready to import`
-                    })
-                  }} />
+                  <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
+                    <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">AI Lesson Extraction</h3>
+                    <p className="text-gray-500 mb-4">Upload a textbook index or table of contents and AI will extract lessons automatically.</p>
+                    <p className="text-sm text-orange-600">Feature temporarily disabled for maintenance</p>
+                  </div>
 
                   {/* Show extracted lessons preview */}
                   {extractedLessons.length > 0 && (

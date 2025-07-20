@@ -1,4 +1,9 @@
 import { useState, useRef } from "react"
+
+// Temporary null check to prevent useRef errors
+if (typeof useRef !== 'function') {
+  console.error('useRef is not available, React may not be properly imported');
+}
 import { useMutation } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
