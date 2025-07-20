@@ -3,9 +3,10 @@ import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { queryClient, getQueryFn } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
-// import { TooltipProvider } from "@/components/ui/tooltip"; // Temporarily disabled due to useRef error
+import { TooltipProvider } from "@/components/ui/tooltip";
 import MobileNav from "@/components/MobileNav";
 import { useAuth } from "@/hooks/useAuth";
+import { useErrorSuppression } from "@/hooks/useErrorSuppression";
 
 
 // Pages
@@ -36,6 +37,9 @@ interface User {
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
+  
+  // Suppress runtime error plugin conflicts
+  useErrorSuppression();
 
   // Make user available globally for debugging
   (window as any).currentUser = user;
@@ -153,9 +157,11 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <MobileNav />
-      <Router />
-      <Toaster />
+      <TooltipProvider>
+        <MobileNav />
+        <Router />
+        <Toaster />
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
