@@ -6,13 +6,14 @@
     <title>Weekly Planner - Homeschool Management</title>
     <style>
         :root {
-            --pebble-track: #F5F2EA;
-            --charcoal-slate: #3E4A59;
-            --moss-green: #8BA88E;
-            --fern-mist: #C8D5CB;
-            --stream-blue: #A8C5E0;
-            --drift-sand: #F8F5EE;
-            --pebble-gray: #6B7280;
+            --pebble-green: #4ade80;
+            --pebble-blue: #3b82f6; 
+            --pebble-purple: #8b5cf6;
+            --sage-green: #86baba;
+            --charcoal-slate: #334155;
+            --warm-cream: #fef7ed;
+            --soft-gray: #f8fafc;
+            --light-border: #e2e8f0;
         }
 
         * {
@@ -20,80 +21,75 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'SF Pro Display', system-ui, -apple-system, sans-serif;
-            background-color: var(--pebble-track);
-            min-height: 100vh;
-            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--soft-gray);
             color: var(--charcoal-slate);
+            line-height: 1.6;
         }
-        
+
+        /* Header */
         .header {
-            background: white;
-            padding: 1.5rem 0;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, var(--pebble-green), var(--sage-green));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .header-content {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--charcoal-slate);
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
         }
 
         .nav-links {
             display: flex;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         .nav-links a {
-            color: var(--pebble-gray);
+            color: white;
             text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s;
             padding: 0.5rem 1rem;
-            border-radius: 6px;
-            border: 2px solid transparent;
+            border-radius: 8px;
+            transition: background-color 0.3s;
         }
 
         .nav-links a:hover {
-            color: var(--moss-green);
-            background-color: var(--fern-mist);
+            background-color: rgba(255,255,255,0.1);
         }
 
         .nav-links a.active {
-            color: var(--moss-green);
-            background-color: var(--fern-mist);
-            border-color: var(--moss-green);
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem 2rem 2rem;
+            background-color: var(--pebble-green);
+            font-weight: 600;
         }
 
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Controls */
         .controls {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .week-nav {
@@ -103,19 +99,18 @@
         }
 
         .week-nav button {
-            background: var(--stream-blue);
-            color: var(--charcoal-slate);
+            background: var(--pebble-blue);
+            color: white;
             border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: background-color 0.3s;
         }
 
         .week-nav button:hover {
-            background: #96b8d4;
-            transform: translateY(-1px);
+            background: #2563eb;
         }
 
         .current-week {
@@ -127,185 +122,127 @@
         .student-management {
             display: flex;
             gap: 1rem;
-            align-items: center;
         }
 
-        .add-student-btn {
-            background: var(--moss-green);
-            color: white;
+        .print-btn, .add-student-btn {
             padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .print-btn {
+            background: var(--sage-green);
+            color: white;
+        }
+
+        .print-btn:hover {
+            background: #6da6a6;
+        }
+
+        .add-student-btn {
+            background: var(--pebble-green);
+            color: white;
         }
 
         .add-student-btn:hover {
-            background: #7a9682;
-            transform: translateY(-1px);
+            background: #22c55e;
         }
 
+        /* Weekly Planner Grid */
         .planner-grid {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             overflow: hidden;
-            border: 2px solid var(--fern-mist);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
         }
 
         .planner-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95rem;
-        }
-
-        .planner-table th,
-        .planner-table td {
-            border: 1px solid var(--fern-mist);
-            padding: 1rem;
-            vertical-align: top;
-            position: relative;
         }
 
         .planner-table th {
-            background: var(--drift-sand);
-            font-weight: 600;
-            color: var(--charcoal-slate);
+            background: var(--pebble-blue);
+            color: white;
+            padding: 1rem;
             text-align: center;
-            white-space: nowrap;
+            font-weight: 600;
+            border-bottom: 2px solid #2563eb;
         }
 
         .planner-table th:first-child {
             background: var(--charcoal-slate);
-            color: white;
-            font-size: 1.1rem;
-            min-width: 120px;
+            width: 120px;
         }
 
         .day-cell {
-            background: var(--charcoal-slate);
-            color: white;
+            background: var(--warm-cream);
             font-weight: 600;
-            font-size: 1rem;
             text-align: center;
-            min-width: 120px;
+            vertical-align: middle;
+            padding: 1rem;
+            border-right: 2px solid var(--light-border);
         }
 
         .task-cell {
-            min-height: 100px;
-            min-width: 150px;
-            background: white;
+            padding: 0.5rem;
+            border: 1px solid var(--light-border);
+            vertical-align: top;
+            min-height: 80px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            transition: background-color 0.3s;
         }
 
         .task-cell:hover {
-            background: var(--drift-sand);
-        }
-
-        .task-item {
-            background: var(--stream-blue);
-            color: var(--charcoal-slate);
-            padding: 0.5rem;
-            margin: 0.25rem 0;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-left: 3px solid var(--moss-green);
-        }
-
-        .task-item:hover {
-            background: #96b8d4;
-            transform: translateX(2px);
-        }
-
-        .task-item.completed {
-            background: var(--fern-mist);
-            text-decoration: line-through;
-            opacity: 0.7;
-            border-left-color: var(--pebble-gray);
-        }
-
-        .add-task-cell {
-            background: var(--drift-sand);
-            border: 2px dashed var(--fern-mist);
-            color: var(--pebble-gray);
-            text-align: center;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .add-task-cell:hover {
-            border-color: var(--moss-green);
-            color: var(--moss-green);
-            background: white;
+            background-color: #f1f5f9;
         }
 
         .empty-cell {
-            color: var(--pebble-gray);
-            text-align: center;
+            color: #94a3b8;
             font-style: italic;
-            padding: 2rem 1rem;
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.9rem;
         }
 
-        @media (max-width: 1200px) {
-            .container {
-                padding: 0 1rem 2rem 1rem;
-            }
-            
-            .planner-table {
-                font-size: 0.85rem;
-            }
-            
-            .planner-table th,
-            .planner-table td {
-                padding: 0.75rem;
-            }
+        .task-item {
+            background: var(--pebble-green);
+            color: white;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .week-nav {
-                justify-content: center;
-            }
-            
-            .student-management {
-                justify-content: center;
-            }
-            
-            .planner-table {
-                font-size: 0.8rem;
-            }
-            
-            .planner-table th,
-            .planner-table td {
-                padding: 0.5rem;
-            }
+        .task-item:hover {
+            background: #22c55e;
+            transform: translateY(-1px);
         }
 
-        /* Modal Styles */
+        .task-item.completed {
+            background: #94a3b8;
+            text-decoration: line-through;
+        }
+
+        .task-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Modals */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
+            z-index: 1000;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            background-color: rgba(0,0,0,0.5);
             align-items: center;
             justify-content: center;
         }
@@ -314,26 +251,25 @@
             background: white;
             padding: 2rem;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            max-width: 500px;
             width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
-        .modal h2 {
+        .modal-content h2 {
             margin-bottom: 1.5rem;
             color: var(--charcoal-slate);
+            font-size: 1.5rem;
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 600;
+            font-weight: 500;
             color: var(--charcoal-slate);
         }
 
@@ -342,73 +278,53 @@
         .form-group textarea {
             width: 100%;
             padding: 0.75rem;
-            border: 2px solid var(--fern-mist);
-            border-radius: 6px;
+            border: 2px solid var(--light-border);
+            border-radius: 8px;
             font-size: 1rem;
-            font-family: inherit;
-            transition: border-color 0.2s ease;
+            transition: border-color 0.3s;
         }
 
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: var(--moss-green);
+            border-color: var(--pebble-blue);
         }
 
         .modal-actions {
             display: flex;
             gap: 1rem;
             justify-content: flex-end;
-            margin-top: 2rem;
         }
 
-        .btn-primary {
-            background: var(--moss-green);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary:hover {
-            background: #7a9682;
-        }
-
-        .btn-secondary {
-            background: var(--pebble-gray);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6370;
-        }
-
-        .print-btn {
-            background: var(--stream-blue);
-            color: var(--charcoal-slate);
+        .btn-primary, .btn-secondary {
             padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            font-weight: 500;
+            transition: all 0.3s;
         }
 
-        .print-btn:hover {
-            background: #96b8d4;
+        .btn-primary {
+            background: var(--pebble-blue);
+            color: white;
         }
 
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--charcoal-slate);
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        /* Print styles */
         @media print {
             .header, .controls {
                 display: none;
@@ -416,18 +332,32 @@
             
             .container {
                 max-width: none;
+                margin: 0;
                 padding: 0;
             }
             
             .planner-grid {
                 box-shadow: none;
-                border: 2px solid #000;
             }
             
-            .planner-table th,
-            .planner-table td {
-                border: 1px solid #000;
-                padding: 0.5rem;
+            .planner-table {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .planner-table {
+                font-size: 0.8rem;
+            }
+            
+            .task-cell {
+                min-height: 60px;
             }
         }
     </style>
@@ -600,7 +530,7 @@
     </div>
 
     <script>
-        // Global state
+        // Global state for weekly planner
         let students = [];
         let weeklyTasks = {};
         let currentWeek = new Date();
@@ -612,7 +542,7 @@
         function getWeekStart(date) {
             const d = new Date(date);
             const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
             return new Date(d.setDate(diff));
         }
 
@@ -715,35 +645,12 @@
                 const header = document.getElementById(`student-header-${i + 1}`);
                 if (i < students.length && students[i]) {
                     header.textContent = students[i].fullName || `Student ${i + 1}`;
-                    header.style.display = 'table-cell';
+                    header.style.color = 'white';
                 } else {
                     header.textContent = `Student ${i + 1}`;
-                    header.style.color = '#ccc';
-                    header.style.display = 'table-cell';
+                    header.style.color = '#cbd5e1';
                 }
             }
-            
-            // Hide/show columns based on student count
-            updateTableColumns();
-        }
-
-        function updateTableColumns() {
-            const maxStudents = 6;
-            const table = document.getElementById('plannerTable');
-            const rows = table.querySelectorAll('tr');
-            
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('th, td');
-                for (let i = 1; i <= maxStudents; i++) {
-                    if (cells[i]) {
-                        if (i <= students.length || students.length === 0) {
-                            cells[i].style.display = 'table-cell';
-                        } else {
-                            cells[i].style.display = 'none';
-                        }
-                    }
-                }
-            });
         }
 
         function renderTasks() {
@@ -789,8 +696,6 @@
         }
 
         function openTaskModal(day, studentIndex) {
-            if (studentIndex >= students.length && students.length > 0) return;
-            
             currentTaskDay = day;
             currentTaskStudent = studentIndex;
             
@@ -832,11 +737,8 @@
             }
             
             weeklyTasks[weekKey][cellKey].push(task);
-            
-            // Save to localStorage
             localStorage.setItem('weekly_planner_tasks', JSON.stringify(weeklyTasks));
             
-            // Try to save online
             if (isOnline) {
                 try {
                     await fetch('/api/planner/tasks', {
@@ -865,23 +767,7 @@
                 const task = weeklyTasks[weekKey][cellKey].find(t => t.id === taskId);
                 if (task) {
                     task.completed = !task.completed;
-                    
-                    // Save to localStorage
                     localStorage.setItem('weekly_planner_tasks', JSON.stringify(weeklyTasks));
-                    
-                    // Try to save online
-                    if (isOnline) {
-                        try {
-                            await fetch(`/api/planner/tasks/${taskId}`, {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ completed: task.completed })
-                            });
-                        } catch (error) {
-                            console.error('Error updating task online:', error);
-                        }
-                    }
-                    
                     renderTasks();
                 }
             }
@@ -905,77 +791,11 @@
                 'Week of ' + formatWeekRange(currentWeek);
         }
 
-        // Print functionality
         function printPlanner() {
             window.print();
         }
 
-        // Form handlers
-        document.getElementById('studentForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            const studentData = {
-                fullName: formData.get('studentName'),
-                gradeLevel: formData.get('studentGrade'),
-                parentId: 'demo-parent'
-            };
-            
-            if (isOnline) {
-                try {
-                    const response = await fetch('/api/planner/students', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(studentData)
-                    });
-                    
-                    if (response.ok) {
-                        const newStudent = await response.json();
-                        students.push(newStudent);
-                    }
-                } catch (error) {
-                    console.error('Error adding student:', error);
-                    // Add locally anyway
-                    studentData.id = Date.now();
-                    students.push(studentData);
-                }
-            } else {
-                studentData.id = Date.now();
-                students.push(studentData);
-            }
-            
-            localStorage.setItem('weekly_planner_students', JSON.stringify(students));
-            updateStudentHeaders();
-            closeStudentModal();
-        });
-
-        document.getElementById('taskForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            await addTask(
-                formData.get('taskTitle'),
-                formData.get('taskSubject'),
-                formData.get('taskDescription')
-            );
-            
-            closeTaskModal();
-        });
-
-        // Close modals when clicking outside
-        window.addEventListener('click', function(e) {
-            const studentModal = document.getElementById('studentModal');
-            const taskModal = document.getElementById('taskModal');
-            
-            if (e.target === studentModal) {
-                closeStudentModal();
-            }
-            if (e.target === taskModal) {
-                closeTaskModal();
-            }
-        });
-
-        // Authentication check
+        // Authentication
         function checkAuth() {
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             const userRole = localStorage.getItem('userRole');
@@ -987,87 +807,82 @@
             return true;
         }
 
-        // Logout function
         function logout() {
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userRole');
             window.location.href = '/login';
         }
 
-        // Initialize
+        // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
             if (!checkAuth()) return;
             
             updateWeekDisplay();
             loadStudents();
             loadTasks();
-        });
-    </script>
-</body>
-</html>
+
+            // Student form
+            document.getElementById('studentForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const studentData = {
+                    fullName: formData.get('studentName'),
+                    gradeLevel: formData.get('studentGrade'),
+                    parentId: 'demo-parent'
+                };
+                
+                if (isOnline) {
+                    try {
+                        const response = await fetch('/api/planner/students', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(studentData)
+                        });
+                        
+                        if (response.ok) {
+                            const newStudent = await response.json();
+                            students.push(newStudent);
+                        }
+                    } catch (error) {
+                        console.error('Error adding student:', error);
+                        studentData.id = Date.now();
+                        students.push(studentData);
                     }
-                } catch (error) {
-                    console.warn('Failed to load from API, using localStorage');
-                    loadFromLocalStorage();
+                } else {
+                    studentData.id = Date.now();
+                    students.push(studentData);
                 }
-            } else {
-                loadFromLocalStorage();
-            }
-            
-            renderTasks();
-        }
+                
+                localStorage.setItem('weekly_planner_students', JSON.stringify(students));
+                updateStudentHeaders();
+                closeStudentModal();
+            });
 
-        function loadFromLocalStorage() {
-            const saved = localStorage.getItem('homeschool_tasks');
-            if (saved) {
-                tasks = JSON.parse(saved);
-            } else {
-                // Default sample tasks
-                tasks = [
-                    {
-                        id: "sample-1",
-                        title: "Math Practice - Addition",
-                        subject: "Math",
-                        completed: false,
-                        dueDate: "2025-01-21"
-                    },
-                    {
-                        id: "sample-2", 
-                        title: "Read Chapter 3",
-                        subject: "Reading",
-                        completed: true,
-                        dueDate: "2025-01-20"
-                    },
-                    {
-                        id: "sample-3",
-                        title: "Science Experiment - Plants",
-                        subject: "Science", 
-                        completed: false,
-                        dueDate: "2025-01-22"
-                    }
-                ];
-                saveToLocalStorage();
-            }
-        }
+            // Task form
+            document.getElementById('taskForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                await addTask(
+                    formData.get('taskTitle'),
+                    formData.get('taskSubject'),
+                    formData.get('taskDescription')
+                );
+                
+                closeTaskModal();
+            });
 
-        function saveToLocalStorage() {
-            localStorage.setItem('homeschool_tasks', JSON.stringify(tasks));
-        }
-
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString();
-        }
-
-        function updateStats() {
-            const completed = tasks.filter(t => t.completed).length;
-            const remaining = tasks.filter(t => !t.completed).length;
-            const total = tasks.length;
-
-            document.getElementById('completedCount').textContent = completed;
-            document.getElementById('remainingCount').textContent = remaining;
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('taskHeader').textContent = `Today's Tasks (${remaining} remaining)`;
-        }
+            // Modal clicks
+            window.addEventListener('click', function(e) {
+                if (e.target === document.getElementById('studentModal')) {
+                    closeStudentModal();
+                }
+                if (e.target === document.getElementById('taskModal')) {
+                    closeTaskModal();
+                }
+            });
+        });
     </script>
 </body>
 </html>
