@@ -113,7 +113,7 @@
             font-size: 1.1rem;
         }
 
-        .task-section {
+        .class-section {
             background: white;
             border-radius: 12px;
             padding: 2rem;
@@ -141,13 +141,13 @@
             font-weight: 500;
         }
 
-        .task-list {
+        .class-list {
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
 
-        .task-card {
+        .class-card {
             background: var(--fern-mist);
             padding: 1.5rem;
             border-radius: 8px;
@@ -156,29 +156,29 @@
             cursor: pointer;
         }
 
-        .task-card:hover {
+        .class-card:hover {
             border-color: var(--stream-blue);
         }
 
-        .task-card.completed {
+        .class-card.completed {
             background: var(--drift-sand);
             opacity: 0.7;
         }
 
-        .task-header {
+        .class-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 0.5rem;
         }
 
-        .task-title {
+        .class-title {
             font-size: 1.2rem;
             font-weight: 600;
             color: var(--charcoal-slate);
         }
 
-        .task-title.completed {
+        .class-title.completed {
             text-decoration: line-through;
         }
 
@@ -202,7 +202,7 @@
             cursor: not-allowed;
         }
 
-        .task-meta {
+        .class-meta {
             color: var(--pebble-gray);
             font-size: 0.9rem;
         }
@@ -274,7 +274,7 @@
                 padding: 1rem;
             }
 
-            .task-header {
+            .class-header {
                 flex-direction: column;
                 gap: 1rem;
                 align-items: stretch;
@@ -300,13 +300,13 @@
             <p>Ready to learn something new today?</p>
         </div>
 
-        <div class="task-section">
+        <div class="class-section">
             <div class="section-header">
-                <h2 class="section-title">Today's Tasks</h2>
+                <h2 class="section-title">Today's Classs</h2>
                 <div class="progress-badge" id="progressBadge">3 of 5 completed</div>
             </div>
-            <div class="task-list" id="taskList">
-                <!-- Tasks will be loaded here -->
+            <div class="class-list" id="classList">
+                <!-- Classs will be loaded here -->
             </div>
         </div>
 
@@ -331,9 +331,9 @@
 
     <script>
         let currentStudent = null;
-        let tasks = [];
+        let classs = [];
 
-        // Load student data and tasks
+        // Load student data and classs
         async function loadStudentData() {
             try {
                 // Get current student (in real app, this would come from login)
@@ -349,17 +349,17 @@
                     }
                 }
 
-                // Load tasks
-                const tasksResponse = await fetch('/api/planner/tasks');
-                if (tasksResponse.ok) {
-                    tasks = await tasksResponse.json();
-                    // Filter tasks for current student or unassigned tasks
+                // Load classs
+                const classsResponse = await fetch('/api/planner/classs');
+                if (classsResponse.ok) {
+                    classs = await classsResponse.json();
+                    // Filter classs for current student or unassigned classs
                     if (currentStudent) {
-                        tasks = tasks.filter(task => 
-                            !task.studentId || task.studentId === currentStudent.id
+                        classs = classs.filter(class => 
+                            !class.studentId || class.studentId === currentStudent.id
                         );
                     }
-                    renderTasks();
+                    renderClasss();
                     updateProgress();
                 }
             } catch (error) {
@@ -370,68 +370,68 @@
 
         function loadOfflineData() {
             // Load from localStorage or use defaults
-            const savedTasks = localStorage.getItem('homeschool_tasks');
-            if (savedTasks) {
-                tasks = JSON.parse(savedTasks);
-                renderTasks();
+            const savedClasss = localStorage.getItem('homeschool_classs');
+            if (savedClasss) {
+                classs = JSON.parse(savedClasss);
+                renderClasss();
                 updateProgress();
             }
         }
 
-        function renderTasks() {
-            const container = document.getElementById('taskList');
+        function renderClasss() {
+            const container = document.getElementById('classList');
             
-            if (tasks.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--pebble-gray);">No tasks assigned yet!</p>';
+            if (classs.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--pebble-gray);">No classs assigned yet!</p>';
                 return;
             }
 
-            container.innerHTML = tasks.map(task => `
-                <div class="task-card ${task.completed ? 'completed' : ''}">
-                    <div class="task-header">
+            container.innerHTML = classs.map(class => `
+                <div class="class-card ${class.completed ? 'completed' : ''}">
+                    <div class="class-header">
                         <div>
-                            <div class="task-title ${task.completed ? 'completed' : ''}">${task.title}</div>
-                            <div class="task-meta">
-                                <span class="subject-tag">${task.subject}</span>
-                                Due: ${formatDate(task.dueDate)}
+                            <div class="class-title ${class.completed ? 'completed' : ''}">${class.title}</div>
+                            <div class="class-meta">
+                                <span class="subject-tag">${class.subject}</span>
+                                Due: ${formatDate(class.dueDate)}
                             </div>
                         </div>
                         <button class="complete-btn" 
-                                onclick="toggleTask('${task.id}')" 
-                                ${task.completed ? 'disabled' : ''}>
-                            ${task.completed ? 'Completed!' : 'Mark Complete'}
+                                onclick="toggleClass('${class.id}')" 
+                                ${class.completed ? 'disabled' : ''}>
+                            ${class.completed ? 'Completed!' : 'Mark Complete'}
                         </button>
                     </div>
                 </div>
             `).join('');
         }
 
-        async function toggleTask(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
+        async function toggleClass(classId) {
+            const class = classs.find(t => t.id === classId);
+            if (!class) return;
 
-            task.completed = !task.completed;
+            class.completed = !class.completed;
 
             try {
-                const response = await fetch(`/api/planner/tasks/${taskId}`, {
+                const response = await fetch(`/api/planner/classs/${classId}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ completed: task.completed })
+                    body: JSON.stringify({ completed: class.completed })
                 });
 
                 if (!response.ok) throw new Error('API request failed');
             } catch (error) {
                 console.warn('Saving locally');
-                localStorage.setItem('homeschool_tasks', JSON.stringify(tasks));
+                localStorage.setItem('homeschool_classs', JSON.stringify(classs));
             }
 
-            renderTasks();
+            renderClasss();
             updateProgress();
         }
 
         function updateProgress() {
-            const completed = tasks.filter(t => t.completed).length;
-            const total = tasks.length;
+            const completed = classs.filter(t => t.completed).length;
+            const total = classs.length;
             
             document.getElementById('progressBadge').textContent = `${completed} of ${total} completed`;
             document.getElementById('completedToday').textContent = completed;

@@ -339,10 +339,10 @@
             <h2 style="margin-bottom: 1rem; color: var(--charcoal-slate);">Assignment Reports</h2>
             
             <div class="report-filters">
-                <button class="filter-btn active" onclick="filterTasks('all')">All Tasks</button>
-                <button class="filter-btn" onclick="filterTasks('completed')">Completed</button>
-                <button class="filter-btn" onclick="filterTasks('pending')">Pending</button>
-                <button class="filter-btn" onclick="filterTasks('overdue')">Overdue</button>
+                <button class="filter-btn active" onclick="filterClasss('all')">All Classs</button>
+                <button class="filter-btn" onclick="filterClasss('completed')">Completed</button>
+                <button class="filter-btn" onclick="filterClasss('pending')">Pending</button>
+                <button class="filter-btn" onclick="filterClasss('overdue')">Overdue</button>
             </div>
 
             <div class="assignment-list" id="assignmentList">
@@ -359,7 +359,7 @@
 
     <script>
         let students = [];
-        let tasks = [];
+        let classs = [];
         let currentFilter = 'all';
 
         async function loadParentData() {
@@ -370,10 +370,10 @@
                     students = await studentsResponse.json();
                 }
 
-                // Load tasks
-                const tasksResponse = await fetch('/api/planner/tasks');
-                if (tasksResponse.ok) {
-                    tasks = await tasksResponse.json();
+                // Load classs
+                const classsResponse = await fetch('/api/planner/classs');
+                if (classsResponse.ok) {
+                    classs = await classsResponse.json();
                 }
 
                 renderStudentCards();
@@ -387,10 +387,10 @@
 
         function loadOfflineData() {
             const savedStudents = localStorage.getItem('homeschool_students');
-            const savedTasks = localStorage.getItem('homeschool_tasks');
+            const savedClasss = localStorage.getItem('homeschool_classs');
             
             if (savedStudents) students = JSON.parse(savedStudents);
-            if (savedTasks) tasks = JSON.parse(savedTasks);
+            if (savedClasss) classs = JSON.parse(savedClasss);
             
             renderStudentCards();
             renderAssignments();
@@ -406,9 +406,9 @@
             }
 
             container.innerHTML = students.map(student => {
-                const studentTasks = tasks.filter(task => task.studentId === student.id);
-                const completedTasks = studentTasks.filter(task => task.completed);
-                const progress = studentTasks.length > 0 ? (completedTasks.length / studentTasks.length) * 100 : 0;
+                const studentClasss = classs.filter(class => class.studentId === student.id);
+                const completedClasss = studentClasss.filter(class => class.completed);
+                const progress = studentClasss.length > 0 ? (completedClasss.length / studentClasss.length) * 100 : 0;
 
                 return `
                     <div class="student-card">
@@ -423,11 +423,11 @@
                         </div>
                         <div class="student-stats">
                             <div class="stat-item">
-                                <div class="stat-number">${completedTasks.length}</div>
+                                <div class="stat-number">${completedClasss.length}</div>
                                 <div class="stat-label">Completed</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-number">${studentTasks.length - completedTasks.length}</div>
+                                <div class="stat-number">${studentClasss.length - completedClasss.length}</div>
                                 <div class="stat-label">Pending</div>
                             </div>
                             <div class="stat-item">
@@ -442,33 +442,33 @@
 
         function renderAssignments() {
             const container = document.getElementById('assignmentList');
-            let filteredTasks = tasks;
+            let filteredClasss = classs;
 
             if (currentFilter === 'completed') {
-                filteredTasks = tasks.filter(task => task.completed);
+                filteredClasss = classs.filter(class => class.completed);
             } else if (currentFilter === 'pending') {
-                filteredTasks = tasks.filter(task => !task.completed && new Date(task.dueDate) >= new Date());
+                filteredClasss = classs.filter(class => !class.completed && new Date(class.dueDate) >= new Date());
             } else if (currentFilter === 'overdue') {
-                filteredTasks = tasks.filter(task => !task.completed && new Date(task.dueDate) < new Date());
+                filteredClasss = classs.filter(class => !class.completed && new Date(class.dueDate) < new Date());
             }
 
-            if (filteredTasks.length === 0) {
+            if (filteredClasss.length === 0) {
                 container.innerHTML = '<p style="color: var(--pebble-gray); text-align: center;">No assignments found</p>';
                 return;
             }
 
-            container.innerHTML = filteredTasks.map(task => {
-                const student = students.find(s => s.id === task.studentId);
-                const isOverdue = !task.completed && new Date(task.dueDate) < new Date();
-                const statusClass = task.completed ? 'status-completed' : (isOverdue ? 'status-overdue' : 'status-pending');
-                const statusText = task.completed ? 'Completed' : (isOverdue ? 'Overdue' : 'Pending');
+            container.innerHTML = filteredClasss.map(class => {
+                const student = students.find(s => s.id === class.studentId);
+                const isOverdue = !class.completed && new Date(class.dueDate) < new Date();
+                const statusClass = class.completed ? 'status-completed' : (isOverdue ? 'status-overdue' : 'status-pending');
+                const statusText = class.completed ? 'Completed' : (isOverdue ? 'Overdue' : 'Pending');
 
                 return `
                     <div class="assignment-item">
                         <div class="assignment-info">
-                            <h4>${task.title}</h4>
+                            <h4>${class.title}</h4>
                             <div class="assignment-meta">
-                                ${task.subject} • ${student ? student.fullName : 'All Students'} • Due: ${formatDate(task.dueDate)}
+                                ${class.subject} • ${student ? student.fullName : 'All Students'} • Due: ${formatDate(class.dueDate)}
                             </div>
                         </div>
                         <div class="status-badge ${statusClass}">${statusText}</div>
@@ -477,7 +477,7 @@
             }).join('');
         }
 
-        function filterTasks(filter) {
+        function filterClasss(filter) {
             currentFilter = filter;
             
             // Update active filter button
@@ -488,11 +488,11 @@
         }
 
         function updateQuickStats() {
-            const totalTasks = tasks.length;
-            const completedTasks = tasks.filter(task => task.completed).length;
-            const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            const totalClasss = classs.length;
+            const completedClasss = classs.filter(class => class.completed).length;
+            const completionRate = totalClasss > 0 ? Math.round((completedClasss / totalClasss) * 100) : 0;
             
-            document.getElementById('totalAssignments').textContent = totalTasks;
+            document.getElementById('totalAssignments').textContent = totalClasss;
             document.getElementById('completionRate').textContent = completionRate + '%';
             
             // Mock average grade calculation
@@ -504,15 +504,15 @@
         function exportReport() {
             // Simple CSV export
             const csvContent = [
-                ['Student', 'Task', 'Subject', 'Status', 'Due Date'],
-                ...tasks.map(task => {
-                    const student = students.find(s => s.id === task.studentId);
+                ['Student', 'Class', 'Subject', 'Status', 'Due Date'],
+                ...classs.map(class => {
+                    const student = students.find(s => s.id === class.studentId);
                     return [
                         student ? student.fullName : 'All Students',
-                        task.title,
-                        task.subject,
-                        task.completed ? 'Completed' : 'Pending',
-                        task.dueDate
+                        class.title,
+                        class.subject,
+                        class.completed ? 'Completed' : 'Pending',
+                        class.dueDate
                     ];
                 })
             ].map(row => row.join(',')).join('\\n');
@@ -529,23 +529,23 @@
         function exportDetailedReport() {
             // Generate a more detailed report
             const report = students.map(student => {
-                const studentTasks = tasks.filter(task => task.studentId === student.id);
-                const completedTasks = studentTasks.filter(task => task.completed);
-                const pendingTasks = studentTasks.filter(task => !task.completed);
+                const studentClasss = classs.filter(class => class.studentId === student.id);
+                const completedClasss = studentClasss.filter(class => class.completed);
+                const pendingClasss = studentClasss.filter(class => !class.completed);
                 
                 return {
                     student: student.fullName,
                     grade: student.gradeLevel,
-                    totalTasks: studentTasks.length,
-                    completed: completedTasks.length,
-                    pending: pendingTasks.length,
-                    completionRate: studentTasks.length > 0 ? Math.round((completedTasks.length / studentTasks.length) * 100) : 0
+                    totalClasss: studentClasss.length,
+                    completed: completedClasss.length,
+                    pending: pendingClasss.length,
+                    completionRate: studentClasss.length > 0 ? Math.round((completedClasss.length / studentClasss.length) * 100) : 0
                 };
             });
 
             const csvContent = [
-                ['Student', 'Grade Level', 'Total Tasks', 'Completed', 'Pending', 'Completion Rate'],
-                ...report.map(r => [r.student, r.grade, r.totalTasks, r.completed, r.pending, r.completionRate + '%'])
+                ['Student', 'Grade Level', 'Total Classs', 'Completed', 'Pending', 'Completion Rate'],
+                ...report.map(r => [r.student, r.grade, r.totalClasss, r.completed, r.pending, r.completionRate + '%'])
             ].map(row => row.join(',')).join('\\n');
 
             const blob = new Blob([csvContent], { type: 'text/csv' });

@@ -187,7 +187,7 @@
             border-right: 2px solid var(--light-border);
         }
 
-        .task-cell {
+        .class-cell {
             padding: 0.5rem;
             border: 1px solid var(--light-border);
             vertical-align: top;
@@ -196,7 +196,7 @@
             transition: background-color 0.3s;
         }
 
-        .task-cell:hover {
+        .class-cell:hover {
             background-color: #f1f5f9;
         }
 
@@ -208,7 +208,7 @@
             font-size: 0.9rem;
         }
 
-        .task-item {
+        .class-item {
             background: var(--pebble-green);
             color: white;
             padding: 0.5rem;
@@ -219,17 +219,17 @@
             transition: all 0.3s;
         }
 
-        .task-item:hover {
+        .class-item:hover {
             background: #22c55e;
             transform: translateY(-1px);
         }
 
-        .task-item.completed {
+        .class-item.completed {
             background: #94a3b8;
             text-decoration: line-through;
         }
 
-        .task-item:last-child {
+        .class-item:last-child {
             margin-bottom: 0;
         }
 
@@ -356,7 +356,7 @@
                 font-size: 0.8rem;
             }
             
-            .task-cell {
+            .class-cell {
                 min-height: 60px;
             }
         }
@@ -409,48 +409,48 @@
                 <tbody>
                     <tr>
                         <td class="day-cell">Monday</td>
-                        <td class="task-cell" onclick="openTaskModal('monday', 0)"></td>
-                        <td class="task-cell" onclick="openTaskModal('monday', 1)"></td>
-                        <td class="task-cell" onclick="openTaskModal('monday', 2)"></td>
-                        <td class="task-cell" onclick="openTaskModal('monday', 3)"></td>
-                        <td class="task-cell" onclick="openTaskModal('monday', 4)"></td>
-                        <td class="task-cell" onclick="openTaskModal('monday', 5)"></td>
+                        <td class="class-cell" onclick="openClassModal('monday', 0)"></td>
+                        <td class="class-cell" onclick="openClassModal('monday', 1)"></td>
+                        <td class="class-cell" onclick="openClassModal('monday', 2)"></td>
+                        <td class="class-cell" onclick="openClassModal('monday', 3)"></td>
+                        <td class="class-cell" onclick="openClassModal('monday', 4)"></td>
+                        <td class="class-cell" onclick="openClassModal('monday', 5)"></td>
                     </tr>
                     <tr>
                         <td class="day-cell">Tuesday</td>
-                        <td class="task-cell" onclick="openTaskModal('tuesday', 0)"></td>
-                        <td class="task-cell" onclick="openTaskModal('tuesday', 1)"></td>
-                        <td class="task-cell" onclick="openTaskModal('tuesday', 2)"></td>
-                        <td class="task-cell" onclick="openTaskModal('tuesday', 3)"></td>
-                        <td class="task-cell" onclick="openTaskModal('tuesday', 4)"></td>
-                        <td class="task-cell" onclick="openTaskModal('tuesday', 5)"></td>
+                        <td class="class-cell" onclick="openClassModal('tuesday', 0)"></td>
+                        <td class="class-cell" onclick="openClassModal('tuesday', 1)"></td>
+                        <td class="class-cell" onclick="openClassModal('tuesday', 2)"></td>
+                        <td class="class-cell" onclick="openClassModal('tuesday', 3)"></td>
+                        <td class="class-cell" onclick="openClassModal('tuesday', 4)"></td>
+                        <td class="class-cell" onclick="openClassModal('tuesday', 5)"></td>
                     </tr>
                     <tr>
                         <td class="day-cell">Wednesday</td>
-                        <td class="task-cell" onclick="openTaskModal('wednesday', 0)"></td>
-                        <td class="task-cell" onclick="openTaskModal('wednesday', 1)"></td>
-                        <td class="task-cell" onclick="openTaskModal('wednesday', 2)"></td>
-                        <td class="task-cell" onclick="openTaskModal('wednesday', 3)"></td>
-                        <td class="task-cell" onclick="openTaskModal('wednesday', 4)"></td>
-                        <td class="task-cell" onclick="openTaskModal('wednesday', 5)"></td>
+                        <td class="class-cell" onclick="openClassModal('wednesday', 0)"></td>
+                        <td class="class-cell" onclick="openClassModal('wednesday', 1)"></td>
+                        <td class="class-cell" onclick="openClassModal('wednesday', 2)"></td>
+                        <td class="class-cell" onclick="openClassModal('wednesday', 3)"></td>
+                        <td class="class-cell" onclick="openClassModal('wednesday', 4)"></td>
+                        <td class="class-cell" onclick="openClassModal('wednesday', 5)"></td>
                     </tr>
                     <tr>
                         <td class="day-cell">Thursday</td>
-                        <td class="task-cell" onclick="openTaskModal('thursday', 0)"></td>
-                        <td class="task-cell" onclick="openTaskModal('thursday', 1)"></td>
-                        <td class="task-cell" onclick="openTaskModal('thursday', 2)"></td>
-                        <td class="task-cell" onclick="openTaskModal('thursday', 3)"></td>
-                        <td class="task-cell" onclick="openTaskModal('thursday', 4)"></td>
-                        <td class="task-cell" onclick="openTaskModal('thursday', 5)"></td>
+                        <td class="class-cell" onclick="openClassModal('thursday', 0)"></td>
+                        <td class="class-cell" onclick="openClassModal('thursday', 1)"></td>
+                        <td class="class-cell" onclick="openClassModal('thursday', 2)"></td>
+                        <td class="class-cell" onclick="openClassModal('thursday', 3)"></td>
+                        <td class="class-cell" onclick="openClassModal('thursday', 4)"></td>
+                        <td class="class-cell" onclick="openClassModal('thursday', 5)"></td>
                     </tr>
                     <tr>
                         <td class="day-cell">Friday</td>
-                        <td class="task-cell" onclick="openTaskModal('friday', 0)"></td>
-                        <td class="task-cell" onclick="openTaskModal('friday', 1)"></td>
-                        <td class="task-cell" onclick="openTaskModal('friday', 2)"></td>
-                        <td class="task-cell" onclick="openTaskModal('friday', 3)"></td>
-                        <td class="task-cell" onclick="openTaskModal('friday', 4)"></td>
-                        <td class="task-cell" onclick="openTaskModal('friday', 5)"></td>
+                        <td class="class-cell" onclick="openClassModal('friday', 0)"></td>
+                        <td class="class-cell" onclick="openClassModal('friday', 1)"></td>
+                        <td class="class-cell" onclick="openClassModal('friday', 2)"></td>
+                        <td class="class-cell" onclick="openClassModal('friday', 3)"></td>
+                        <td class="class-cell" onclick="openClassModal('friday', 4)"></td>
+                        <td class="class-cell" onclick="openClassModal('friday', 5)"></td>
                     </tr>
                 </tbody>
             </table>
@@ -494,18 +494,18 @@
         </div>
     </div>
 
-    <!-- Add Task Modal -->
-    <div id="taskModal" class="modal">
+    <!-- Add Class Modal -->
+    <div id="classModal" class="modal">
         <div class="modal-content">
-            <h2 id="taskModalTitle">Add Task</h2>
-            <form id="taskForm">
+            <h2 id="classModalTitle">Add Class</h2>
+            <form id="classForm">
                 <div class="form-group">
-                    <label for="taskTitle">Task Title</label>
-                    <input type="text" id="taskTitle" name="taskTitle" required>
+                    <label for="classTitle">Task Title</label>
+                    <input type="text" id="classTitle" name="classTitle" required>
                 </div>
                 <div class="form-group">
-                    <label for="taskSubject">Subject</label>
-                    <select id="taskSubject" name="taskSubject" required>
+                    <label for="classSubject">Subject</label>
+                    <select id="classSubject" name="classSubject" required>
                         <option value="">Select Subject</option>
                         <option value="Math">Math</option>
                         <option value="English">English</option>
@@ -518,12 +518,12 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="taskDescription">Description (Optional)</label>
-                    <textarea id="taskDescription" name="taskDescription" rows="3"></textarea>
+                    <label for="classDescription">Description (Optional)</label>
+                    <textarea id="classDescription" name="classDescription" rows="3"></textarea>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeTaskModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Add Task</button>
+                    <button type="submit" class="btn-primary">Add Class</button>
                 </div>
             </form>
         </div>
@@ -608,14 +608,14 @@
             
             if (isOnline) {
                 try {
-                    const response = await fetch(`/api/planner/tasks?week=${weekKey}`);
+                    const response = await fetch(`/api/planner/classes?week=${weekKey}`);
                     if (response.ok) {
-                        const tasks = await response.json();
-                        weeklyTasks[weekKey] = tasks;
-                        localStorage.setItem('weekly_planner_tasks', JSON.stringify(weeklyTasks));
+                        const classes = await response.json();
+                        weeklyTasks[weekKey] = classes;
+                        localStorage.setItem('weekly_planner_classes', JSON.stringify(weeklyTasks));
                     }
                 } catch (error) {
-                    console.error('Error loading tasks:', error);
+                    console.error('Error loading classes:', error);
                     loadOfflineTasks();
                 }
             } else {
@@ -626,7 +626,7 @@
         }
 
         function loadOfflineTasks() {
-            const saved = localStorage.getItem('weekly_planner_tasks');
+            const saved = localStorage.getItem('weekly_planner_classes');
             if (saved) {
                 weeklyTasks = JSON.parse(saved);
             }
@@ -655,7 +655,7 @@
 
         function renderTasks() {
             const weekKey = getWeekKey(currentWeek);
-            const tasks = weeklyTasks[weekKey] || {};
+            const classes = weeklyTasks[weekKey] || {};
             
             const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
             const table = document.getElementById('plannerTable');
@@ -663,22 +663,22 @@
             
             rows.forEach((row, dayIndex) => {
                 const day = days[dayIndex];
-                const cells = row.querySelectorAll('.task-cell');
+                const cells = row.querySelectorAll('.class-cell');
                 
                 cells.forEach((cell, studentIndex) => {
-                    const cellTasks = tasks[`${day}-${studentIndex}`] || [];
+                    const cellTasks = classes[`${day}-${studentIndex}`] || [];
                     
                     if (cellTasks.length > 0) {
-                        cell.innerHTML = cellTasks.map(task => `
-                            <div class="task-item ${task.completed ? 'completed' : ''}" 
-                                 onclick="toggleTask('${day}', ${studentIndex}, '${task.id}')" 
-                                 title="${task.description || ''}">
-                                ${task.title}
-                                <small style="display: block; font-size: 0.7rem; margin-top: 0.25rem;">${task.subject}</small>
+                        cell.innerHTML = cellTasks.map(class => `
+                            <div class="class-item ${class.completed ? 'completed' : ''}" 
+                                 onclick="toggleTask('${day}', ${studentIndex}, '${class.id}')" 
+                                 title="${class.description || ''}">
+                                ${class.title}
+                                <small style="display: block; font-size: 0.7rem; margin-top: 0.25rem;">${class.subject}</small>
                             </div>
                         `).join('');
                     } else {
-                        cell.innerHTML = `<div class="empty-cell">Click to add task</div>`;
+                        cell.innerHTML = `<div class="empty-cell">Click to add class</div>`;
                     }
                 });
             });
@@ -695,29 +695,29 @@
             document.getElementById('studentForm').reset();
         }
 
-        function openTaskModal(day, studentIndex) {
+        function openClassModal(day, studentIndex) {
             currentTaskDay = day;
             currentTaskStudent = studentIndex;
             
             const studentName = students[studentIndex]?.fullName || `Student ${studentIndex + 1}`;
             const dayName = day.charAt(0).toUpperCase() + day.slice(1);
             
-            document.getElementById('taskModalTitle').textContent = 
-                `Add Task for ${studentName} - ${dayName}`;
-            document.getElementById('taskModal').style.display = 'flex';
-            document.getElementById('taskTitle').focus();
+            document.getElementById('classModalTitle').textContent = 
+                `Add Class for ${studentName} - ${dayName}`;
+            document.getElementById('classModal').style.display = 'flex';
+            document.getElementById('classTitle').focus();
         }
 
         function closeTaskModal() {
-            document.getElementById('taskModal').style.display = 'none';
-            document.getElementById('taskForm').reset();
+            document.getElementById('classModal').style.display = 'none';
+            document.getElementById('classForm').reset();
             currentTaskDay = '';
             currentTaskStudent = -1;
         }
 
         // Task management
         async function addTask(title, subject, description = '') {
-            const task = {
+            const class = {
                 id: Date.now().toString(),
                 title,
                 subject,
@@ -736,38 +736,38 @@
                 weeklyTasks[weekKey][cellKey] = [];
             }
             
-            weeklyTasks[weekKey][cellKey].push(task);
-            localStorage.setItem('weekly_planner_tasks', JSON.stringify(weeklyTasks));
+            weeklyTasks[weekKey][cellKey].push(class);
+            localStorage.setItem('weekly_planner_classes', JSON.stringify(weeklyTasks));
             
             if (isOnline) {
                 try {
-                    await fetch('/api/planner/tasks', {
+                    await fetch('/api/planner/classes', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            ...task,
+                            ...class,
                             day: currentTaskDay,
                             studentIndex: currentTaskStudent,
                             week: weekKey
                         })
                     });
                 } catch (error) {
-                    console.error('Error saving task online:', error);
+                    console.error('Error saving class online:', error);
                 }
             }
             
             renderTasks();
         }
 
-        async function toggleTask(day, studentIndex, taskId) {
+        async function toggleTask(day, studentIndex, classId) {
             const weekKey = getWeekKey(currentWeek);
             const cellKey = `${day}-${studentIndex}`;
             
             if (weeklyTasks[weekKey] && weeklyTasks[weekKey][cellKey]) {
-                const task = weeklyTasks[weekKey][cellKey].find(t => t.id === taskId);
-                if (task) {
-                    task.completed = !task.completed;
-                    localStorage.setItem('weekly_planner_tasks', JSON.stringify(weeklyTasks));
+                const class = weeklyTasks[weekKey][cellKey].find(t => t.id === classId);
+                if (class) {
+                    class.completed = !class.completed;
+                    localStorage.setItem('weekly_planner_classes', JSON.stringify(weeklyTasks));
                     renderTasks();
                 }
             }
@@ -860,14 +860,14 @@
             });
 
             // Task form
-            document.getElementById('taskForm').addEventListener('submit', async function(e) {
+            document.getElementById('classForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const formData = new FormData(e.target);
                 await addTask(
-                    formData.get('taskTitle'),
-                    formData.get('taskSubject'),
-                    formData.get('taskDescription')
+                    formData.get('classTitle'),
+                    formData.get('classSubject'),
+                    formData.get('classDescription')
                 );
                 
                 closeTaskModal();
@@ -878,7 +878,7 @@
                 if (e.target === document.getElementById('studentModal')) {
                     closeStudentModal();
                 }
-                if (e.target === document.getElementById('taskModal')) {
+                if (e.target === document.getElementById('classModal')) {
                     closeTaskModal();
                 }
             });

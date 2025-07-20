@@ -5,19 +5,30 @@ import { insertPlannerTaskSchema } from "../shared/schema";
 
 const router = Router();
 
-// Task schema for validation
-const createTaskSchema = z.object({
+// Class schema for validation
+const createClassSchema = z.object({
   title: z.string().min(1, "Title is required"),
   subject: z.string().min(1, "Subject is required"),
   dueDate: z.string().optional(),
   studentId: z.string().optional(),
 });
 
-const updateTaskSchema = z.object({
+const updateClassSchema = z.object({
   completed: z.boolean(),
 });
 
-// Get all tasks
+// Get all classes
+router.get("/classes", async (req, res) => {
+  try {
+    const allClasses = await storage.getAllTasks();
+    res.json(allClasses);
+  } catch (error) {
+    console.error("Error fetching classes:", error);
+    res.status(500).json({ error: "Failed to fetch classes" });
+  }
+});
+
+// Legacy endpoint for backwards compatibility
 router.get("/tasks", async (req, res) => {
   try {
     const allTasks = await storage.getAllTasks();
@@ -28,7 +39,32 @@ router.get("/tasks", async (req, res) => {
   }
 });
 
-// Create a new task
+// Create a new class
+router.post("/classes", async (req, res) => {
+  try {
+    const validatedData = createClassSchema.parse(req.body);
+    
+    const classData = {
+      title: validatedData.title,
+      subject: validatedData.subject,
+      dueDate: validatedData.dueDate || new Date().toISOString().split('T')[0],
+      completed: false,
+      studentId: validatedData.studentId || null,
+    };
+
+    const newClass = await storage.createPlannerTask(classData);
+    res.json(newClass);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: "Validation failed", details: error.errors });
+    } else {
+      console.error("Error creating class:", error);
+      res.status(500).json({ error: "Failed to create class" });
+    }
+  }
+});
+
+// Legacy endpoint for backwards compatibility
 router.post("/tasks", async (req, res) => {
   try {
     const validatedData = createTaskSchema.parse(req.body);
@@ -53,11 +89,34 @@ router.post("/tasks", async (req, res) => {
   }
 });
 
-// Update a task (toggle completion)
+// Update a class (toggle completion)
+router.patch("/classes/:id", async (req, res) => {
+  try {
+    const classId = req.params.id;
+    const validatedData = updateClassSchema.parse(req.body);
+
+    const updatedClass = await storage.updatePlannerTask(classId, { completed: validatedData.completed });
+    
+    if (!updatedClass) {
+      return res.status(404).json({ error: "Class not found" });
+    }
+
+    res.json(updatedClass);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: "Validation failed", details: error.errors });
+    } else {
+      console.error("Error updating class:", error);
+      res.status(500).json({ error: "Failed to update class" });
+    }
+  }
+});
+
+// Legacy: Update a task (toggle completion)
 router.patch("/tasks/:id", async (req, res) => {
   try {
     const taskId = req.params.id;
-    const validatedData = updateTaskSchema.parse(req.body);
+    const validatedData = updateClassSchema.parse(req.body);
 
     const updatedTask = await storage.updatePlannerTask(taskId, { completed: validatedData.completed });
     
@@ -76,7 +135,24 @@ router.patch("/tasks/:id", async (req, res) => {
   }
 });
 
-// Delete a task
+// Delete a class
+router.delete("/classes/:id", async (req, res) => {
+  try {
+    const classId = req.params.id;
+    const deleted = await storage.deletePlannerTask(classId);
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Class not found" });
+    }
+
+    res.json({ message: "Class deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting class:", error);
+    res.status(500).json({ error: "Failed to delete class" });
+  }
+});
+
+// Legacy: Delete a task
 router.delete("/tasks/:id", async (req, res) => {
   try {
     const taskId = req.params.id;

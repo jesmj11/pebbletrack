@@ -353,15 +353,15 @@
             </div>
 
             <div class="card">
-                <h2>Tasks Today</h2>
-                <div class="stat-number" id="todayTasks">5</div>
-                <div class="stat-label">Pending Tasks</div>
+                <h2>Classs Today</h2>
+                <div class="stat-number" id="todayClasss">5</div>
+                <div class="stat-label">Pending Classs</div>
             </div>
 
             <div class="card">
                 <h2>Completed This Week</h2>
                 <div class="stat-number" id="weeklyCompleted">12</div>
-                <div class="stat-label">Tasks Completed</div>
+                <div class="stat-label">Classs Completed</div>
             </div>
 
             <div class="card">
@@ -372,7 +372,7 @@
         </div>
 
         <div class="quick-actions">
-            <a href="/static-planner" class="action-btn">Add New Task</a>
+            <a href="/static-planner" class="action-btn">Add New Class</a>
             <button class="action-btn ai-btn" onclick="openAIInterface()">📸 AI Curriculum Import</button>
             <a href="/student-view" class="action-btn">Student Login</a>
             <a href="/parent-view" class="action-btn">Parent Reports</a>
@@ -442,18 +442,18 @@
                     document.getElementById('studentCount').textContent = students.length;
                 }
 
-                // Load tasks
-                const tasksResponse = await fetch('/api/planner/tasks');
-                if (tasksResponse.ok) {
-                    const tasks = await tasksResponse.json();
-                    const pendingTasks = tasks.filter(t => !t.completed);
-                    const completedTasks = tasks.filter(t => t.completed);
+                // Load classs
+                const classsResponse = await fetch('/api/planner/classs');
+                if (classsResponse.ok) {
+                    const classs = await classsResponse.json();
+                    const pendingClasss = classs.filter(t => !t.completed);
+                    const completedClasss = classs.filter(t => t.completed);
                     
-                    document.getElementById('todayTasks').textContent = pendingTasks.length;
-                    document.getElementById('weeklyCompleted').textContent = completedTasks.length;
+                    document.getElementById('todayClasss').textContent = pendingClasss.length;
+                    document.getElementById('weeklyCompleted').textContent = completedClasss.length;
                     
-                    const progressPercent = tasks.length > 0 ? 
-                        Math.round((completedTasks.length / tasks.length) * 100) : 0;
+                    const progressPercent = classs.length > 0 ? 
+                        Math.round((completedClasss.length / classs.length) * 100) : 0;
                     document.getElementById('overallProgress').textContent = progressPercent + '%';
                 }
             } catch (error) {
@@ -598,9 +598,9 @@
             addBtn.disabled = true;
 
             try {
-                // Add lessons as tasks to the planner
+                // Add lessons as classs to the planner
                 for (const lesson of extractedLessons) {
-                    const task = {
+                    const class = {
                         id: Date.now() + Math.random(),
                         title: lesson.title,
                         subject: lesson.subject,
@@ -613,21 +613,21 @@
 
                     // Try to save online first
                     try {
-                        const response = await fetch('/api/planner/tasks', {
+                        const response = await fetch('/api/planner/classs', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify(task)
+                            body: JSON.stringify(class)
                         });
                         
                         if (!response.ok) throw new Error('API request failed');
                     } catch (error) {
                         console.warn('Failed to save online, saving locally');
                         // Save to localStorage as fallback
-                        const tasks = JSON.parse(localStorage.getItem('homeschool_tasks') || '[]');
-                        tasks.push(task);
-                        localStorage.setItem('homeschool_tasks', JSON.stringify(tasks));
+                        const classs = JSON.parse(localStorage.getItem('homeschool_classs') || '[]');
+                        classs.push(class);
+                        localStorage.setItem('homeschool_classs', JSON.stringify(classs));
                     }
                 }
 
