@@ -262,7 +262,7 @@
         <div class="student-info">
             <div class="student-avatar" id="studentAvatar">E</div>
             <span id="studentName">Emma Johnson</span>
-            <a href="/static-dashboard" class="logout-btn">Back to Main</a>
+            <a href="/login" class="logout-btn" onclick="logout()">Logout</a>
         </div>
     </nav>
 
@@ -417,8 +417,27 @@
             return new Date(dateString).toLocaleDateString();
         }
 
+        // Check authentication on page load
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (!isLoggedIn || userRole !== 'student') {
+                window.location.href = '/login';
+                return false;
+            }
+            return true;
+        }
+
+        function logout() {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('isLoggedIn');
+        }
+
         // Load data when page loads
-        loadStudentData();
+        if (checkAuth()) {
+            loadStudentData();
+        }
     </script>
 </body>
 </html>

@@ -403,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve static planner that bypasses Vite completely
+  // Serve static planner that bypasses Vite completely (requires teacher login)
   app.get('/static-planner', (req, res) => {
     res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -1166,12 +1166,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         document.getElementById('taskForm').addEventListener('submit', addTask);
         document.getElementById('studentForm').addEventListener('submit', addStudent);
         
-        // Load data on startup
-        loadStudents();
-        loadTasks();
+        // Check authentication on page load
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (!isLoggedIn || userRole !== 'teacher') {
+                window.location.href = '/login';
+                return false;
+            }
+            return true;
+        }
 
-        // Check connection periodically
-        setInterval(checkConnection, 30000); // Every 30 seconds
+        function logout() {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('isLoggedIn');
+        }
+
+        // Load data on startup
+        if (checkAuth()) {
+            loadStudents();
+            loadTasks();
+
+            // Check connection periodically
+            setInterval(checkConnection, 30000); // Every 30 seconds
+        }
     </script>
 </body>
 </html>`);

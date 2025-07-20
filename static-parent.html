@@ -284,9 +284,7 @@
     <nav class="navbar">
         <h1>Parent Dashboard</h1>
         <div class="nav-links">
-            <a href="/static-dashboard">Dashboard</a>
-            <a href="/static-planner">Planner</a>
-            <a href="/student-view">Student View</a>
+            <a href="/login" onclick="logout()">Logout</a>
         </div>
     </nav>
 
@@ -334,9 +332,9 @@
         </div>
 
         <div class="action-buttons">
-            <a href="/static-planner" class="btn">Create New Assignment</a>
-            <a href="/static-planner" class="btn btn-secondary">Manage Students</a>
             <button class="btn btn-secondary" onclick="exportReport()">Export Report</button>
+            <button class="btn btn-secondary" onclick="exportDetailedReport()">Detailed Report</button>
+            <a href="/login" class="btn" onclick="logout()">Logout</a>
         </div>
     </div>
 
@@ -509,12 +507,62 @@
             window.URL.revokeObjectURL(url);
         }
 
+        function exportDetailedReport() {
+            // Generate a more detailed report
+            const report = students.map(student => {
+                const studentTasks = tasks.filter(task => task.studentId === student.id);
+                const completedTasks = studentTasks.filter(task => task.completed);
+                const pendingTasks = studentTasks.filter(task => !task.completed);
+                
+                return {
+                    student: student.fullName,
+                    grade: student.gradeLevel,
+                    totalTasks: studentTasks.length,
+                    completed: completedTasks.length,
+                    pending: pendingTasks.length,
+                    completionRate: studentTasks.length > 0 ? Math.round((completedTasks.length / studentTasks.length) * 100) : 0
+                };
+            });
+
+            const csvContent = [
+                ['Student', 'Grade Level', 'Total Tasks', 'Completed', 'Pending', 'Completion Rate'],
+                ...report.map(r => [r.student, r.grade, r.totalTasks, r.completed, r.pending, r.completionRate + '%'])
+            ].map(row => row.join(',')).join('\\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'detailed-homeschool-report.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function logout() {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('isLoggedIn');
+        }
+
         function formatDate(dateString) {
             return new Date(dateString).toLocaleDateString();
         }
 
+        // Check authentication on page load
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (!isLoggedIn || userRole !== 'parent') {
+                window.location.href = '/login';
+                return false;
+            }
+            return true;
+        }
+
         // Load data when page loads
-        loadParentData();
+        if (checkAuth()) {
+            loadParentData();
+        }
     </script>
 </body>
 </html>

@@ -218,30 +218,21 @@
         <p class="subtitle">Choose your role to get started</p>
 
         <div class="login-options">
-            <a href="/static-dashboard" class="login-btn">
+            <button onclick="loginAs('teacher')" class="login-btn">
                 <div class="role-icon">T</div>
                 Teacher/Parent Dashboard
-            </a>
+            </button>
             
-            <a href="/static-student" class="login-btn secondary">
+            <button onclick="loginAs('student')" class="login-btn secondary">
                 <div class="role-icon">S</div>
                 Student Portal
-            </a>
+            </button>
             
-            <a href="/static-parent" class="login-btn outline">
+            <button onclick="loginAs('parent')" class="login-btn outline">
                 <div class="role-icon">P</div>
                 Parent Reports
-            </a>
+            </button>
         </div>
-
-        <div class="divider">
-            <span>Or</span>
-        </div>
-
-        <a href="/static-planner" class="login-btn outline">
-            <div class="role-icon">✏</div>
-            Go to Planner
-        </a>
 
         <div class="features">
             <h3>Platform Features</h3>
@@ -260,18 +251,30 @@
     </div>
 
     <script>
-        // Add some interactive feedback
-        document.querySelectorAll('.login-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                // Add a brief loading state
-                const originalText = this.innerHTML;
-                this.innerHTML = this.innerHTML.replace(/(Teacher\/Parent Dashboard|Student Portal|Parent Reports|Go to Planner)/, 'Loading...');
-                
-                setTimeout(() => {
-                    this.innerHTML = originalText;
-                }, 500);
-            });
-        });
+        function loginAs(role) {
+            // Store the user role for session management
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('isLoggedIn', 'true');
+            
+            // Show loading state
+            event.target.style.opacity = '0.7';
+            event.target.innerHTML = event.target.innerHTML.replace(/(Teacher\/Parent Dashboard|Student Portal|Parent Reports)/, 'Logging in...');
+            
+            // Navigate based on role
+            setTimeout(() => {
+                switch(role) {
+                    case 'teacher':
+                        window.location.href = '/static-dashboard';
+                        break;
+                    case 'student':
+                        window.location.href = '/student-view';
+                        break;
+                    case 'parent':
+                        window.location.href = '/parent-view';
+                        break;
+                }
+            }, 800);
+        }
 
         // Check if we have any data to show stats
         function checkForExistingData() {

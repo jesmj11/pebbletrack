@@ -179,9 +179,7 @@
         <div class="nav-links">
             <a href="/static-dashboard" class="active">Dashboard</a>
             <a href="/static-planner">Planner</a>
-            <a href="/parent-view">Parent View</a>
-            <a href="/student-view">Student View</a>
-            <a href="/login">Login</a>
+            <a href="/login" onclick="logout()">Logout</a>
         </div>
     </nav>
 
@@ -275,8 +273,27 @@
             }
         }
 
+        // Check authentication on page load
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (!isLoggedIn || userRole !== 'teacher') {
+                window.location.href = '/login';
+                return false;
+            }
+            return true;
+        }
+
+        function logout() {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('isLoggedIn');
+        }
+
         // Load data when page loads
-        loadDashboardData();
+        if (checkAuth()) {
+            loadDashboardData();
+        }
     </script>
 </body>
 </html>
