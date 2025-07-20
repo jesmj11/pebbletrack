@@ -1,15 +1,6 @@
-import { StrictMode } from "react";
+// import { StrictMode } from "react"; // Removed unused import
 import { createRoot } from "react-dom/client";
-import App from "./App";
+import SimpleApp from "./SimpleApp";
 import "./index.css";
-import { UserProvider } from "./context/UserContext";
-import { registerServiceWorker } from "./lib/pwa";
 
-// Register service worker for PWA functionality
-registerServiceWorker();
-
-createRoot(document.getElementById("root")!).render(
-  <UserProvider>
-    <App />
-  </UserProvider>
-);
+createRoot(document.getElementById("root")!).render(<SimpleApp />);
