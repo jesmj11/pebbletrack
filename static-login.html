@@ -227,11 +227,6 @@
                 <div class="role-icon">S</div>
                 Student Portal
             </button>
-            
-            <button onclick="loginAs('parent')" class="login-btn outline">
-                <div class="role-icon">P</div>
-                Parent Reports
-            </button>
         </div>
 
         <div class="features">
@@ -258,7 +253,7 @@
             
             // Show loading state
             event.target.style.opacity = '0.7';
-            event.target.innerHTML = event.target.innerHTML.replace(/(Teacher\/Parent Dashboard|Student Portal|Parent Reports)/, 'Logging in...');
+            event.target.innerHTML = event.target.innerHTML.replace(/(Teacher\/Parent Dashboard|Student Portal)/, 'Logging in...');
             
             // Navigate based on role
             setTimeout(() => {
@@ -268,9 +263,6 @@
                         break;
                     case 'student':
                         window.location.href = '/student-view';
-                        break;
-                    case 'parent':
-                        window.location.href = '/parent-view';
                         break;
                 }
             }, 800);
