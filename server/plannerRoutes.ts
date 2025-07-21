@@ -17,11 +17,34 @@ const updateClassSchema = z.object({
   completed: z.boolean(),
 });
 
-// Get all classes
+// Get classes for a specific week (organized by day-student combinations)
 router.get("/classes", async (req, res) => {
   try {
+    const { week } = req.query;
     const allClasses = await storage.getAllTasks();
-    res.json(allClasses);
+    
+    if (week) {
+      // Filter classes for specific week and organize by cell keys
+      const weekClasses = allClasses.filter(task => 
+        task.dueDate && task.dueDate.startsWith(week)
+      );
+      
+      // Transform into the format expected by frontend: { "monday-0": [...], "tuesday-1": [...] }
+      const organizedClasses = {};
+      weekClasses.forEach(task => {
+        // For now, place all classes in the first student column on Monday
+        // This is a temporary solution until we have proper day/student tracking
+        const cellKey = "monday-0";
+        if (!organizedClasses[cellKey]) {
+          organizedClasses[cellKey] = [];
+        }
+        organizedClasses[cellKey].push(task);
+      });
+      
+      res.json(organizedClasses);
+    } else {
+      res.json(allClasses);
+    }
   } catch (error) {
     console.error("Error fetching classes:", error);
     res.status(500).json({ error: "Failed to fetch classes" });
@@ -45,11 +68,12 @@ router.post("/classes", async (req, res) => {
     const validatedData = createClassSchema.parse(req.body);
     
     const classData = {
+      id: Date.now().toString(), // Simple ID generation
       title: validatedData.title,
       subject: validatedData.subject,
       dueDate: validatedData.dueDate || new Date().toISOString().split('T')[0],
       completed: false,
-      studentId: validatedData.studentId || null,
+      studentId: validatedData.studentId ? parseInt(validatedData.studentId) : null,
     };
 
     const newClass = await storage.createPlannerTask(classData);
@@ -67,14 +91,15 @@ router.post("/classes", async (req, res) => {
 // Legacy endpoint for backwards compatibility
 router.post("/tasks", async (req, res) => {
   try {
-    const validatedData = createTaskSchema.parse(req.body);
+    const validatedData = createClassSchema.parse(req.body);
     
     const taskData = {
+      id: Date.now().toString(), // Simple ID generation
       title: validatedData.title,
       subject: validatedData.subject,
       dueDate: validatedData.dueDate || new Date().toISOString().split('T')[0],
       completed: false,
-      studentId: validatedData.studentId || null,
+      studentId: validatedData.studentId ? parseInt(validatedData.studentId) : null,
     };
 
     const newTask = await storage.createPlannerTask(taskData);

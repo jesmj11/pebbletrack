@@ -636,10 +636,24 @@
             
             if (isOnline) {
                 try {
-                    const response = await fetch(`/api/planner/classes?week=${weekKey}`);
+                    const response = await fetch('/api/planner/classes');
                     if (response.ok) {
-                        const classes = await response.json();
-                        weeklyTasks[weekKey] = classes;
+                        const allClasses = await response.json();
+                        console.log('Loaded classes from database:', allClasses);
+                        
+                        // Convert database classes to our frontend format
+                        const organizedClasses = {};
+                        allClasses.forEach(classItem => {
+                            // For now, place all classes on Monday, first student column
+                            // Later we can add day/student tracking to the database
+                            const cellKey = "monday-0";
+                            if (!organizedClasses[cellKey]) {
+                                organizedClasses[cellKey] = [];
+                            }
+                            organizedClasses[cellKey].push(classItem);
+                        });
+                        
+                        weeklyTasks[weekKey] = organizedClasses;
                         localStorage.setItem('weekly_planner_classes', JSON.stringify(weeklyTasks));
                     }
                 } catch (error) {

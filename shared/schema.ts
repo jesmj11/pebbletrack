@@ -124,14 +124,17 @@ export const tasks = pgTable("tasks", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Simplified task schema for the static planner
+// Planner tasks for the weekly planner interface
 export const plannerTasks = pgTable("planner_tasks", {
-  id: text("id").primaryKey(),
+  id: text("id").primaryKey(), // uuid or timestamp-based ID
   title: text("title").notNull(),
   subject: text("subject").notNull(),
-  dueDate: text("due_date").notNull(),
+  description: text("description"),
+  day: text("day").notNull(), // "monday", "tuesday", etc.
+  studentIndex: integer("student_index").notNull(), // 0, 1, 2, etc.
+  weekKey: text("week_key").notNull(), // "2025-01-20" (start of week)
   completed: boolean("completed").notNull().default(false),
-  studentId: integer("student_id"),
+  studentId: integer("student_id"), // references students.id
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -190,11 +193,14 @@ export const insertTaskSchema = createInsertSchema(tasks).pick({
   completedAt: true,
 });
 
-// Simplified planner task schema
+// Planner task schema for weekly planner interface
 export const insertPlannerTaskSchema = createInsertSchema(plannerTasks).pick({
   title: true,
   subject: true,
-  dueDate: true,
+  description: true,
+  day: true,
+  studentIndex: true,
+  weekKey: true,
   completed: true,
   studentId: true,
 });
