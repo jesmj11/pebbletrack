@@ -24,13 +24,12 @@ router.get("/classes", async (req, res) => {
     const allClasses = await storage.getAllTasks();
     
     if (week) {
-      // Filter classes for specific week and organize by cell keys
-      const weekClasses = allClasses.filter(task => 
-        task.dueDate && task.dueDate.startsWith(week)
-      );
+      // For now, return all classes regardless of week
+      // Later we can filter by week when we have proper date tracking
+      const weekClasses = allClasses;
       
       // Transform into the format expected by frontend: { "monday-0": [...], "tuesday-1": [...] }
-      const organizedClasses = {};
+      const organizedClasses: Record<string, any[]> = {};
       weekClasses.forEach(task => {
         // For now, place all classes in the first student column on Monday
         // This is a temporary solution until we have proper day/student tracking
@@ -71,7 +70,10 @@ router.post("/classes", async (req, res) => {
       id: Date.now().toString(), // Simple ID generation
       title: validatedData.title,
       subject: validatedData.subject,
-      dueDate: validatedData.dueDate || new Date().toISOString().split('T')[0],
+      description: "",
+      day: "monday", // Default to Monday for now
+      studentIndex: 0, // Default to first student
+      weekKey: new Date().toISOString().split('T')[0], // Current date as week key
       completed: false,
       studentId: validatedData.studentId ? parseInt(validatedData.studentId) : null,
     };
@@ -97,7 +99,10 @@ router.post("/tasks", async (req, res) => {
       id: Date.now().toString(), // Simple ID generation
       title: validatedData.title,
       subject: validatedData.subject,
-      dueDate: validatedData.dueDate || new Date().toISOString().split('T')[0],
+      description: "",
+      day: "monday", // Default to Monday for now
+      studentIndex: 0, // Default to first student
+      weekKey: new Date().toISOString().split('T')[0], // Current date as week key
       completed: false,
       studentId: validatedData.studentId ? parseInt(validatedData.studentId) : null,
     };
