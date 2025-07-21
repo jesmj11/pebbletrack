@@ -389,6 +389,7 @@
             <div class="student-management">
                 <button class="print-btn" onclick="printPlanner()">Print Planner</button>
                 <button class="add-student-btn" onclick="openStudentModal()">Add Student</button>
+                <button class="add-student-btn" onclick="testModal()" style="background: #ef4444;">Test Modal</button>
             </div>
         </div>
 
@@ -654,6 +655,7 @@
         }
 
         function renderTasks() {
+            console.log('renderTasks() called'); // Debug log
             const weekKey = getWeekKey(currentWeek);
             const classes = weeklyTasks[weekKey] || {};
             
@@ -661,9 +663,13 @@
             const table = document.getElementById('plannerTable');
             const rows = table.querySelectorAll('tbody tr');
             
+            console.log('Found table rows:', rows.length); // Debug log
+            
             rows.forEach((row, dayIndex) => {
                 const day = days[dayIndex];
                 const cells = row.querySelectorAll('.class-cell');
+                
+                console.log(`Day ${day} has ${cells.length} cells`); // Debug log
                 
                 cells.forEach((cell, studentIndex) => {
                     const cellTasks = classes[`${day}-${studentIndex}`] || [];
@@ -678,7 +684,8 @@
                             </div>
                         `).join('');
                     } else {
-                        cell.innerHTML = `<div class="empty-cell">Click to add class</div>`;
+                        cell.innerHTML = `<div class="empty-cell" style="pointer-events: none;">Click to add class</div>`;
+                        console.log(`Added placeholder to ${day}-${studentIndex}`); // Debug log
                     }
                 });
             });
@@ -708,6 +715,12 @@
                 `Add Class for ${studentName} - ${dayName}`;
             document.getElementById('classModal').style.display = 'flex';
             document.getElementById('classTitle').focus();
+        }
+        
+        // Test function to debug modal
+        function testModal() {
+            console.log('Test modal function called');
+            openClassModal('monday', 0);
         }
 
         function closeClassModal() {
