@@ -548,7 +548,8 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeClassModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Add Class</button>
+                    <button type="submit" class="btn-primary" id="classSubmitBtn">Add Class</button>
+                    <button type="button" class="btn-danger" id="deleteClassBtn" onclick="deleteCurrentClass()" style="background: #ef4444; display: none;">Delete Class</button>
                 </div>
             </form>
         </div>
@@ -561,6 +562,7 @@
         let currentWeek = new Date();
         let currentTaskDay = '';
         let currentTaskStudent = -1;
+        let currentEditingClassId = null;
         let isOnline = false;
 
         // Date utilities
@@ -701,8 +703,8 @@
                     if (cellTasks.length > 0) {
                         cell.innerHTML = cellTasks.map(classItem => `
                             <div class="class-item ${classItem.completed ? 'completed' : ''}" 
-                                 onclick="toggleTask('${day}', ${studentIndex}, '${classItem.id}')" 
-                                 title="${classItem.description || ''}">
+                                 onclick="editClass('${day}', ${studentIndex}, '${classItem.id}')" 
+                                 title="${classItem.description || ''} - Click to edit">
                                 ${classItem.title}
                                 <small style="display: block; font-size: 0.7rem; margin-top: 0.25rem;">${classItem.subject}</small>
                             </div>
@@ -731,11 +733,16 @@
             
             currentTaskDay = day;
             currentTaskStudent = studentIndex;
+            currentEditingClassId = null;
             
             const studentName = students[studentIndex]?.fullName || `Student ${studentIndex + 1}`;
             
             document.getElementById('classModalTitle').textContent = 
                 `Add Class for ${studentName}`;
+            
+            // Reset to add mode
+            document.getElementById('classSubmitBtn').textContent = 'Add Class';
+            document.getElementById('deleteClassBtn').style.display = 'none';
             
             // Pre-select the clicked day
             clearAllDays();
@@ -743,6 +750,53 @@
             if (dayCheckbox) {
                 dayCheckbox.checked = true;
             }
+            
+            document.getElementById('classModal').style.display = 'flex';
+            document.getElementById('classTitle').focus();
+        }
+        
+        function editClass(day, studentIndex, classId) {
+            console.log('Editing class:', day, studentIndex, classId);
+            
+            currentTaskDay = day;
+            currentTaskStudent = studentIndex;
+            currentEditingClassId = classId;
+            
+            const weekKey = getWeekKey(currentWeek);
+            const cellKey = `${day}-${studentIndex}`;
+            const classItem = weeklyTasks[weekKey]?.[cellKey]?.find(c => c.id === classId);
+            
+            if (!classItem) {
+                console.error('Class not found for editing');
+                return;
+            }
+            
+            const studentName = students[studentIndex]?.fullName || `Student ${studentIndex + 1}`;
+            
+            // Populate form with existing data
+            document.getElementById('classTitle').value = classItem.title;
+            document.getElementById('classSubject').value = classItem.subject;
+            document.getElementById('classDescription').value = classItem.description || '';
+            
+            // Find all days this class appears on for this student
+            clearAllDays();
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            days.forEach(d => {
+                const cellKey = `${d}-${studentIndex}`;
+                const hasClass = weeklyTasks[weekKey]?.[cellKey]?.some(c => 
+                    c.title === classItem.title && c.subject === classItem.subject
+                );
+                if (hasClass) {
+                    const checkbox = document.querySelector(`input[name="classDays"][value="${d}"]`);
+                    if (checkbox) checkbox.checked = true;
+                }
+            });
+            
+            // Switch to edit mode
+            document.getElementById('classModalTitle').textContent = 
+                `Edit Class for ${studentName}`;
+            document.getElementById('classSubmitBtn').textContent = 'Update Class';
+            document.getElementById('deleteClassBtn').style.display = 'inline-block';
             
             document.getElementById('classModal').style.display = 'flex';
             document.getElementById('classTitle').focus();
@@ -800,6 +854,12 @@
             document.getElementById('classForm').reset();
             currentTaskDay = '';
             currentTaskStudent = -1;
+            currentEditingClassId = null;
+            
+            // Reset modal to add mode
+            document.getElementById('classSubmitBtn').textContent = 'Add Class';
+            document.getElementById('deleteClassBtn').style.display = 'none';
+            clearAllDays();
         }
         
         // Legacy function name for compatibility
@@ -857,6 +917,67 @@
         // Legacy single task function for compatibility
         async function addTask(title, subject, description = '') {
             return addTaskToMultipleDays(title, subject, description, [currentTaskDay]);
+        }
+        
+        // Update existing class across multiple days
+        async function updateClass(title, subject, description = '', selectedDays = []) {
+            const weekKey = getWeekKey(currentWeek);
+            const originalClass = findClassById(currentEditingClassId);
+            
+            if (!originalClass) {
+                console.error('Original class not found for update');
+                return;
+            }
+            
+            // Remove the class from all days first
+            await deleteClassFromAllDays(originalClass.title, originalClass.subject, currentTaskStudent);
+            
+            // Add the updated class to selected days
+            await addTaskToMultipleDays(title, subject, description, selectedDays);
+        }
+        
+        // Delete current class being edited
+        async function deleteCurrentClass() {
+            if (!currentEditingClassId) return;
+            
+            const originalClass = findClassById(currentEditingClassId);
+            if (!originalClass) return;
+            
+            if (confirm(`Are you sure you want to delete "${originalClass.title}" from all days?`)) {
+                await deleteClassFromAllDays(originalClass.title, originalClass.subject, currentTaskStudent);
+                closeClassModal();
+            }
+        }
+        
+        // Helper function to find a class by ID
+        function findClassById(classId) {
+            const weekKey = getWeekKey(currentWeek);
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            
+            for (const day of days) {
+                const cellKey = `${day}-${currentTaskStudent}`;
+                const classItem = weeklyTasks[weekKey]?.[cellKey]?.find(c => c.id === classId);
+                if (classItem) return classItem;
+            }
+            return null;
+        }
+        
+        // Helper function to delete a class from all days
+        async function deleteClassFromAllDays(title, subject, studentIndex) {
+            const weekKey = getWeekKey(currentWeek);
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            
+            for (const day of days) {
+                const cellKey = `${day}-${studentIndex}`;
+                if (weeklyTasks[weekKey]?.[cellKey]) {
+                    weeklyTasks[weekKey][cellKey] = weeklyTasks[weekKey][cellKey].filter(c => 
+                        !(c.title === title && c.subject === subject)
+                    );
+                }
+            }
+            
+            localStorage.setItem('weekly_planner_classes', JSON.stringify(weeklyTasks));
+            renderTasks();
         }
 
         async function toggleTask(day, studentIndex, classId) {
@@ -972,12 +1093,23 @@
                     return;
                 }
                 
-                await addTaskToMultipleDays(
-                    formData.get('classTitle'),
-                    formData.get('classSubject'),
-                    formData.get('classDescription'),
-                    selectedDays
-                );
+                if (currentEditingClassId) {
+                    // Update existing class
+                    await updateClass(
+                        formData.get('classTitle'),
+                        formData.get('classSubject'),
+                        formData.get('classDescription'),
+                        selectedDays
+                    );
+                } else {
+                    // Add new class
+                    await addTaskToMultipleDays(
+                        formData.get('classTitle'),
+                        formData.get('classSubject'),
+                        formData.get('classDescription'),
+                        selectedDays
+                    );
+                }
                 
                 closeClassModal();
             });
