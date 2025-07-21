@@ -675,12 +675,12 @@
                     const cellTasks = classes[`${day}-${studentIndex}`] || [];
                     
                     if (cellTasks.length > 0) {
-                        cell.innerHTML = cellTasks.map(class => `
-                            <div class="class-item ${class.completed ? 'completed' : ''}" 
-                                 onclick="toggleTask('${day}', ${studentIndex}, '${class.id}')" 
-                                 title="${class.description || ''}">
-                                ${class.title}
-                                <small style="display: block; font-size: 0.7rem; margin-top: 0.25rem;">${class.subject}</small>
+                        cell.innerHTML = cellTasks.map(classItem => `
+                            <div class="class-item ${classItem.completed ? 'completed' : ''}" 
+                                 onclick="toggleTask('${day}', ${studentIndex}, '${classItem.id}')" 
+                                 title="${classItem.description || ''}">
+                                ${classItem.title}
+                                <small style="display: block; font-size: 0.7rem; margin-top: 0.25rem;">${classItem.subject}</small>
                             </div>
                         `).join('');
                     } else {
@@ -767,7 +767,7 @@
 
         // Task management
         async function addTask(title, subject, description = '') {
-            const class = {
+            const classItem = {
                 id: Date.now().toString(),
                 title,
                 subject,
@@ -786,7 +786,7 @@
                 weeklyTasks[weekKey][cellKey] = [];
             }
             
-            weeklyTasks[weekKey][cellKey].push(class);
+            weeklyTasks[weekKey][cellKey].push(classItem);
             localStorage.setItem('weekly_planner_classes', JSON.stringify(weeklyTasks));
             
             if (isOnline) {
@@ -795,7 +795,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            ...class,
+                            ...classItem,
                             day: currentTaskDay,
                             studentIndex: currentTaskStudent,
                             week: weekKey
@@ -814,9 +814,9 @@
             const cellKey = `${day}-${studentIndex}`;
             
             if (weeklyTasks[weekKey] && weeklyTasks[weekKey][cellKey]) {
-                const class = weeklyTasks[weekKey][cellKey].find(t => t.id === classId);
-                if (class) {
-                    class.completed = !class.completed;
+                const classItem = weeklyTasks[weekKey][cellKey].find(t => t.id === classId);
+                if (classItem) {
+                    classItem.completed = !classItem.completed;
                     localStorage.setItem('weekly_planner_classes', JSON.stringify(weeklyTasks));
                     renderTasks();
                 }
