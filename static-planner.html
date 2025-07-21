@@ -519,6 +519,30 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label>Select Days (choose one or more)</label>
+                    <div class="days-selection" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0;">
+                        <label class="day-checkbox" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="checkbox" name="classDays" value="monday"> Monday
+                        </label>
+                        <label class="day-checkbox" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="checkbox" name="classDays" value="tuesday"> Tuesday
+                        </label>
+                        <label class="day-checkbox" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="checkbox" name="classDays" value="wednesday"> Wednesday
+                        </label>
+                        <label class="day-checkbox" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="checkbox" name="classDays" value="thursday"> Thursday
+                        </label>
+                        <label class="day-checkbox" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="checkbox" name="classDays" value="friday"> Friday
+                        </label>
+                    </div>
+                    <div class="quick-select-buttons" style="margin-top: 8px; gap: 8px; display: flex;">
+                        <button type="button" onclick="selectAllDays()" style="padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">All Days</button>
+                        <button type="button" onclick="clearAllDays()" style="padding: 4px 8px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer;">Clear All</button>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="classDescription">Description (Optional)</label>
                     <textarea id="classDescription" name="classDescription" rows="3"></textarea>
                 </div>
@@ -709,12 +733,30 @@
             currentTaskStudent = studentIndex;
             
             const studentName = students[studentIndex]?.fullName || `Student ${studentIndex + 1}`;
-            const dayName = day.charAt(0).toUpperCase() + day.slice(1);
             
             document.getElementById('classModalTitle').textContent = 
-                `Add Class for ${studentName} - ${dayName}`;
+                `Add Class for ${studentName}`;
+            
+            // Pre-select the clicked day
+            clearAllDays();
+            const dayCheckbox = document.querySelector(`input[name="classDays"][value="${day}"]`);
+            if (dayCheckbox) {
+                dayCheckbox.checked = true;
+            }
+            
             document.getElementById('classModal').style.display = 'flex';
             document.getElementById('classTitle').focus();
+        }
+        
+        // Day selection helper functions
+        function selectAllDays() {
+            const checkboxes = document.querySelectorAll('input[name="classDays"]');
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+        }
+        
+        function clearAllDays() {
+            const checkboxes = document.querySelectorAll('input[name="classDays"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
         }
         
         // Test function to debug modal
@@ -765,48 +807,56 @@
             closeClassModal();
         }
 
-        // Task management
-        async function addTask(title, subject, description = '') {
-            const classItem = {
-                id: Date.now().toString(),
-                title,
-                subject,
-                description,
-                completed: false,
-                createdAt: new Date().toISOString()
-            };
-            
+        // Task management - multiple days support
+        async function addTaskToMultipleDays(title, subject, description = '', selectedDays = []) {
             const weekKey = getWeekKey(currentWeek);
-            const cellKey = `${currentTaskDay}-${currentTaskStudent}`;
             
-            if (!weeklyTasks[weekKey]) {
-                weeklyTasks[weekKey] = {};
-            }
-            if (!weeklyTasks[weekKey][cellKey]) {
-                weeklyTasks[weekKey][cellKey] = [];
-            }
-            
-            weeklyTasks[weekKey][cellKey].push(classItem);
-            localStorage.setItem('weekly_planner_classes', JSON.stringify(weeklyTasks));
-            
-            if (isOnline) {
-                try {
-                    await fetch('/api/planner/classes', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            ...classItem,
-                            day: currentTaskDay,
-                            studentIndex: currentTaskStudent,
-                            week: weekKey
-                        })
-                    });
-                } catch (error) {
-                    console.error('Error saving class online:', error);
+            for (const day of selectedDays) {
+                const classItem = {
+                    id: `${Date.now()}-${day}-${Math.random().toString(36).substr(2, 9)}`,
+                    title,
+                    subject,
+                    description,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                };
+                
+                const cellKey = `${day}-${currentTaskStudent}`;
+                
+                if (!weeklyTasks[weekKey]) {
+                    weeklyTasks[weekKey] = {};
+                }
+                if (!weeklyTasks[weekKey][cellKey]) {
+                    weeklyTasks[weekKey][cellKey] = [];
+                }
+                
+                weeklyTasks[weekKey][cellKey].push(classItem);
+                
+                if (isOnline) {
+                    try {
+                        await fetch('/api/planner/classes', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                ...classItem,
+                                day: day,
+                                studentIndex: currentTaskStudent,
+                                week: weekKey
+                            })
+                        });
+                    } catch (error) {
+                        console.error('Error saving class online:', error);
+                    }
                 }
             }
             
+            localStorage.setItem('weekly_planner_classes', JSON.stringify(weeklyTasks));
             renderTasks();
+        }
+        
+        // Legacy single task function for compatibility
+        async function addTask(title, subject, description = '') {
+            return addTaskToMultipleDays(title, subject, description, [currentTaskDay]);
         }
 
         async function toggleTask(day, studentIndex, classId) {
@@ -915,10 +965,18 @@
                 e.preventDefault();
                 
                 const formData = new FormData(e.target);
-                await addTask(
+                const selectedDays = formData.getAll('classDays');
+                
+                if (selectedDays.length === 0) {
+                    alert('Please select at least one day for this class.');
+                    return;
+                }
+                
+                await addTaskToMultipleDays(
                     formData.get('classTitle'),
                     formData.get('classSubject'),
-                    formData.get('classDescription')
+                    formData.get('classDescription'),
+                    selectedDays
                 );
                 
                 closeClassModal();
