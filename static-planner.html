@@ -644,9 +644,8 @@
                         // Convert database classes to our frontend format
                         const organizedClasses = {};
                         allClasses.forEach(classItem => {
-                            // For now, place all classes on Monday, first student column
-                            // Later we can add day/student tracking to the database
-                            const cellKey = "monday-0";
+                            // Use the day and studentIndex from the database
+                            const cellKey = `${classItem.day}-${classItem.studentIndex}`;
                             if (!organizedClasses[cellKey]) {
                                 organizedClasses[cellKey] = [];
                             }
