@@ -722,6 +722,36 @@
             console.log('Test modal function called');
             openClassModal('monday', 0);
         }
+        
+        // Week navigation functions
+        function previousWeek() {
+            console.log('Previous week clicked');
+            currentWeek.setDate(currentWeek.getDate() - 7);
+            updateWeekDisplay();
+            renderTasks();
+        }
+        
+        function nextWeek() {
+            console.log('Next week clicked');
+            currentWeek.setDate(currentWeek.getDate() + 7);
+            updateWeekDisplay();
+            renderTasks();
+        }
+        
+        function updateWeekDisplay() {
+            const weekStart = getWeekStart(currentWeek);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 4);
+            
+            document.getElementById('currentWeek').textContent = 
+                `Week of ${weekStart.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+        }
+        
+        // Print function
+        function printPlanner() {
+            console.log('Print planner clicked');
+            window.print();
+        }
 
         function closeClassModal() {
             document.getElementById('classModal').style.display = 'none';
@@ -903,6 +933,12 @@
                     closeClassModal();
                 }
             });
+
+            // Initialize everything when DOM is ready
+            loadData();
+            updateStudentHeaders();
+            updateWeekDisplay();
+            renderTasks();
         });
     </script>
 </body>
