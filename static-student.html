@@ -202,6 +202,143 @@
             cursor: not-allowed;
         }
 
+        /* === ENHANCED ACCOUNTABILITY STYLES === */
+
+        /* Success animations */
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40%, 43% {
+                transform: translateY(-10px);
+            }
+            70% {
+                transform: translateY(-5px);
+            }
+            90% {
+                transform: translateY(-2px);
+            }
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Success popup */
+        .success-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideInFromRight 0.5s ease-in-out;
+        }
+
+        .popup-content {
+            background: var(--moss-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .popup-icon {
+            font-size: 1.2rem;
+        }
+
+        .popup-text {
+            font-weight: 600;
+        }
+
+        /* Enhanced progress bar */
+        .progress-container {
+            background: var(--drift-sand);
+            border-radius: 10px;
+            height: 12px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--moss-green), var(--stream-blue));
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s ease-in-out;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Overdue task styling */
+        .class-card.overdue {
+            border: 2px solid #ef4444 !important;
+            background: #fef2f2 !important;
+            position: relative;
+        }
+
+        .class-card.overdue::before {
+            content: "OVERDUE";
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Streak display enhancement */
+        .streak-badge {
+            background: linear-gradient(45deg, #f59e0b, #f97316);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .streak-flame {
+            font-size: 1.2rem;
+            animation: flicker 2s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% { transform: scale(1) rotate(-2deg); }
+            100% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        .complete-btn:disabled {
+            background: var(--pebble-gray);
+            cursor: not-allowed;
+        }
+
         .class-meta {
             color: var(--pebble-gray);
             font-size: 0.9rem;
@@ -302,7 +439,7 @@
 
         <div class="class-section">
             <div class="section-header">
-                <h2 class="section-title">Today's Classs</h2>
+                <h2 class="section-title">Today's Classes</h2>
                 <div class="progress-badge" id="progressBadge">3 of 5 completed</div>
             </div>
             <div class="class-list" id="classList">
@@ -386,37 +523,72 @@
                 return;
             }
 
-            container.innerHTML = classs.map(class => `
-                <div class="class-card ${class.completed ? 'completed' : ''}">
-                    <div class="class-header">
-                        <div>
-                            <div class="class-title ${class.completed ? 'completed' : ''}">${class.title}</div>
-                            <div class="class-meta">
-                                <span class="subject-tag">${class.subject}</span>
-                                Due: ${formatDate(class.dueDate)}
+            const today = new Date();
+            
+            container.innerHTML = classs.map(classItem => {
+                const dueDate = new Date(classItem.dueDate);
+                const isOverdue = dueDate < today && !classItem.completed;
+                
+                return `
+                    <div class="class-card ${classItem.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" 
+                         data-task-id="${classItem.id}">
+                        <div class="class-header">
+                            <div>
+                                <div class="class-title ${classItem.completed ? 'completed' : ''}">${classItem.title}</div>
+                                <div class="class-meta">
+                                    <span class="subject-tag">${classItem.subject}</span>
+                                    Due: ${formatDate(classItem.dueDate)}
+                                </div>
                             </div>
+                            <button class="complete-btn" 
+                                    onclick="toggleClass('${classItem.id}')" 
+                                    ${classItem.completed ? 'disabled' : ''}>
+                                ${classItem.completed ? 'Completed! ✅' : 'Mark Complete'}
+                            </button>
                         </div>
-                        <button class="complete-btn" 
-                                onclick="toggleClass('${class.id}')" 
-                                ${class.completed ? 'disabled' : ''}>
-                            ${class.completed ? 'Completed!' : 'Mark Complete'}
-                        </button>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
+        // 🎉 ENHANCED TASK COMPLETION WITH CELEBRATIONS
         async function toggleClass(classId) {
-            const class = classs.find(t => t.id === classId);
-            if (!class) return;
+            const taskClass = classs.find(t => t.id === classId);
+            if (!taskClass) return;
 
-            class.completed = !class.completed;
+            taskClass.completed = !taskClass.completed;
+
+            // 🎉 CELEBRATION ANIMATION & NOTIFICATIONS
+            if (taskClass.completed) {
+                const taskElement = document.querySelector(`[data-task-id="${classId}"]`);
+                if (taskElement) {
+                    taskElement.style.animation = 'bounce 0.6s ease-in-out';
+                    taskElement.style.backgroundColor = '#86baba';
+                    
+                    setTimeout(() => {
+                        taskElement.style.backgroundColor = '';
+                        taskElement.style.animation = '';
+                    }, 600);
+                }
+                
+                // Show success popup
+                showSuccessMessage(`Great job! ${taskClass.title} completed! 🎉`);
+                
+                // 📢 NOTIFY PARENTS
+                notifyParent(taskClass);
+                
+                // Update streak
+                updateStreak();
+            }
 
             try {
                 const response = await fetch(`/api/planner/classs/${classId}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ completed: class.completed })
+                    body: JSON.stringify({ 
+                        completed: taskClass.completed,
+                        completedAt: taskClass.completed ? new Date().toISOString() : null
+                    })
                 });
 
                 if (!response.ok) throw new Error('API request failed');
@@ -429,15 +601,94 @@
             updateProgress();
         }
 
+        // 🎉 SUCCESS ANIMATIONS
+        function showSuccessMessage(message) {
+            const popup = document.createElement('div');
+            popup.className = 'success-popup';
+            popup.innerHTML = `
+                <div class="popup-content">
+                    <span class="popup-icon">✅</span>
+                    <span class="popup-text">${message}</span>
+                </div>
+            `;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 3000);
+        }
+
+        // 📢 PARENT NOTIFICATIONS
+        function notifyParent(completedTask) {
+            const notification = {
+                id: Date.now().toString(),
+                type: 'task_completed',
+                studentName: currentStudent?.fullName || 'Student',
+                taskTitle: completedTask.title,
+                subject: completedTask.subject,
+                completedAt: new Date().toISOString(),
+                timestamp: new Date().toISOString(),
+                read: false,
+                message: `${currentStudent?.fullName || 'Student'} completed ${completedTask.title} (${completedTask.subject})`
+            };
+
+            // Save to localStorage for parent dashboard
+            const existingNotifications = JSON.parse(localStorage.getItem('parentNotifications') || '[]');
+            existingNotifications.unshift(notification);
+            localStorage.setItem('parentNotifications', JSON.stringify(existingNotifications));
+            
+            // Trigger event for real-time updates
+            localStorage.setItem('newNotification', JSON.stringify(notification));
+            window.dispatchEvent(new Event('storage'));
+        }
+
+        // 🔥 STREAK TRACKING
+        function updateStreak() {
+            const today = new Date().toDateString();
+            const lastDate = localStorage.getItem('lastCompletionDate');
+            let currentStreak = parseInt(localStorage.getItem('currentStreak') || '0');
+            
+            if (lastDate !== today) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                if (lastDate === yesterday.toDateString()) {
+                    currentStreak++;
+                } else {
+                    currentStreak = 1;
+                }
+                
+                localStorage.setItem('currentStreak', currentStreak.toString());
+                localStorage.setItem('lastCompletionDate', today);
+                
+                // Update display
+                document.getElementById('weekStreak').innerHTML = `
+                    <span class="streak-flame">🔥</span> ${currentStreak}
+                `;
+                
+                if (currentStreak >= 5) {
+                    showSuccessMessage(`🔥 ${currentStreak} day streak! You're on fire!`);
+                }
+            }
+        }
+
         function updateProgress() {
             const completed = classs.filter(t => t.completed).length;
             const total = classs.length;
+            const percentage = total > 0 ? (completed / total) * 100 : 0;
             
-            document.getElementById('progressBadge').textContent = `${completed} of ${total} completed`;
+            document.getElementById('progressBadge').innerHTML = `
+                <div>${completed} of ${total} completed</div>
+                <div class="progress-container">
+                    <div class="progress-fill" style="width: ${percentage}%"></div>
+                </div>
+            `;
+            
             document.getElementById('completedToday').textContent = completed;
             
-            // Update achievements (mock data)
-            document.getElementById('weekStreak').textContent = Math.min(completed + 2, 7);
+            // Load and display current streak
+            const currentStreak = parseInt(localStorage.getItem('currentStreak') || '0');
+            document.getElementById('weekStreak').innerHTML = `
+                <span class="streak-flame">🔥</span> ${currentStreak}
+            `;
+            
             document.getElementById('totalPoints').textContent = completed * 25;
         }
 

@@ -293,6 +293,154 @@
                 flex-direction: column;
             }
         }
+
+        /* === NOTIFICATION PANEL STYLES === */
+
+        .notification-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--fern-mist);
+            margin-bottom: 2rem;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .notification-header h3 {
+            color: var(--charcoal-slate);
+            margin: 0;
+        }
+
+        /* Live indicator */
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--moss-green);
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--moss-green);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        /* Notification badge */
+        .notification-badge {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Notification list */
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .notification-item:hover {
+            background: var(--fern-mist);
+        }
+
+        .notification-item.unread {
+            background: #f0f9ff;
+            border-left: 4px solid var(--stream-blue);
+            font-weight: 600;
+        }
+
+        .notification-item.read {
+            background: var(--drift-sand);
+            opacity: 0.7;
+        }
+
+        .notification-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-message {
+            color: var(--charcoal-slate);
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-time {
+            color: var(--pebble-gray);
+            font-size: 0.8rem;
+        }
+
+        /* Mark all read button */
+        .mark-all-read-btn {
+            background: var(--stream-blue);
+            color: var(--charcoal-slate);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .mark-all-read-btn:hover {
+            background: var(--moss-green);
+            color: white;
+        }
+
+        /* No notifications message */
+        .no-notifications {
+            text-align: center;
+            color: var(--pebble-gray);
+            font-style: italic;
+            padding: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -333,6 +481,25 @@
                     <div class="stat-label">Average Performance</div>
                 </div>
             </div>
+        </div>
+
+        <!-- 📢 PARENT NOTIFICATION PANEL -->
+        <div class="notification-panel">
+            <div class="notification-header">
+                <h3>Recent Activity 
+                    <span class="live-indicator">
+                        <span class="live-dot"></span>
+                        Live
+                    </span>
+                </h3>
+                <div class="notification-badge" style="display: none;">0</div>
+            </div>
+            <div class="notification-list" id="notificationList">
+                <!-- Notifications loaded here -->
+            </div>
+            <button onclick="markAllAsRead()" class="mark-all-read-btn">
+                Mark All as Read
+            </button>
         </div>
 
         <div class="reports-section">
@@ -578,9 +745,100 @@
             return true;
         }
 
+        // === PARENT NOTIFICATION SYSTEM ===
+
+        // 📢 Load and display parent notifications
+        function loadParentNotifications() {
+            const notifications = JSON.parse(localStorage.getItem('parentNotifications') || '[]');
+            const container = document.getElementById('notificationList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<p class="no-notifications">No recent activity</p>';
+                updateNotificationBadge(0);
+                return;
+            }
+
+            const recentNotifications = notifications.slice(0, 10);
+            container.innerHTML = recentNotifications.map(notification => `
+                <div class="notification-item ${notification.read ? 'read' : 'unread'}" 
+                     onclick="markNotificationAsRead('${notification.id}')">
+                    <div class="notification-icon">
+                        ${notification.type === 'task_completed' ? '✅' : '⚠️'}
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-message">${notification.message}</div>
+                        <div class="notification-time">${formatTimeAgo(notification.timestamp)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            const unreadCount = notifications.filter(n => !n.read).length;
+            updateNotificationBadge(unreadCount);
+        }
+
+        function markNotificationAsRead(notificationId) {
+            const notifications = JSON.parse(localStorage.getItem('parentNotifications') || '[]');
+            const notification = notifications.find(n => n.id === notificationId);
+            if (notification) {
+                notification.read = true;
+                localStorage.setItem('parentNotifications', JSON.stringify(notifications));
+                loadParentNotifications();
+            }
+        }
+
+        function markAllAsRead() {
+            const notifications = JSON.parse(localStorage.getItem('parentNotifications') || '[]');
+            notifications.forEach(n => n.read = true);
+            localStorage.setItem('parentNotifications', JSON.stringify(notifications));
+            loadParentNotifications();
+        }
+
+        function updateNotificationBadge(count) {
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        function formatTimeAgo(timestamp) {
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diffInMinutes = Math.floor((now - time) / (1000 * 60));
+            
+            if (diffInMinutes < 1) return 'Just now';
+            if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+            if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+            return `${Math.floor(diffInMinutes / 1440)}d ago`;
+        }
+
+        // Listen for real-time notifications from students
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'newNotification') {
+                loadParentNotifications();
+                
+                // Show a brief flash to indicate new activity
+                const panel = document.querySelector('.notification-panel');
+                if (panel) {
+                    panel.style.border = '2px solid var(--moss-green)';
+                    setTimeout(() => {
+                        panel.style.border = '1px solid var(--fern-mist)';
+                    }, 1000);
+                }
+            }
+        });
+
         // Load data when page loads
         if (checkAuth()) {
             loadParentData();
+            loadParentNotifications(); // Load notifications too!
+            
+            // Auto-refresh notifications every 30 seconds
+            setInterval(loadParentNotifications, 30000);
         }
     </script>
 </body>
