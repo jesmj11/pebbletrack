@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
 // Simple production startup script for Railway
+// Set demo mode to avoid warnings
+process.env.DEMO_MODE = 'true';
+process.env.NODE_ENV = 'production';
+
 import { createServer } from 'http';
 import express from 'express';
 import path from 'path';
@@ -32,11 +36,15 @@ app.get('/', (req, res) => {
 });
 
 // Serve static HTML files directly
-const staticFiles = ['static-login.html', 'static-dashboard.html', 'static-student.html', 'static-parent.html', 'static-planner.html'];
+const routeMap = {
+  '/student-view': 'static-student.html',
+  '/parent-view': 'static-parent.html', 
+  '/dashboard': 'static-dashboard.html',
+  '/planner': 'static-planner.html',
+  '/login': 'static-login.html'
+};
 
-staticFiles.forEach(filename => {
-  const route = '/' + filename.replace('static-', '').replace('.html', '') + '-view';
-  
+Object.entries(routeMap).forEach(([route, filename]) => {
   app.get(route, async (req, res) => {
     try {
       const filePath = path.join(__dirname, filename);
@@ -44,9 +52,10 @@ staticFiles.forEach(filename => {
         const html = fs.readFileSync(filePath, 'utf8');
         res.send(html);
       } else {
-        res.status(404).send('Page not found');
+        res.status(404).send(`Page not found: ${filename}`);
       }
     } catch (error) {
+      console.error(`Error serving ${filename}:`, error);
       res.status(500).send('Error loading page');
     }
   });
@@ -118,12 +127,20 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// Fallback for any other routes
+app.get('*', (req, res) => {
+  res.redirect('/student-view');
+});
+
 // Start server
 const port = parseInt(process.env.PORT || '5000');
 const server = createServer(app);
 
 server.listen(port, '0.0.0.0', () => {
   console.log(`🚀 PebbleTrack Demo running on port ${port}`);
-  console.log(`📱 Student View: http://localhost:${port}/student-view`);
-  console.log(`📊 Parent View: http://localhost:${port}/parent-view`);
+  console.log(`📱 Student View: /student-view`);
+  console.log(`📊 Parent View: /parent-view`);
+  console.log(`💚 Health Check: /health`);
+  console.log(`🎯 Demo Mode: ENABLED`);
+  console.log(`🚀 Ready for Railway deployment!`);
 });
