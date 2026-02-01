@@ -8,8 +8,14 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage-replit";
 
+const DEMO_MODE = !process.env.REPLIT_DOMAINS || !process.env.DATABASE_URL;
+
 if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error("Environment variable REPLIT_DOMAINS not provided");
+  } else {
+    console.warn("⚠️  Replit auth disabled in demo mode - authentication skipped");
+  }
 }
 
 const getOidcConfig = memoize(
@@ -24,6 +30,21 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  
+  if (DEMO_MODE || !process.env.DATABASE_URL) {
+    // Use memory store for demo mode
+    return session({
+      secret: process.env.SESSION_SECRET || 'demo-secret-key-change-in-production',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: sessionTtl,
+      },
+    });
+  }
+
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
@@ -67,6 +88,11 @@ async function upsertUser(
 }
 
 export async function setupAuth(app: Express) {
+  if (DEMO_MODE) {
+    console.log("🚀 Demo mode: Authentication setup skipped");
+    return;
+  }
+
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
@@ -154,6 +180,11 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // Skip authentication in demo mode
+  if (DEMO_MODE) {
+    return next();
+  }
+
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {

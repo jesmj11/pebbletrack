@@ -440,4 +440,282 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Demo storage class for when database is not available
+class DemoStorage implements IStorage {
+  private students: Student[] = [
+    { id: 1, parentId: 'demo-parent', fullName: 'Emma Johnson', gradeLevel: '6th Grade', createdAt: new Date(), updatedAt: new Date() },
+    { id: 2, parentId: 'demo-parent', fullName: 'Jake Johnson', gradeLevel: '4th Grade', createdAt: new Date(), updatedAt: new Date() },
+    { id: 3, parentId: 'demo-parent', fullName: 'Sophie Johnson', gradeLevel: '8th Grade', createdAt: new Date(), updatedAt: new Date() }
+  ];
+
+  private plannerTasks: PlannerTask[] = [
+    {
+      id: '1',
+      title: 'Math Worksheet - Fractions',
+      subject: 'Mathematics',
+      description: 'Complete pages 12-15',
+      day: 'monday',
+      studentIndex: 0,
+      weekKey: '2025-01-27',
+      completed: false,
+      studentId: 1,
+      dueDate: new Date().toISOString()
+    },
+    {
+      id: '2',
+      title: 'Science Reading',
+      subject: 'Science',
+      description: 'Chapter 3: Plants and Animals',
+      day: 'monday',
+      studentIndex: 0,
+      weekKey: '2025-01-27',
+      completed: false,
+      studentId: 1,
+      dueDate: new Date().toISOString()
+    },
+    {
+      id: '3',
+      title: 'History Report',
+      subject: 'History',
+      description: 'Write about the Civil War',
+      day: 'tuesday',
+      studentIndex: 1,
+      weekKey: '2025-01-27',
+      completed: true,
+      studentId: 2,
+      dueDate: new Date().toISOString()
+    }
+  ];
+
+  // Basic implementations for demo
+  async getUser(id: string): Promise<User | undefined> {
+    return undefined; // Not needed for demo
+  }
+
+  async upsertUser(user: UpsertUser): Promise<User> {
+    throw new Error('Not implemented in demo mode');
+  }
+
+  async getClasses(): Promise<Class[]> {
+    return [];
+  }
+
+  async getClass(id: number): Promise<Class | undefined> {
+    return undefined;
+  }
+
+  async getClassesByTeacher(teacherId: string): Promise<Class[]> {
+    return [];
+  }
+
+  async createClass(classData: InsertClass): Promise<Class> {
+    throw new Error('Not implemented in demo mode');
+  }
+
+  async updateClass(id: number, classData: Partial<InsertClass>): Promise<Class | undefined> {
+    return undefined;
+  }
+
+  async deleteClass(id: number): Promise<boolean> {
+    return false;
+  }
+
+  async getStudents(): Promise<Student[]> {
+    return [...this.students];
+  }
+
+  async getStudent(id: number): Promise<Student | undefined> {
+    return this.students.find(s => s.id === id);
+  }
+
+  async getStudentsByParent(parentId: string): Promise<Student[]> {
+    return this.students.filter(s => s.parentId === parentId);
+  }
+
+  async createStudent(student: InsertStudent): Promise<Student> {
+    const newStudent: Student = {
+      id: this.students.length + 1,
+      ...student,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.students.push(newStudent);
+    return newStudent;
+  }
+
+  async updateStudent(id: number, studentData: Partial<InsertStudent>): Promise<Student | undefined> {
+    const studentIndex = this.students.findIndex(s => s.id === id);
+    if (studentIndex >= 0) {
+      this.students[studentIndex] = { ...this.students[studentIndex], ...studentData, updatedAt: new Date() };
+      return this.students[studentIndex];
+    }
+    return undefined;
+  }
+
+  async deleteStudent(id: number): Promise<boolean> {
+    const originalLength = this.students.length;
+    this.students = this.students.filter(s => s.id !== id);
+    return this.students.length < originalLength;
+  }
+
+  async getAssignments(): Promise<Assignment[]> {
+    return [];
+  }
+
+  async getAssignment(id: number): Promise<Assignment | undefined> {
+    return undefined;
+  }
+
+  async getAssignmentsByClass(classId: number): Promise<Assignment[]> {
+    return [];
+  }
+
+  async createAssignment(assignment: InsertAssignment): Promise<Assignment> {
+    throw new Error('Not implemented in demo mode');
+  }
+
+  async updateAssignment(id: number, assignmentData: Partial<InsertAssignment>): Promise<Assignment | undefined> {
+    return undefined;
+  }
+
+  async deleteAssignment(id: number): Promise<boolean> {
+    return false;
+  }
+
+  async getTasks(): Promise<Task[]> {
+    return [];
+  }
+
+  async getTask(id: number): Promise<Task | undefined> {
+    return undefined;
+  }
+
+  async getTasksByStudent(studentId: number): Promise<TaskWithAssignment[]> {
+    return [];
+  }
+
+  async getTasksByAssignment(assignmentId: number): Promise<Task[]> {
+    return [];
+  }
+
+  async createTask(task: InsertTask): Promise<Task> {
+    throw new Error('Not implemented in demo mode');
+  }
+
+  async updateTask(id: number, taskData: Partial<InsertTask>): Promise<Task | undefined> {
+    return undefined;
+  }
+
+  async deleteTask(id: number): Promise<boolean> {
+    return false;
+  }
+
+  // Planner task operations (main demo functionality)
+  async getAllTasks(): Promise<PlannerTask[]> {
+    return [...this.plannerTasks];
+  }
+
+  async getPlannerTask(id: string): Promise<PlannerTask | undefined> {
+    return this.plannerTasks.find(t => t.id === id);
+  }
+
+  async createPlannerTask(taskData: InsertPlannerTask): Promise<PlannerTask> {
+    const newTask: PlannerTask = {
+      id: (this.plannerTasks.length + 1).toString(),
+      ...taskData
+    };
+    this.plannerTasks.push(newTask);
+    return newTask;
+  }
+
+  async updatePlannerTask(id: string, taskData: Partial<InsertPlannerTask>): Promise<PlannerTask | undefined> {
+    const taskIndex = this.plannerTasks.findIndex(t => t.id === id);
+    if (taskIndex >= 0) {
+      this.plannerTasks[taskIndex] = { ...this.plannerTasks[taskIndex], ...taskData };
+      return this.plannerTasks[taskIndex];
+    }
+    return undefined;
+  }
+
+  async deletePlannerTask(id: string): Promise<boolean> {
+    const originalLength = this.plannerTasks.length;
+    this.plannerTasks = this.plannerTasks.filter(t => t.id !== id);
+    return this.plannerTasks.length < originalLength;
+  }
+
+  // Curriculum operations (minimal implementation)
+  async getCurriculums(): Promise<Curriculum[]> {
+    return [];
+  }
+
+  async getCurriculum(id: number): Promise<Curriculum | undefined> {
+    return undefined;
+  }
+
+  async getCurriculumsByParent(parentId: string): Promise<Curriculum[]> {
+    return [];
+  }
+
+  async createCurriculum(curriculum: InsertCurriculum): Promise<Curriculum> {
+    throw new Error('Not implemented in demo mode');
+  }
+
+  async updateCurriculum(id: number, curriculumData: Partial<InsertCurriculum>): Promise<Curriculum | undefined> {
+    return undefined;
+  }
+
+  async deleteCurriculum(id: number): Promise<boolean> {
+    return false;
+  }
+
+  async getCurriculumLessons(curriculumId: number): Promise<CurriculumLesson[]> {
+    return [];
+  }
+
+  async createCurriculumLesson(lesson: InsertCurriculumLesson): Promise<CurriculumLesson> {
+    throw new Error('Not implemented in demo mode');
+  }
+
+  async updateCurriculumLesson(id: number, lessonData: Partial<InsertCurriculumLesson>): Promise<CurriculumLesson | undefined> {
+    return undefined;
+  }
+
+  async getStudentCurriculums(studentId: number): Promise<StudentCurriculum[]> {
+    return [];
+  }
+
+  async createStudentCurriculum(studentCurriculum: InsertStudentCurriculum): Promise<StudentCurriculum> {
+    throw new Error('Not implemented in demo mode');
+  }
+
+  async updateStudentCurriculum(id: number, data: Partial<InsertStudentCurriculum>): Promise<StudentCurriculum | undefined> {
+    return undefined;
+  }
+
+  async getLessonProgress(studentId: number, curriculumId: number): Promise<LessonProgress[]> {
+    return [];
+  }
+
+  async createLessonProgress(progress: InsertLessonProgress): Promise<LessonProgress> {
+    throw new Error('Not implemented in demo mode');
+  }
+
+  async updateLessonProgress(id: number, data: Partial<InsertLessonProgress>): Promise<LessonProgress | undefined> {
+    return undefined;
+  }
+
+  async getClassesWithStudentCount(teacherId: string): Promise<ClassWithStudentCount[]> {
+    return [];
+  }
+
+  async getStudentProgress(teacherId: string): Promise<StudentProgress[]> {
+    return [];
+  }
+
+  async getTaskCompletionRate(teacherId: string): Promise<number> {
+    return 0.75; // 75% for demo
+  }
+}
+
+// Use database storage if available, otherwise use demo storage
+export const storage = db ? new DatabaseStorage() : new DemoStorage();
