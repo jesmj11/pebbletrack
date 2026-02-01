@@ -71,10 +71,10 @@ Object.entries(routeMap).forEach(([route, filename]) => {
 });
 
 // Simple API endpoints with demo data
-const demoStudents = [
-  { id: 1, parentId: 'demo-parent', fullName: 'Emma Johnson', gradeLevel: '6th Grade' },
-  { id: 2, parentId: 'demo-parent', fullName: 'Jake Johnson', gradeLevel: '4th Grade' },
-  { id: 3, parentId: 'demo-parent', fullName: 'Sophie Johnson', gradeLevel: '8th Grade' }
+let demoStudents = [
+  { id: 1, parentId: 'demo-parent', fullName: 'Emma Johnson', gradeLevel: '6th Grade', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: 2, parentId: 'demo-parent', fullName: 'Jake Johnson', gradeLevel: '4th Grade', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: 3, parentId: 'demo-parent', fullName: 'Sophie Johnson', gradeLevel: '8th Grade', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
 ];
 
 let demoTasks = [
@@ -127,6 +127,120 @@ app.patch('/api/planner/classes/:id', (req, res) => {
     res.json(task);
   } else {
     res.status(404).json({ error: 'Task not found' });
+  }
+});
+
+// Student Management API Endpoints
+app.post('/api/planner/students', (req, res) => {
+  try {
+    const { fullName, gradeLevel } = req.body;
+    
+    if (!fullName || !gradeLevel) {
+      return res.status(400).json({ error: 'Full name and grade level are required' });
+    }
+    
+    const newId = Math.max(...demoStudents.map(s => s.id), 0) + 1;
+    const newStudent = {
+      id: newId,
+      parentId: 'demo-parent',
+      fullName: fullName.trim(),
+      gradeLevel: gradeLevel.trim(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    demoStudents.push(newStudent);
+    res.status(201).json(newStudent);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create student' });
+  }
+});
+
+app.delete('/api/planner/students/:id', (req, res) => {
+  try {
+    const studentId = parseInt(req.params.id);
+    
+    const studentIndex = demoStudents.findIndex(s => s.id === studentId);
+    if (studentIndex === -1) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Remove the student
+    const deletedStudent = demoStudents.splice(studentIndex, 1)[0];
+    
+    // Remove all tasks associated with this student
+    demoTasks = demoTasks.filter(task => task.studentId !== studentId);
+    
+    res.json({ message: 'Student deleted successfully', student: deletedStudent });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete student' });
+  }
+});
+
+app.patch('/api/planner/students/:id', (req, res) => {
+  try {
+    const studentId = parseInt(req.params.id);
+    const { fullName, gradeLevel } = req.body;
+    
+    const student = demoStudents.find(s => s.id === studentId);
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Update student fields
+    if (fullName !== undefined) student.fullName = fullName.trim();
+    if (gradeLevel !== undefined) student.gradeLevel = gradeLevel.trim();
+    student.updatedAt = new Date().toISOString();
+    
+    res.json(student);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update student' });
+  }
+});
+
+// Additional endpoints for full compatibility
+app.post('/api/planner/classes', (req, res) => {
+  try {
+    const { title, subject, description = '', studentId, dueDate } = req.body;
+    
+    if (!title || !subject) {
+      return res.status(400).json({ error: 'Title and subject are required' });
+    }
+    
+    const newId = (Math.max(...demoTasks.map(t => parseInt(t.id) || 0), 0) + 1).toString();
+    const newTask = {
+      id: newId,
+      title: title.trim(),
+      subject: subject.trim(),
+      description: description.trim(),
+      completed: false,
+      studentId: studentId ? parseInt(studentId) : null,
+      dueDate: dueDate || new Date().toISOString(),
+      day: 'monday',
+      studentIndex: 0,
+      weekKey: new Date().toISOString().split('T')[0]
+    };
+    
+    demoTasks.push(newTask);
+    res.status(201).json(newTask);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create task' });
+  }
+});
+
+app.delete('/api/planner/classes/:id', (req, res) => {
+  try {
+    const taskId = req.params.id;
+    
+    const taskIndex = demoTasks.findIndex(t => t.id === taskId);
+    if (taskIndex === -1) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    
+    const deletedTask = demoTasks.splice(taskIndex, 1)[0];
+    res.json({ message: 'Task deleted successfully', task: deletedTask });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete task' });
   }
 });
 
