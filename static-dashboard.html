@@ -280,6 +280,70 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Curriculum Management Styles */
+        .curriculum-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+
+        .curriculum-item {
+            background: var(--fern-mist);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--moss-green);
+        }
+
+        .curriculum-header h3 {
+            margin: 0 0 0.25rem 0;
+            color: var(--charcoal-slate);
+            font-size: 1.1rem;
+        }
+
+        .curriculum-meta {
+            color: var(--pebble-gray);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .curriculum-details p {
+            margin: 0.5rem 0;
+            color: var(--charcoal-slate);
+            font-size: 0.9rem;
+        }
+
+        .curriculum-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--pebble-gray);
+            margin: 0.5rem 0;
+        }
+
+        .curriculum-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .empty-state,
+        .error-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--pebble-gray);
+        }
+
+        .empty-state p,
+        .error-state p {
+            margin: 0.5rem 0;
+        }
+
         .recent-activity {
             background: white;
             border-radius: 12px;
@@ -373,12 +437,11 @@
         </div>
 
         <div class="quick-actions">
-            <a href="/static-planner" class="action-btn">Add New Class</a>
-            <button class="action-btn ai-btn" onclick="openAIInterface()">📸 AI Curriculum Import</button>
+            <a href="/static-planner" class="action-btn">📅 Weekly Planner</a>
+            <a href="/curriculum-import" class="action-btn ai-btn">📸 Import Curriculum</a>
             <button class="action-btn" onclick="showCurriculumManager()">📚 Manage Curriculums</button>
-            <a href="/student-view" class="action-btn">Student Login</a>
-            <a href="/parent-view" class="action-btn">Parent Reports</a>
-            <a href="/static-planner" class="action-btn">Manage Students</a>
+            <a href="/student-view" class="action-btn">👨‍🎓 Student Login</a>
+            <a href="/parent-view" class="action-btn">📊 Parent Reports</a>
         </div>
 
         <div class="recent-activity">
@@ -445,7 +508,7 @@
             
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeCurriculumManager()">Close</button>
-                <button class="btn btn-primary" onclick="openAIInterface(); closeCurriculumManager();">📸 Import New Curriculum</button>
+                <a href="/curriculum-import" class="btn btn-primary">📸 Import New Curriculum</a>
             </div>
         </div>
     </div>
@@ -662,10 +725,109 @@
             }
         }
 
-        // Close modal when clicking outside
+        // Curriculum Management Functions
+        function showCurriculumManager() {
+            document.getElementById('curriculumModal').style.display = 'flex';
+            loadCurriculumList();
+        }
+
+        function closeCurriculumManager() {
+            document.getElementById('curriculumModal').style.display = 'none';
+        }
+
+        async function loadCurriculumList() {
+            const curriculumList = document.getElementById('curriculumList');
+            curriculumList.innerHTML = '<div class="loading">Loading curriculums...</div>';
+
+            try {
+                const response = await fetch('/api/curriculums');
+                if (response.ok) {
+                    const curriculums = await response.json();
+                    
+                    if (curriculums.length === 0) {
+                        curriculumList.innerHTML = `
+                            <div class="empty-state">
+                                <p>No curriculums imported yet.</p>
+                                <p>Click "📸 Import New Curriculum" to get started!</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    curriculumList.innerHTML = curriculums.map(curriculum => `
+                        <div class="curriculum-item">
+                            <div class="curriculum-header">
+                                <h3>${curriculum.name}</h3>
+                                <span class="curriculum-meta">${curriculum.subject} • ${curriculum.gradeLevel || 'All Grades'}</span>
+                            </div>
+                            <div class="curriculum-details">
+                                <p>${curriculum.description || 'No description available'}</p>
+                                <div class="curriculum-stats">
+                                    <span>📚 ${curriculum.totalLessons} lessons</span>
+                                    <span>📅 Created ${new Date(curriculum.createdAt).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <div class="curriculum-actions">
+                                <button class="btn btn-sm" onclick="viewCurriculumLessons(${curriculum.id})">View Lessons</button>
+                                <button class="btn btn-sm btn-secondary" onclick="assignCurriculum(${curriculum.id})">Assign to Student</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    throw new Error('Failed to load curriculums');
+                }
+            } catch (error) {
+                console.error('Error loading curriculums:', error);
+                curriculumList.innerHTML = `
+                    <div class="error-state">
+                        <p style="color: red;">Failed to load curriculums.</p>
+                        <p>You can still <a href="/curriculum-import">import new curriculums here</a>.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function viewCurriculumLessons(curriculumId) {
+            try {
+                const response = await fetch(`/api/curriculums/${curriculumId}/lessons`);
+                if (response.ok) {
+                    const lessons = await response.json();
+                    
+                    const lessonsList = lessons.map(lesson => 
+                        `<div class="lesson-preview">
+                            <span class="lesson-number">${lesson.lessonNumber}</span>
+                            <span class="lesson-title">${lesson.title}</span>
+                            <span class="lesson-type lesson-type-${lesson.type}">${lesson.type}</span>
+                            <span class="lesson-duration">${lesson.estimatedMinutes}min</span>
+                        </div>`
+                    ).join('');
+
+                    alert(`Lessons Preview:\n\n${lessons.slice(0, 10).map(l => 
+                        `${l.lessonNumber}. ${l.title} (${l.type}, ${l.estimatedMinutes}min)`
+                    ).join('\n')}${lessons.length > 10 ? `\n... and ${lessons.length - 10} more lessons` : ''}`);
+                } else {
+                    alert('Failed to load lessons');
+                }
+            } catch (error) {
+                console.error('Error viewing lessons:', error);
+                alert('Error loading lessons');
+            }
+        }
+
+        function assignCurriculum(curriculumId) {
+            alert('Curriculum assignment feature coming soon! For now, you can manually schedule lessons in the Weekly Planner.');
+        }
+
+        // Close modals when clicking outside
         document.getElementById('aiModal').addEventListener('click', (e) => {
             if (e.target.id === 'aiModal') {
                 closeAIInterface();
+            }
+        });
+
+        document.getElementById('curriculumModal').addEventListener('click', (e) => {
+            if (e.target.id === 'curriculumModal') {
+                closeCurriculumManager();
             }
         });
 
