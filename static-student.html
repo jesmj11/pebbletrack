@@ -154,15 +154,35 @@
             border: 2px solid transparent;
             transition: all 0.2s ease;
             cursor: pointer;
+            position: relative;
         }
 
         .class-card:hover {
             border-color: var(--stream-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .class-card.completed {
             background: var(--drift-sand);
-            opacity: 0.7;
+            opacity: 0.8;
+            border-color: var(--moss-green);
+        }
+
+        .assignment-checkbox {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 24px;
+            height: 24px;
+            accent-color: var(--moss-green);
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        .assignment-details {
+            margin-left: 0;
+            padding-right: 3rem;
         }
 
         .class-header {
@@ -334,6 +354,31 @@
             100% { transform: scale(1.1) rotate(2deg); }
         }
 
+        @keyframes celebrationBounce {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        @keyframes checkmarkPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .assignment-checkbox:checked {
+            animation: checkmarkPop 0.3s ease;
+        }
+
+        .time-estimate {
+            background: var(--stream-blue);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
         .complete-btn:disabled {
             background: var(--pebble-gray);
             cursor: not-allowed;
@@ -421,13 +466,14 @@
 </head>
 <body>
     <nav class="navbar">
-        <h1>My Learning Dashboard</h1>
-        <div class="nav-links">
-            <a href="/static-dashboard">Dashboard</a>
-            <a href="/static-planner">Weekly Planner</a>
-            <a href="/static-student" class="active">Student View</a>
-            <a href="/static-parent">Parent View</a>
-            <a href="/login" onclick="logout()">Logout</a>
+        <h1>📚 My Learning Dashboard</h1>
+        <div class="student-info">
+            <div class="student-avatar" id="studentAvatar">?</div>
+            <div style="text-align: right;">
+                <div style="font-weight: 600; color: var(--charcoal-slate);" id="studentName">Student</div>
+                <div style="font-size: 0.8rem; color: var(--pebble-gray);" id="studentGrade">Grade</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </nav>
 
@@ -519,32 +565,81 @@
             const container = document.getElementById('classList');
             
             if (classs.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--pebble-gray);">No classs assigned yet!</p>';
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--pebble-gray);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
+                        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">All caught up!</p>
+                        <p>No assignments for today. Great work!</p>
+                    </div>
+                `;
                 return;
             }
 
+            // Separate pending and completed assignments
+            const pendingTasks = classs.filter(task => !task.completed);
+            const completedTasks = classs.filter(task => task.completed);
             const today = new Date();
-            
-            container.innerHTML = classs.map(classItem => {
+
+            let html = '';
+
+            // Render pending assignments first
+            if (pendingTasks.length > 0) {
+                html += `
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--charcoal-slate); margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            📝 <span>To Do</span>
+                            <span style="background: var(--stream-blue); color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem;">
+                                ${pendingTasks.length}
+                            </span>
+                        </h3>
+                        ${renderTaskList(pendingTasks, today)}
+                    </div>
+                `;
+            }
+
+            // Render completed assignments
+            if (completedTasks.length > 0) {
+                html += `
+                    <div>
+                        <h3 style="color: var(--moss-green); margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                            ✅ <span>Completed Today</span>
+                            <span style="background: var(--moss-green); color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem;">
+                                ${completedTasks.length}
+                            </span>
+                        </h3>
+                        ${renderTaskList(completedTasks, today)}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderTaskList(tasks, today) {
+            return tasks.map(classItem => {
                 const dueDate = new Date(classItem.dueDate);
                 const isOverdue = dueDate < today && !classItem.completed;
                 
                 return `
                     <div class="class-card ${classItem.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" 
-                         data-task-id="${classItem.id}">
-                        <div class="class-header">
-                            <div>
+                         data-task-id="${classItem.id}" id="task-${classItem.id}">
+                        
+                        <input type="checkbox" 
+                               class="assignment-checkbox" 
+                               ${classItem.completed ? 'checked' : ''} 
+                               onchange="toggleClass('${classItem.id}')"
+                               id="checkbox-${classItem.id}">
+                        
+                        <div class="assignment-details">
+                            <div class="class-header">
                                 <div class="class-title ${classItem.completed ? 'completed' : ''}">${classItem.title}</div>
-                                <div class="class-meta">
-                                    <span class="subject-tag">${classItem.subject}</span>
-                                    Due: ${formatDate(classItem.dueDate)}
-                                </div>
                             </div>
-                            <button class="complete-btn" 
-                                    onclick="toggleClass('${classItem.id}')" 
-                                    ${classItem.completed ? 'disabled' : ''}>
-                                ${classItem.completed ? 'Completed! ✅' : 'Mark Complete'}
-                            </button>
+                            <div class="class-meta">
+                                <span class="subject-tag">${classItem.subject}</span>
+                                ${classItem.dueDate ? `<span class="due-date">Due: ${formatDate(classItem.dueDate)}</span>` : ''}
+                                ${isOverdue ? '<span style="color: #e74c3c; font-weight: bold;">⚠️ Overdue</span>' : ''}
+                            </div>
+                            ${classItem.description ? `<div class="class-description">${classItem.description}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -556,29 +651,42 @@
             const taskClass = classs.find(t => t.id === classId);
             if (!taskClass) return;
 
+            const wasCompleted = taskClass.completed;
             taskClass.completed = !taskClass.completed;
+            taskClass.completedAt = taskClass.completed ? new Date().toISOString() : null;
+
+            // Get elements for animations
+            const taskElement = document.querySelector(`[data-task-id="${classId}"]`);
+            const checkbox = document.getElementById(`checkbox-${classId}`);
 
             // 🎉 CELEBRATION ANIMATION & NOTIFICATIONS
             if (taskClass.completed) {
-                const taskElement = document.querySelector(`[data-task-id="${classId}"]`);
+                // Immediate visual feedback
                 if (taskElement) {
-                    taskElement.style.animation = 'bounce 0.6s ease-in-out';
-                    taskElement.style.backgroundColor = '#86baba';
-                    
+                    taskElement.style.transform = 'scale(1.02)';
+                    taskElement.style.transition = 'all 0.3s ease';
                     setTimeout(() => {
-                        taskElement.style.backgroundColor = '';
-                        taskElement.style.animation = '';
-                    }, 600);
+                        taskElement.style.transform = 'scale(1)';
+                    }, 300);
                 }
+
+                // 🎉 Show success message with XP
+                const xpEarned = 25;
+                showSuccessMessage(`🎉 ${taskClass.title} complete! +${xpEarned} XP`);
                 
-                // Show success popup
-                showSuccessMessage(`Great job! ${taskClass.title} completed! 🎉`);
-                
-                // 📢 NOTIFY PARENTS
+                // 📢 Notify parent
                 notifyParent(taskClass);
                 
-                // Update streak
+                // 🔥 Update streak
                 updateStreak();
+
+                // 🎊 Check if all tasks are complete
+                setTimeout(() => {
+                    const remainingTasks = classs.filter(t => !t.completed).length;
+                    if (remainingTasks === 0) {
+                        showAllCompleteAnimation();
+                    }
+                }, 500);
             }
 
             try {
@@ -587,18 +695,51 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         completed: taskClass.completed,
-                        completedAt: taskClass.completed ? new Date().toISOString() : null
+                        completedAt: taskClass.completedAt
                     })
                 });
 
                 if (!response.ok) throw new Error('API request failed');
             } catch (error) {
-                console.warn('Saving locally');
+                console.warn('Saving locally only:', error);
                 localStorage.setItem('homeschool_classs', JSON.stringify(classs));
             }
 
-            renderClasss();
-            updateProgress();
+            // 🔄 Re-render with smooth transition
+            setTimeout(() => {
+                renderClasss();
+                updateProgress();
+            }, taskClass.completed ? 300 : 0);
+        }
+
+        function showAllCompleteAnimation() {
+            const celebrationDiv = document.createElement('div');
+            celebrationDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, var(--moss-green), var(--stream-blue));
+                color: white;
+                padding: 2rem 3rem;
+                border-radius: 20px;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 1000;
+                animation: celebrationBounce 0.6s ease;
+            `;
+            celebrationDiv.innerHTML = `
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🎊</div>
+                <h2 style="margin-bottom: 0.5rem;">All Done!</h2>
+                <p>You completed all your assignments!</p>
+                <p style="margin-top: 1rem; font-size: 1.2rem;">⭐ +50 Bonus XP! ⭐</p>
+            `;
+            
+            document.body.appendChild(celebrationDiv);
+            
+            setTimeout(() => {
+                celebrationDiv.remove();
+            }, 4000);
         }
 
         // 🎉 SUCCESS ANIMATIONS
@@ -698,23 +839,53 @@
 
         // Check authentication on page load
         function checkAuth() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const studentLoggedIn = localStorage.getItem('studentLoggedIn');
             const userRole = localStorage.getItem('userRole');
             
-            if (!isLoggedIn || userRole !== 'student') {
-                window.location.href = '/login';
+            if (!studentLoggedIn || userRole !== 'student') {
+                window.location.href = '/static-student-login';
                 return false;
             }
+            
+            // Load current student info
+            currentStudent = {
+                id: localStorage.getItem('currentStudentId'),
+                fullName: localStorage.getItem('currentStudentName'),
+                gradeLevel: localStorage.getItem('currentStudentGrade')
+            };
+            
             return true;
         }
 
         function logout() {
+            localStorage.removeItem('studentLoggedIn');
+            localStorage.removeItem('currentStudentId');
+            localStorage.removeItem('currentStudentName');
+            localStorage.removeItem('currentStudentGrade');
             localStorage.removeItem('userRole');
-            localStorage.removeItem('isLoggedIn');
+            window.location.href = '/static-student-login';
+        }
+
+        function initializeStudentInfo() {
+            const studentName = localStorage.getItem('currentStudentName') || 'Student';
+            const studentGrade = localStorage.getItem('currentStudentGrade') || '';
+            const firstName = studentName.split(' ')[0];
+            
+            // Update navbar
+            document.getElementById('studentName').textContent = firstName;
+            document.getElementById('studentGrade').textContent = studentGrade;
+            
+            // Update welcome message
+            document.getElementById('welcomeName').textContent = firstName;
+            
+            // Set avatar initials
+            const initials = studentName.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('studentAvatar').textContent = initials;
         }
 
         // Load data when page loads
         if (checkAuth()) {
+            initializeStudentInfo();
             loadStudentData();
         }
     </script>

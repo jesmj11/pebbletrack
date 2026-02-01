@@ -536,6 +536,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve student login
+  app.get('/static-student-login', async (req, res) => {
+    try {
+      const filePath = path.join(__dirname, '..', 'static-student-login.html');
+      const htmlContent = await fs.readFile(filePath, 'utf8');
+      res.send(htmlContent);
+    } catch (error) {
+      console.error('Error serving student login:', error);
+      res.status(500).send('Error loading student login');
+    }
+  });
+
+  // Serve student dashboard
+  app.get('/static-student', async (req, res) => {
+    try {
+      const filePath = path.join(__dirname, '..', 'static-student.html');
+      const htmlContent = await fs.readFile(filePath, 'utf8');
+      res.send(htmlContent);
+    } catch (error) {
+      console.error('Error serving student dashboard:', error);
+      res.status(500).send('Error loading student dashboard');
+    }
+  });
+
   // Serve static parent view
   app.get('/parent-view', async (req, res) => {
     try {
