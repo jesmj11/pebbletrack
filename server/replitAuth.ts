@@ -8,13 +8,15 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage-replit";
 
-const DEMO_MODE = !process.env.REPLIT_DOMAINS || !process.env.DATABASE_URL;
+const DEMO_MODE = !process.env.REPLIT_DOMAINS || !process.env.DATABASE_URL || process.env.DEMO_MODE === 'true';
 
 if (!process.env.REPLIT_DOMAINS) {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error("Environment variable REPLIT_DOMAINS not provided");
+  if (process.env.NODE_ENV === 'production' && process.env.DEMO_MODE !== 'true') {
+    console.warn("⚠️  No REPLIT_DOMAINS provided - running in DEMO MODE");
+    console.warn("⚠️  Authentication will be bypassed for demo purposes");
+    console.warn("⚠️  Set DEMO_MODE=true environment variable to acknowledge demo mode");
   } else {
-    console.warn("⚠️  Replit auth disabled in demo mode - authentication skipped");
+    console.warn("🚀 Demo mode: Authentication disabled - open access for testing");
   }
 }
 
