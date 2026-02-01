@@ -159,21 +159,39 @@ app.post('/api/planner/students', (req, res) => {
 app.delete('/api/planner/students/:id', (req, res) => {
   try {
     const studentId = parseInt(req.params.id);
+    console.log('Delete request for student ID:', studentId, 'Type:', typeof studentId);
+    console.log('Current students:', demoStudents.map(s => ({ id: s.id, name: s.fullName, type: typeof s.id })));
     
     const studentIndex = demoStudents.findIndex(s => s.id === studentId);
+    console.log('Found student index:', studentIndex);
+    
     if (studentIndex === -1) {
-      return res.status(404).json({ error: 'Student not found' });
+      console.log('Student not found with ID:', studentId);
+      return res.status(404).json({ 
+        error: 'Student not found',
+        requestedId: studentId,
+        availableStudents: demoStudents.map(s => ({ id: s.id, name: s.fullName }))
+      });
     }
     
     // Remove the student
     const deletedStudent = demoStudents.splice(studentIndex, 1)[0];
+    console.log('Deleted student:', deletedStudent);
     
     // Remove all tasks associated with this student
+    const tasksBeforeDelete = demoTasks.length;
     demoTasks = demoTasks.filter(task => task.studentId !== studentId);
+    const tasksAfterDelete = demoTasks.length;
+    console.log(`Removed ${tasksBeforeDelete - tasksAfterDelete} tasks for student ${studentId}`);
     
-    res.json({ message: 'Student deleted successfully', student: deletedStudent });
+    res.json({ 
+      message: 'Student deleted successfully', 
+      student: deletedStudent,
+      tasksRemoved: tasksBeforeDelete - tasksAfterDelete
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete student' });
+    console.error('Error in delete endpoint:', error);
+    res.status(500).json({ error: 'Failed to delete student', details: error.message });
   }
 });
 

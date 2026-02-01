@@ -685,11 +685,16 @@
             for (let i = 0; i < maxStudents; i++) {
                 const header = document.getElementById(`student-header-${i + 1}`);
                 if (i < students.length && students[i]) {
+                    const student = students[i];
+                    console.log('Rendering student header:', student.id, student.fullName, 'ID type:', typeof student.id);
+                    
                     header.innerHTML = `
-                        ${students[i].fullName || `Student ${i + 1}`}
-                        <button onclick="deleteStudent(${students[i].id})" 
-                                style="margin-left: 8px; background: #ef4444; color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 12px; cursor: pointer;"
-                                title="Delete ${students[i].fullName}">×</button>
+                        <span style="margin-right: 8px;">${student.fullName || `Student ${i + 1}`}</span>
+                        <button onclick="deleteStudent(${student.id})" 
+                                style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; font-weight: bold;"
+                                title="Delete ${student.fullName}"
+                                onmouseover="this.style.background='#dc2626'" 
+                                onmouseout="this.style.background='#ef4444'">×</button>
                     `;
                     header.style.color = 'white';
                 } else {
@@ -701,34 +706,58 @@
 
         // Delete student function
         async function deleteStudent(studentId) {
-            if (!confirm('Are you sure you want to delete this student? This will also remove all their assigned tasks.')) {
+            console.log('Attempting to delete student ID:', studentId, 'Type:', typeof studentId);
+            
+            const student = students.find(s => s.id == studentId); // Use == to handle type coercion
+            if (!student) {
+                console.error('Student not found in local array:', studentId);
+                alert('Student not found. Please refresh the page and try again.');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to delete "${student.fullName}"? This will also remove all their assigned tasks.`)) {
                 return;
             }
 
+            console.log('Confirmed deletion of student:', student);
+
             if (isOnline) {
                 try {
+                    console.log('Making DELETE request to:', `/api/planner/students/${studentId}`);
+                    
                     const response = await fetch(`/api/planner/students/${studentId}`, {
                         method: 'DELETE'
                     });
                     
+                    console.log('Delete response status:', response.status);
+                    
                     if (response.ok) {
+                        const result = await response.json();
+                        console.log('Delete successful:', result);
+                        
                         // Remove from local array
-                        students = students.filter(s => s.id !== studentId);
+                        students = students.filter(s => s.id != studentId); // Use != for type coercion
                         // Remove associated tasks
-                        tasks = tasks.filter(t => t.studentId !== studentId);
+                        tasks = tasks.filter(t => t.studentId != studentId);
+                        
+                        alert(`Student "${student.fullName}" deleted successfully!`);
                     } else {
-                        alert('Failed to delete student from server');
+                        const errorData = await response.json();
+                        console.error('Delete failed:', response.status, errorData);
+                        alert(`Failed to delete student: ${errorData.error || 'Unknown error'}`);
                         return;
                     }
                 } catch (error) {
                     console.error('Error deleting student:', error);
-                    alert('Error deleting student. Please try again.');
+                    alert(`Error deleting student: ${error.message}. Please try again.`);
                     return;
                 }
             } else {
                 // Offline mode
-                students = students.filter(s => s.id !== studentId);
-                tasks = tasks.filter(t => t.studentId !== studentId);
+                console.log('Deleting in offline mode');
+                students = students.filter(s => s.id != studentId);
+                tasks = tasks.filter(t => t.studentId != studentId);
+                alert(`Student "${student.fullName}" deleted successfully (offline mode)!`);
             }
             
             // Update localStorage and UI
@@ -736,6 +765,8 @@
             localStorage.setItem('weekly_planner_tasks', JSON.stringify(tasks));
             updateStudentHeaders();
             renderTasks();
+            
+            console.log('Students after deletion:', students);
         }
 
         function renderTasks() {
