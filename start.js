@@ -32,16 +32,25 @@ app.get('/health', (req, res) => {
 
 // Root redirect
 app.get('/', (req, res) => {
-  res.redirect('/student-view');
+  res.redirect('/static-dashboard');
 });
 
 // Serve static HTML files directly
 const routeMap = {
+  // Main demo routes
   '/student-view': 'static-student.html',
-  '/parent-view': 'static-parent.html', 
+  '/parent-view': 'static-parent.html',
+  
+  // Routes that match the navigation links in HTML files
+  '/static-dashboard': 'static-dashboard.html',
+  '/static-planner': 'static-planner.html', 
+  '/static-student': 'static-student.html',
+  '/static-parent': 'static-parent.html',
+  '/login': 'static-login.html',
+  
+  // Friendly aliases
   '/dashboard': 'static-dashboard.html',
-  '/planner': 'static-planner.html',
-  '/login': 'static-login.html'
+  '/planner': 'static-planner.html'
 };
 
 Object.entries(routeMap).forEach(([route, filename]) => {
@@ -129,7 +138,7 @@ app.use((err, req, res, next) => {
 
 // Fallback for any other routes
 app.get('*', (req, res) => {
-  res.redirect('/student-view');
+  res.redirect('/static-dashboard');
 });
 
 // Start server
