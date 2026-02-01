@@ -336,6 +336,7 @@
         <div class="nav-links">
             <a href="/static-dashboard" class="active">Dashboard</a>
             <a href="/static-planner">Weekly Planner</a>
+            <a href="/curriculum-import">📚 Import Curriculum</a>
             <a href="/static-student">Student View</a>
             <a href="/static-parent">Parent View</a>
             <a href="/login" onclick="logout()">Logout</a>
@@ -374,6 +375,7 @@
         <div class="quick-actions">
             <a href="/static-planner" class="action-btn">Add New Class</a>
             <button class="action-btn ai-btn" onclick="openAIInterface()">📸 AI Curriculum Import</button>
+            <button class="action-btn" onclick="showCurriculumManager()">📚 Manage Curriculums</button>
             <a href="/student-view" class="action-btn">Student Login</a>
             <a href="/parent-view" class="action-btn">Parent Reports</a>
             <a href="/static-planner" class="action-btn">Manage Students</a>
@@ -427,6 +429,23 @@
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeAIInterface()">Cancel</button>
                 <button class="btn btn-primary" id="addLessonsBtn" onclick="addLessonsToPlanner()" style="display: none;">Add to Planner</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Curriculum Management Modal -->
+    <div id="curriculumModal" class="ai-modal">
+        <div class="ai-modal-content">
+            <h2>Curriculum Manager</h2>
+            <p>Manage your homeschool curriculums and view imported lessons.</p>
+            
+            <div class="curriculum-list" id="curriculumList">
+                <div class="loading">Loading curriculums...</div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeCurriculumManager()">Close</button>
+                <button class="btn btn-primary" onclick="openAIInterface(); closeCurriculumManager();">📸 Import New Curriculum</button>
             </div>
         </div>
     </div>

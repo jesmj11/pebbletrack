@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curriculum Import - Homeschool Management</title>
+    <style>
+        :root {
+            --pebble-green: #4ade80;
+            --pebble-blue: #3b82f6; 
+            --pebble-purple: #8b5cf6;
+            --sage-green: #86baba;
+            --charcoal-slate: #334155;
+            --warm-cream: #fef7ed;
+            --soft-gray: #f8fafc;
+            --light-border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--soft-gray);
+            color: var(--charcoal-slate);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--pebble-green), var(--sage-green));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .import-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .import-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .import-card:hover {
+            border-color: var(--pebble-green);
+            transform: translateY(-2px);
+        }
+
+        .import-card h3 {
+            color: var(--pebble-green);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background: var(--pebble-green);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #22c55e;
+        }
+
+        .btn-secondary {
+            background: var(--pebble-blue);
+        }
+
+        .btn-secondary:hover {
+            background: #2563eb;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--charcoal-slate);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--light-border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--light-border);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background: var(--warm-cream);
+            transition: all 0.3s ease;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--pebble-green);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .preview-table {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--light-border);
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
+        .preview-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--light-border);
+        }
+
+        .preview-table th {
+            background: var(--soft-gray);
+            font-weight: 600;
+        }
+
+        .lesson-type-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .lesson-type-lesson { background: #dbeafe; color: #1e40af; }
+        .lesson-type-quiz { background: #fef3c7; color: #92400e; }
+        .lesson-type-test { background: #fecaca; color: #991b1b; }
+        .lesson-type-review { background: #d1fae5; color: #065f46; }
+
+        .template-download {
+            background: var(--warm-cream);
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .manual-entry {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+
+        .lesson-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--light-border);
+            border-radius: 6px;
+            padding: 1rem;
+        }
+
+        .lesson-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .lesson-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>📚 Curriculum Import Center</h1>
+            <div class="nav-links">
+                <a href="/planner">← Back to Planner</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Import Curriculum Lessons & Structure</h2>
+        <p>Choose your preferred method to add curriculum content to PebbleTrack:</p>
+
+        <div class="import-methods">
+            <!-- CSV/Excel Import -->
+            <div class="import-card">
+                <h3>📊 CSV/Excel Import</h3>
+                <p>Upload a spreadsheet with your lesson structure. Perfect for bulk imports.</p>
+                
+                <div class="template-download">
+                    <strong>📥 Download Template:</strong>
+                    <button class="btn btn-secondary" onclick="downloadTemplate()">
+                        Download CSV Template
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label for="csvFile">Upload CSV/Excel File:</label>
+                    <div class="upload-area" id="csvUploadArea">
+                        <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" style="display: none;">
+                        <div>
+                            📁 Drag & drop your file here or click to browse
+                        </div>
+                    </div>
+                </div>
+
+                <div id="csvPreview" style="display: none;">
+                    <h4>Preview:</h4>
+                    <div class="preview-table" id="csvPreviewTable"></div>
+                    <button class="btn" onclick="importCsvData()">Import Lessons</button>
+                </div>
+            </div>
+
+            <!-- Copy-Paste Parser -->
+            <div class="import-card">
+                <h3>📋 Copy-Paste Parser</h3>
+                <p>Copy lesson lists from websites and let our smart parser extract the structure.</p>
+                
+                <div class="form-group">
+                    <label for="pasteData">Paste content from curriculum website:</label>
+                    <textarea id="pasteData" rows="8" placeholder="Example:
+Lesson 1: Introduction to Fractions
+Lesson 2: Adding Fractions
+Quiz 1: Fractions Review
+Lesson 3: Subtracting Fractions
+Test 1: Fractions Assessment"></textarea>
+                </div>
+
+                <button class="btn" onclick="parseClipboardData()">Parse Lessons</button>
+
+                <div id="parsePreview" style="display: none;">
+                    <h4>Parsed Results:</h4>
+                    <div class="preview-table" id="parsePreviewTable"></div>
+                    <button class="btn" onclick="importParsedData()">Import Parsed Lessons</button>
+                </div>
+            </div>
+
+            <!-- Manual Entry -->
+            <div class="import-card">
+                <h3>✏️ Manual Entry</h3>
+                <p>Add lessons one by one with full control over details.</p>
+                
+                <div class="form-group">
+                    <label for="curriculumSelect">Select Curriculum:</label>
+                    <select id="curriculumSelect">
+                        <option value="">Choose curriculum...</option>
+                        <option value="new">+ Create New Curriculum</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="showManualEntry()">Start Manual Entry</button>
+            </div>
+
+            <!-- Template Library -->
+            <div class="import-card">
+                <h3>📚 Template Library</h3>
+                <p>Use pre-built lesson structures for popular curricula.</p>
+                
+                <div class="form-group">
+                    <label for="templateSelect">Choose Template:</label>
+                    <select id="templateSelect">
+                        <option value="">Select a template...</option>
+                        <option value="saxon-math-76">Saxon Math 7/6 (120 lessons)</option>
+                        <option value="teaching-textbooks-algebra">Teaching Textbooks Algebra 1 (122 lessons)</option>
+                        <option value="apologia-general-science">Apologia General Science (16 modules)</option>
+                        <option value="trail-guide-geography">Trail Guide to Geography (36 lessons)</option>
+                        <option value="writing-with-ease">Writing with Ease Level 2 (36 weeks)</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="loadTemplate()">Load Template</button>
+
+                <div id="templatePreview" style="display: none;">
+                    <h4>Template Preview:</h4>
+                    <div class="preview-table" id="templatePreviewTable"></div>
+                    <button class="btn" onclick="importTemplate()">Import Template</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Entry Interface -->
+        <div class="manual-entry" id="manualEntrySection" style="display: none;">
+            <h3>✏️ Manual Lesson Entry</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <div class="form-group">
+                        <label for="curriculumName">Curriculum Name:</label>
+                        <input type="text" id="curriculumName" placeholder="e.g., Saxon Math 8/7">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="curriculumSubject">Subject:</label>
+                        <select id="curriculumSubject">
+                            <option value="Math">Math</option>
+                            <option value="English">English</option>
+                            <option value="Science">Science</option>
+                            <option value="History">History</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lessonTitle">Lesson Title:</label>
+                        <input type="text" id="lessonTitle" placeholder="e.g., Adding Fractions">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lessonType">Lesson Type:</label>
+                        <select id="lessonType">
+                            <option value="lesson">Lesson</option>
+                            <option value="quiz">Quiz</option>
+                            <option value="test">Test</option>
+                            <option value="review">Review</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lessonMinutes">Estimated Minutes:</label>
+                        <input type="number" id="lessonMinutes" value="30" min="5" max="180">
+                    </div>
+
+                    <button class="btn" onclick="addLesson()">Add Lesson</button>
+                </div>
+
+                <div>
+                    <h4>Lessons Added:</h4>
+                    <div class="lesson-list" id="manualLessonList">
+                        <em>No lessons added yet</em>
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        <button class="btn" onclick="saveManualCurriculum()">Save Curriculum</button>
+                        <button class="btn btn-secondary" onclick="clearManualEntry()">Clear All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let csvData = [];
+        let parsedData = [];
+        let manualLessons = [];
+
+        // CSV Upload handling
+        document.getElementById('csvUploadArea').addEventListener('click', () => {
+            document.getElementById('csvFile').click();
+        });
+
+        document.getElementById('csvFile').addEventListener('change', handleCsvUpload);
+
+        // Drag and drop
+        const uploadArea = document.getElementById('csvUploadArea');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleCsvFile(files[0]);
+            }
+        });
+
+        function downloadTemplate() {
+            const csvContent = `Lesson Number,Title,Type,Estimated Minutes,Description
+1,Introduction to Fractions,lesson,30,Basic fraction concepts
+2,Adding Fractions,lesson,35,Adding fractions with common denominators
+3,Fractions Quiz,quiz,20,Assessment of fraction basics
+4,Subtracting Fractions,lesson,35,Subtracting fractions with common denominators
+5,Mixed Numbers,lesson,40,Converting between improper fractions and mixed numbers
+6,Fractions Test,test,45,Comprehensive fractions assessment`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pebbletrack-curriculum-template.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function handleCsvUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleCsvFile(file);
+            }
+        }
+
+        function handleCsvFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                csvData = parseCSV(text);
+                displayCsvPreview(csvData);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    const values = lines[i].split(',').map(v => v.trim());
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] || '';
+                    });
+                    data.push(row);
+                }
+            }
+            return data;
+        }
+
+        function displayCsvPreview(data) {
+            if (data.length === 0) return;
+            
+            const preview = document.getElementById('csvPreview');
+            const table = document.getElementById('csvPreviewTable');
+            
+            let html = '<table><thead><tr>';
+            const headers = Object.keys(data[0]);
+            headers.forEach(header => {
+                html += `<th>${header}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            data.slice(0, 10).forEach(row => {
+                html += '<tr>';
+                headers.forEach(header => {
+                    let value = row[header];
+                    if (header.toLowerCase().includes('type')) {
+                        value = `<span class="lesson-type-badge lesson-type-${value}">${value}</span>`;
+                    }
+                    html += `<td>${value}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            if (data.length > 10) {
+                html += `<p><em>... and ${data.length - 10} more rows</em></p>`;
+            }
+            
+            table.innerHTML = html;
+            preview.style.display = 'block';
+        }
+
+        async function parseClipboardData() {
+            const text = document.getElementById('pasteData').value;
+            if (!text.trim()) {
+                alert('Please paste some content first');
+                return;
+            }
+            
+            try {
+                // First try local parsing
+                parsedData = smartParseText(text);
+                
+                // Then enhance with backend parsing
+                const response = await fetch('/api/curriculums/parse', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ content: text })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    parsedData = result.lessons;
+                    
+                    // Show suggestions if any
+                    if (result.suggestions && result.suggestions.length > 0) {
+                        const suggestionText = result.suggestions.join('\n• ');
+                        alert(`Parsed ${result.lessonsFound} lessons!\n\nSuggestions:\n• ${suggestionText}`);
+                    }
+                }
+                
+                displayParsePreview(parsedData);
+            } catch (error) {
+                console.error('Error parsing content:', error);
+                // Fallback to local parsing
+                parsedData = smartParseText(text);
+                displayParsePreview(parsedData);
+            }
+        }
+
+        function smartParseText(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const lessons = [];
+            let lessonNumber = 1;
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                
+                // Extract lesson number if present
+                const numberMatch = line.match(/^(?:Lesson\s*)?(\d+)[:.]?\s*(.+)/i);
+                if (numberMatch) {
+                    lessonNumber = parseInt(numberMatch[1]);
+                    line = numberMatch[2];
+                }
+                
+                // Determine type based on keywords
+                let type = 'lesson';
+                if (line.toLowerCase().includes('quiz')) type = 'quiz';
+                else if (line.toLowerCase().includes('test') || line.toLowerCase().includes('exam')) type = 'test';
+                else if (line.toLowerCase().includes('review')) type = 'review';
+                
+                lessons.push({
+                    'Lesson Number': lessonNumber,
+                    'Title': line,
+                    'Type': type,
+                    'Estimated Minutes': type === 'quiz' ? 20 : type === 'test' ? 45 : 30
+                });
+                
+                lessonNumber++;
+            });
+            
+            return lessons;
+        }
+
+        function displayParsePreview(data) {
+            const preview = document.getElementById('parsePreview');
+            const table = document.getElementById('parsePreviewTable');
+            
+            let html = '<table><thead><tr><th>Lesson #</th><th>Title</th><th>Type</th><th>Minutes</th></tr></thead><tbody>';
+            
+            data.forEach(lesson => {
+                html += `<tr>
+                    <td>${lesson['Lesson Number']}</td>
+                    <td>${lesson['Title']}</td>
+                    <td><span class="lesson-type-badge lesson-type-${lesson['Type']}">${lesson['Type']}</span></td>
+                    <td>${lesson['Estimated Minutes']}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            table.innerHTML = html;
+            preview.style.display = 'block';
+        }
+
+        function showManualEntry() {
+            document.getElementById('manualEntrySection').style.display = 'block';
+            document.getElementById('curriculumName').focus();
+        }
+
+        function addLesson() {
+            const title = document.getElementById('lessonTitle').value;
+            const type = document.getElementById('lessonType').value;
+            const minutes = document.getElementById('lessonMinutes').value;
+            
+            if (!title.trim()) {
+                alert('Please enter a lesson title');
+                return;
+            }
+            
+            const lesson = {
+                number: manualLessons.length + 1,
+                title: title,
+                type: type,
+                minutes: parseInt(minutes)
+            };
+            
+            manualLessons.push(lesson);
+            updateManualLessonList();
+            
+            // Clear the form
+            document.getElementById('lessonTitle').value = '';
+            document.getElementById('lessonMinutes').value = 30;
+            document.getElementById('lessonTitle').focus();
+        }
+
+        function updateManualLessonList() {
+            const list = document.getElementById('manualLessonList');
+            
+            if (manualLessons.length === 0) {
+                list.innerHTML = '<em>No lessons added yet</em>';
+                return;
+            }
+            
+            let html = '';
+            manualLessons.forEach((lesson, index) => {
+                html += `
+                    <div class="lesson-item">
+                        <div>
+                            <strong>Lesson ${lesson.number}:</strong> ${lesson.title}
+                            <br><small><span class="lesson-type-badge lesson-type-${lesson.type}">${lesson.type}</span> • ${lesson.minutes} min</small>
+                        </div>
+                        <button onclick="removeManualLesson(${index})" style="background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px;">×</button>
+                    </div>
+                `;
+            });
+            
+            list.innerHTML = html;
+        }
+
+        function removeManualLesson(index) {
+            manualLessons.splice(index, 1);
+            // Renumber lessons
+            manualLessons.forEach((lesson, i) => {
+                lesson.number = i + 1;
+            });
+            updateManualLessonList();
+        }
+
+        function clearManualEntry() {
+            if (manualLessons.length > 0 && !confirm('Clear all lessons? This cannot be undone.')) {
+                return;
+            }
+            manualLessons = [];
+            updateManualLessonList();
+            document.getElementById('curriculumName').value = '';
+        }
+
+        // API functions - connected to PebbleTrack backend
+        async function importCsvData() {
+            try {
+                const curriculumName = prompt('Enter curriculum name:');
+                const curriculumSubject = prompt('Enter subject (Math, Science, English, etc.):');
+                
+                if (!curriculumName || !curriculumSubject) {
+                    alert('Curriculum name and subject are required');
+                    return;
+                }
+                
+                console.log('Importing CSV data:', csvData);
+                
+                const response = await fetch('/api/curriculums/import/csv', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        curriculumName,
+                        curriculumSubject,
+                        lessons: csvData.map(row => ({
+                            lessonNumber: parseInt(row['Lesson Number']) || undefined,
+                            title: row['Title'] || row['title'] || '',
+                            type: row['Type'] || row['type'] || 'lesson',
+                            estimatedMinutes: parseInt(row['Estimated Minutes']) || parseInt(row['estimated_minutes']) || 30,
+                            description: row['Description'] || row['description'] || ''
+                        }))
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Successfully imported "${result.curriculum.name}" with ${result.lessonsImported} lessons!`);
+                    
+                    // Clear the preview
+                    document.getElementById('csvPreview').style.display = 'none';
+                    csvData = [];
+                    document.getElementById('csvFile').value = '';
+                } else {
+                    const error = await response.json();
+                    alert(`Import failed: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Error importing CSV data:', error);
+                alert('Failed to import CSV data. Please try again.');
+            }
+        }
+
+        async function importParsedData() {
+            try {
+                const curriculumName = prompt('Enter curriculum name:');
+                const curriculumSubject = prompt('Enter subject (Math, Science, English, etc.):');
+                
+                if (!curriculumName || !curriculumSubject) {
+                    alert('Curriculum name and subject are required');
+                    return;
+                }
+                
+                console.log('Importing parsed data:', parsedData);
+                
+                const response = await fetch('/api/curriculums/import/csv', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        curriculumName,
+                        curriculumSubject,
+                        lessons: parsedData.map(lesson => ({
+                            lessonNumber: lesson['Lesson Number'],
+                            title: lesson['Title'],
+                            type: lesson['Type'],
+                            estimatedMinutes: lesson['Estimated Minutes'],
+                            description: ''
+                        }))
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Successfully imported "${result.curriculum.name}" with ${result.lessonsImported} lessons!`);
+                    
+                    // Clear the preview
+                    document.getElementById('parsePreview').style.display = 'none';
+                    parsedData = [];
+                    document.getElementById('pasteData').value = '';
+                } else {
+                    const error = await response.json();
+                    alert(`Import failed: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Error importing parsed data:', error);
+                alert('Failed to import parsed data. Please try again.');
+            }
+        }
+
+        async function saveManualCurriculum() {
+            const name = document.getElementById('curriculumName').value;
+            const subject = document.getElementById('curriculumSubject').value;
+            
+            if (!name.trim()) {
+                alert('Please enter a curriculum name');
+                return;
+            }
+            
+            if (manualLessons.length === 0) {
+                alert('Please add at least one lesson');
+                return;
+            }
+            
+            try {
+                console.log('Saving curriculum:', { name, subject, lessons: manualLessons });
+                
+                const response = await fetch('/api/curriculums', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        subject,
+                        lessons: manualLessons.map(lesson => ({
+                            lessonNumber: lesson.number,
+                            title: lesson.title,
+                            type: lesson.type,
+                            estimatedMinutes: lesson.minutes,
+                            description: ''
+                        }))
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Successfully saved "${result.name}" with ${manualLessons.length} lessons!`);
+                    
+                    // Clear the form
+                    clearManualEntry();
+                } else {
+                    const error = await response.json();
+                    alert(`Save failed: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Error saving manual curriculum:', error);
+                alert('Failed to save curriculum. Please try again.');
+            }
+        }
+
+        async function loadTemplate() {
+            const templateId = document.getElementById('templateSelect').value;
+            if (!templateId) return;
+            
+            try {
+                console.log('Loading template:', templateId);
+                
+                const response = await fetch(`/api/curriculums/templates/${templateId}`);
+                
+                if (response.ok) {
+                    const template = await response.json();
+                    displayTemplatePreview(template);
+                } else {
+                    alert('Failed to load template');
+                }
+            } catch (error) {
+                console.error('Error loading template:', error);
+                alert('Failed to load template. Please try again.');
+            }
+        }
+
+        function displayTemplatePreview(template) {
+            const preview = document.getElementById('templatePreview');
+            const table = document.getElementById('templatePreviewTable');
+            
+            let html = `<p><strong>${template.name}</strong> - ${template.lessons.length} lessons</p>`;
+            html += '<table><thead><tr><th>Lesson #</th><th>Title</th><th>Type</th><th>Minutes</th></tr></thead><tbody>';
+            
+            template.lessons.slice(0, 10).forEach(lesson => {
+                html += `<tr>
+                    <td>${lesson.lessonNumber}</td>
+                    <td>${lesson.title}</td>
+                    <td><span class="lesson-type-badge lesson-type-${lesson.type}">${lesson.type}</span></td>
+                    <td>${lesson.estimatedMinutes}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            if (template.lessons.length > 10) {
+                html += `<p><em>... and ${template.lessons.length - 10} more lessons</em></p>`;
+            }
+            
+            table.innerHTML = html;
+            preview.style.display = 'block';
+        }
+
+        async function importTemplate() {
+            const templateId = document.getElementById('templateSelect').value;
+            if (!templateId) return;
+            
+            try {
+                const response = await fetch(`/api/curriculums/templates/${templateId}`);
+                
+                if (response.ok) {
+                    const template = await response.json();
+                    
+                    const createResponse = await fetch('/api/curriculums', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            name: template.name,
+                            subject: template.subject,
+                            publisher: template.publisher,
+                            gradeLevel: template.gradeLevel,
+                            description: template.description,
+                            lessons: template.lessons
+                        })
+                    });
+                    
+                    if (createResponse.ok) {
+                        const result = await createResponse.json();
+                        alert(`Successfully imported template "${result.name}" with ${template.lessons.length} lessons!`);
+                        
+                        // Clear preview
+                        document.getElementById('templatePreview').style.display = 'none';
+                        document.getElementById('templateSelect').value = '';
+                    } else {
+                        const error = await createResponse.json();
+                        alert(`Template import failed: ${error.error}`);
+                    }
+                } else {
+                    alert('Failed to load template');
+                }
+            } catch (error) {
+                console.error('Error importing template:', error);
+                alert('Failed to import template. Please try again.');
+            }
+        }
+
+        // Load templates on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/curriculums/templates');
+                if (response.ok) {
+                    const templates = await response.json();
+                    const select = document.getElementById('templateSelect');
+                    
+                    templates.forEach(template => {
+                        const option = document.createElement('option');
+                        option.value = template.id;
+                        option.textContent = `${template.name} (${template.totalLessons} lessons)`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading templates:', error);
+            }
+        });
+    </script>
+</body>
+</html>

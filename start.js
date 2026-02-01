@@ -107,6 +107,45 @@ let demoTasks = [
   }
 ];
 
+// Demo curriculum data
+let demoCurriculums = [
+  {
+    id: 1,
+    parentId: 'demo-parent',
+    name: 'Saxon Math 7/6',
+    subject: 'Mathematics', 
+    gradeLevel: '6th-7th Grade',
+    publisher: 'Saxon Publishers',
+    description: 'Comprehensive math curriculum covering pre-algebra concepts',
+    totalLessons: 140,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 2,
+    parentId: 'demo-parent',
+    name: 'Apologia General Science',
+    subject: 'Science',
+    gradeLevel: '7th-9th Grade', 
+    publisher: 'Apologia',
+    description: 'Creation-based general science textbook covering chemistry, physics, and earth science',
+    totalLessons: 16,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
+let demoCurriculumLessons = [
+  // Saxon Math lessons
+  { id: 1, curriculumId: 1, lessonNumber: 1, title: 'Whole Numbers', type: 'lesson', description: 'Introduction to whole numbers', estimatedMinutes: 45 },
+  { id: 2, curriculumId: 1, lessonNumber: 2, title: 'Place Value', type: 'lesson', description: 'Understanding place value concepts', estimatedMinutes: 30 },
+  { id: 3, curriculumId: 1, lessonNumber: 3, title: 'Addition of Whole Numbers', type: 'lesson', description: 'Adding whole numbers', estimatedMinutes: 40 },
+  
+  // Apologia Science lessons  
+  { id: 4, curriculumId: 2, lessonNumber: 1, title: 'The History of Science', type: 'lesson', description: 'Overview of scientific method and history', estimatedMinutes: 60 },
+  { id: 5, curriculumId: 2, lessonNumber: 2, title: 'The Scientific Method', type: 'lesson', description: 'Learning to think like a scientist', estimatedMinutes: 50 }
+];
+
 // API endpoints
 app.get('/api/planner/students', (req, res) => {
   res.json(demoStudents);
@@ -259,6 +298,150 @@ app.delete('/api/planner/classes/:id', (req, res) => {
     res.json({ message: 'Task deleted successfully', task: deletedTask });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete task' });
+  }
+});
+
+// Curriculum Management API Endpoints
+app.get('/api/curriculums', (req, res) => {
+  try {
+    res.json(demoCurriculums);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch curriculums' });
+  }
+});
+
+app.post('/api/curriculums', (req, res) => {
+  try {
+    const { name, subject, gradeLevel, publisher, description } = req.body;
+    
+    if (!name || !subject) {
+      return res.status(400).json({ error: 'Name and subject are required' });
+    }
+    
+    const newId = Math.max(...demoCurriculums.map(c => c.id), 0) + 1;
+    const newCurriculum = {
+      id: newId,
+      parentId: 'demo-parent',
+      name: name.trim(),
+      subject: subject.trim(),
+      gradeLevel: gradeLevel?.trim() || '',
+      publisher: publisher?.trim() || '',
+      description: description?.trim() || '',
+      totalLessons: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    demoCurriculums.push(newCurriculum);
+    res.status(201).json(newCurriculum);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create curriculum' });
+  }
+});
+
+app.get('/api/curriculums/:id/lessons', (req, res) => {
+  try {
+    const curriculumId = parseInt(req.params.id);
+    const lessons = demoCurriculumLessons.filter(l => l.curriculumId === curriculumId);
+    res.json(lessons);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch lessons' });
+  }
+});
+
+app.post('/api/curriculums/:id/lessons', (req, res) => {
+  try {
+    const curriculumId = parseInt(req.params.id);
+    const { lessons } = req.body;
+    
+    if (!Array.isArray(lessons)) {
+      return res.status(400).json({ error: 'Lessons must be an array' });
+    }
+    
+    const newLessons = lessons.map((lesson, index) => {
+      const newId = Math.max(...demoCurriculumLessons.map(l => l.id), 0) + index + 1;
+      return {
+        id: newId,
+        curriculumId,
+        lessonNumber: lesson.lessonNumber || (index + 1),
+        title: lesson.title || `Lesson ${index + 1}`,
+        type: lesson.type || 'lesson',
+        description: lesson.description || '',
+        estimatedMinutes: lesson.estimatedMinutes || 30
+      };
+    });
+    
+    demoCurriculumLessons.push(...newLessons);
+    
+    // Update curriculum total lessons
+    const curriculum = demoCurriculums.find(c => c.id === curriculumId);
+    if (curriculum) {
+      curriculum.totalLessons = demoCurriculumLessons.filter(l => l.curriculumId === curriculumId).length;
+      curriculum.updatedAt = new Date().toISOString();
+    }
+    
+    res.status(201).json(newLessons);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create lessons' });
+  }
+});
+
+// AI Curriculum Analysis endpoint (mock implementation)
+app.post('/api/curriculum/analyze', (req, res) => {
+  try {
+    const { image } = req.body;
+    
+    if (!image) {
+      return res.status(400).json({ error: 'Image data is required' });
+    }
+    
+    // Mock AI analysis - return sample lessons
+    const mockLessons = [
+      {
+        lessonNumber: 1,
+        title: 'Introduction to Fractions',
+        type: 'lesson',
+        description: 'Learn the basics of fractions and their representation',
+        estimatedMinutes: 35
+      },
+      {
+        lessonNumber: 2, 
+        title: 'Adding Fractions',
+        type: 'lesson',
+        description: 'Practice adding fractions with like and unlike denominators',
+        estimatedMinutes: 40
+      },
+      {
+        lessonNumber: 3,
+        title: 'Fraction Quiz',
+        type: 'quiz',
+        description: 'Test your understanding of basic fractions',
+        estimatedMinutes: 20
+      },
+      {
+        lessonNumber: 4,
+        title: 'Subtracting Fractions',
+        type: 'lesson', 
+        description: 'Learn to subtract fractions with different denominators',
+        estimatedMinutes: 45
+      },
+      {
+        lessonNumber: 5,
+        title: 'Mixed Numbers',
+        type: 'lesson',
+        description: 'Converting between improper fractions and mixed numbers',
+        estimatedMinutes: 30
+      }
+    ];
+    
+    // Simulate AI processing time
+    setTimeout(() => {
+      res.json({ lessons: mockLessons });
+    }, 2000);
+    
+  } catch (error) {
+    console.error('Error in mock curriculum analysis:', error);
+    res.status(500).json({ error: 'Failed to analyze curriculum image' });
   }
 });
 

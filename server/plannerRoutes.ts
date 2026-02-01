@@ -11,6 +11,8 @@ const createClassSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   dueDate: z.string().optional(),
   studentId: z.string().optional(),
+  location: z.string().optional(),
+  meetingTime: z.string().optional(),
 });
 
 const updateClassSchema = z.object({
@@ -76,6 +78,8 @@ router.post("/classes", async (req, res) => {
       weekKey: new Date().toISOString().split('T')[0], // Current date as week key
       completed: false,
       studentId: validatedData.studentId ? parseInt(validatedData.studentId) : null,
+      location: validatedData.location || null,
+      meetingTime: validatedData.meetingTime || null,
     };
 
     const newClass = await storage.createPlannerTask(classData);
@@ -105,6 +109,8 @@ router.post("/tasks", async (req, res) => {
       weekKey: new Date().toISOString().split('T')[0], // Current date as week key
       completed: false,
       studentId: validatedData.studentId ? parseInt(validatedData.studentId) : null,
+      location: validatedData.location || null,
+      meetingTime: validatedData.meetingTime || null,
     };
 
     const newTask = await storage.createPlannerTask(taskData);
@@ -259,6 +265,78 @@ router.delete("/students/:id", async (req, res) => {
   } catch (error) {
     console.error("Error deleting student:", error);
     res.status(500).json({ error: "Failed to delete student" });
+  }
+});
+
+// Co-Op Group Management APIs
+
+// Get all co-op groups
+router.get("/coop-groups", async (req, res) => {
+  try {
+    const allGroups = await storage.getCoopGroups();
+    res.json(allGroups);
+  } catch (error) {
+    console.error("Error fetching co-op groups:", error);
+    res.status(500).json({ error: "Failed to fetch co-op groups" });
+  }
+});
+
+// Create a new co-op group
+router.post("/coop-groups", async (req, res) => {
+  try {
+    const groupData = {
+      parentId: "demo-parent", // For demo purposes
+      name: req.body.name,
+      subject: req.body.subject,
+      location: req.body.location,
+      meetingDay: req.body.meetingDay,
+      meetingTime: req.body.meetingTime,
+      description: req.body.description,
+      isActive: true,
+    };
+
+    const newGroup = await storage.createCoopGroup(groupData);
+    res.json(newGroup);
+  } catch (error) {
+    console.error("Error creating co-op group:", error);
+    res.status(500).json({ error: "Failed to create co-op group" });
+  }
+});
+
+// Add student to co-op group
+router.post("/coop-groups/:id/members", async (req, res) => {
+  try {
+    const groupId = parseInt(req.params.id);
+    const memberData = {
+      groupId: groupId,
+      studentId: parseInt(req.body.studentId),
+      role: req.body.role || "member",
+    };
+
+    const newMember = await storage.addCoopGroupMember(memberData);
+    res.json(newMember);
+  } catch (error) {
+    console.error("Error adding group member:", error);
+    res.status(500).json({ error: "Failed to add group member" });
+  }
+});
+
+// Remove student from co-op group
+router.delete("/coop-groups/:groupId/members/:studentId", async (req, res) => {
+  try {
+    const groupId = parseInt(req.params.groupId);
+    const studentId = parseInt(req.params.studentId);
+    
+    const removed = await storage.removeCoopGroupMember(groupId, studentId);
+    
+    if (!removed) {
+      return res.status(404).json({ error: "Group member not found" });
+    }
+
+    res.json({ message: "Member removed successfully" });
+  } catch (error) {
+    console.error("Error removing group member:", error);
+    res.status(500).json({ error: "Failed to remove group member" });
   }
 });
 

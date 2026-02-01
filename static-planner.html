@@ -230,6 +230,19 @@
             text-decoration: line-through;
         }
 
+        /* Co-Op class styling */
+        .class-item.coop-class {
+            background: linear-gradient(135deg, var(--pebble-purple), var(--pebble-blue));
+            color: white;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .class-item.coop-class.completed {
+            background: linear-gradient(135deg, #9ca3af, #6b7280);
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
         .class-item:last-child {
             margin-bottom: 0;
         }
@@ -371,6 +384,7 @@
             <div class="nav-links">
                 <a href="/static-dashboard">Dashboard</a>
                 <a href="/static-planner" class="active">Weekly Planner</a>
+                <a href="/curriculum-import">📚 Import Curriculum</a>
                 <a href="/static-student">Student View</a>
                 <a href="/static-parent">Parent View</a>
                 <a href="/login" onclick="logout()">Logout</a>
@@ -507,7 +521,7 @@
                 </div>
                 <div class="form-group">
                     <label for="classSubject">Subject</label>
-                    <select id="classSubject" name="classSubject" required>
+                    <select id="classSubject" name="classSubject" required onchange="toggleCoopFields()">
                         <option value="">Select Subject</option>
                         <option value="Math">Math</option>
                         <option value="English">English</option>
@@ -516,6 +530,12 @@
                         <option value="Art">Art</option>
                         <option value="Music">Music</option>
                         <option value="PE">Physical Education</option>
+                        <option value="Co-Op">Co-Op</option>
+                        <option value="Co-Op Math">Co-Op Math</option>
+                        <option value="Co-Op Science">Co-Op Science</option>
+                        <option value="Co-Op History">Co-Op History</option>
+                        <option value="Co-Op Art">Co-Op Art</option>
+                        <option value="Co-Op PE">Co-Op PE</option>
                         <option value="Other">Other</option>
                     </select>
                 </div>
@@ -542,6 +562,14 @@
                         <button type="button" onclick="selectAllDays()" style="padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">All Days</button>
                         <button type="button" onclick="clearAllDays()" style="padding: 4px 8px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer;">Clear All</button>
                     </div>
+                </div>
+                <div class="form-group" id="coopLocationGroup" style="display: none;">
+                    <label for="classLocation">Location</label>
+                    <input type="text" id="classLocation" name="classLocation" placeholder="e.g., Community Center, Smith House">
+                </div>
+                <div class="form-group" id="coopTimeGroup" style="display: none;">
+                    <label for="classTime">Meeting Time</label>
+                    <input type="time" id="classTime" name="classTime">
                 </div>
                 <div class="form-group">
                     <label for="classDescription">Description (Optional)</label>
@@ -807,14 +835,25 @@
                     const cellTasks = classes[`${day}-${studentIndex}`] || [];
                     
                     if (cellTasks.length > 0) {
-                        cell.innerHTML = cellTasks.map(classItem => `
-                            <div class="class-item ${classItem.completed ? 'completed' : ''}" 
-                                 onclick="editClass('${day}', ${studentIndex}, '${classItem.id}')" 
-                                 title="${classItem.description || ''} - Click to edit">
-                                ${classItem.title}
-                                <small style="display: block; font-size: 0.7rem; margin-top: 0.25rem;">${classItem.subject}</small>
-                            </div>
-                        `).join('');
+                        cell.innerHTML = cellTasks.map(classItem => {
+                            const isCoopClass = classItem.subject.toLowerCase().includes('co-op');
+                            const coopInfo = isCoopClass && (classItem.location || classItem.meetingTime) 
+                                ? `<div style="font-size: 0.6rem; color: #666; margin-top: 0.15rem;">
+                                     ${classItem.location ? `📍 ${classItem.location}` : ''} 
+                                     ${classItem.meetingTime ? `🕐 ${classItem.meetingTime}` : ''}
+                                   </div>`
+                                : '';
+                            
+                            return `
+                                <div class="class-item ${classItem.completed ? 'completed' : ''} ${isCoopClass ? 'coop-class' : ''}" 
+                                     onclick="editClass('${day}', ${studentIndex}, '${classItem.id}')" 
+                                     title="${classItem.description || ''} - Click to edit">
+                                    ${classItem.title}
+                                    <small style="display: block; font-size: 0.7rem; margin-top: 0.25rem;">${classItem.subject}</small>
+                                    ${coopInfo}
+                                </div>
+                            `;
+                        }).join('');
                     } else {
                         cell.innerHTML = `<div class="empty-cell" style="pointer-events: none;">Click to add class</div>`;
                         console.log(`Added placeholder to ${day}-${studentIndex}`); // Debug log
@@ -918,6 +957,26 @@
             const checkboxes = document.querySelectorAll('input[name="classDays"]');
             checkboxes.forEach(checkbox => checkbox.checked = false);
         }
+
+        // Show/hide Co-Op specific fields
+        function toggleCoopFields() {
+            const subjectSelect = document.getElementById('classSubject');
+            const locationGroup = document.getElementById('coopLocationGroup');
+            const timeGroup = document.getElementById('coopTimeGroup');
+            
+            const isCoopSelected = subjectSelect.value.toLowerCase().includes('co-op');
+            
+            if (isCoopSelected) {
+                locationGroup.style.display = 'block';
+                timeGroup.style.display = 'block';
+            } else {
+                locationGroup.style.display = 'none';
+                timeGroup.style.display = 'none';
+                // Clear values when hiding
+                document.getElementById('classLocation').value = '';
+                document.getElementById('classTime').value = '';
+            }
+        }
         
         // Test function to debug modal
         function testModal() {
@@ -974,8 +1033,9 @@
         }
 
         // Task management - multiple days support
-        async function addTaskToMultipleDays(title, subject, description = '', selectedDays = []) {
+        async function addTaskToMultipleDays(title, subject, description = '', selectedDays = [], location = '', meetingTime = '') {
             const weekKey = getWeekKey(currentWeek);
+            const isCoopClass = subject.toLowerCase().includes('co-op');
             
             for (const day of selectedDays) {
                 const classItem = {
@@ -984,6 +1044,8 @@
                     subject,
                     description,
                     completed: false,
+                    location: isCoopClass ? location : null,
+                    meetingTime: isCoopClass ? meetingTime : null,
                     createdAt: new Date().toISOString()
                 };
                 
@@ -1021,8 +1083,8 @@
         }
         
         // Legacy single task function for compatibility
-        async function addTask(title, subject, description = '') {
-            return addTaskToMultipleDays(title, subject, description, [currentTaskDay]);
+        async function addTask(title, subject, description = '', location = '', meetingTime = '') {
+            return addTaskToMultipleDays(title, subject, description, [currentTaskDay], location, meetingTime);
         }
         
         // Update existing class across multiple days
@@ -1230,7 +1292,9 @@
                         formData.get('classTitle'),
                         formData.get('classSubject'),
                         formData.get('classDescription'),
-                        selectedDays
+                        selectedDays,
+                        formData.get('classLocation'),
+                        formData.get('classTime')
                     );
                 }
                 

@@ -124,6 +124,28 @@ export const tasks = pgTable("tasks", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Co-op groups for collaborative learning
+export const coopGroups = pgTable("coop_groups", {
+  id: serial("id").primaryKey(),
+  parentId: text("parent_id").notNull(), // who created this co-op - references users.id
+  name: text("name").notNull(), // "Science Co-Op", "History Club"
+  subject: text("subject").notNull(), // "Co-Op Science", "Co-Op History"
+  location: text("location"), // "Community Center", "Smith House"
+  meetingDay: text("meeting_day"), // "monday", "wednesday", etc.
+  meetingTime: text("meeting_time"), // "10:00 AM", "2:30 PM"
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const coopGroupMembers = pgTable("coop_group_members", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").notNull(), // references coop_groups.id
+  studentId: integer("student_id").notNull(), // references students.id
+  role: text("role").default("member"), // "member", "leader", "assistant"
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
 // Planner tasks for the weekly planner interface
 export const plannerTasks = pgTable("planner_tasks", {
   id: text("id").primaryKey(), // uuid or timestamp-based ID
@@ -135,6 +157,9 @@ export const plannerTasks = pgTable("planner_tasks", {
   weekKey: text("week_key").notNull(), // "2025-01-20" (start of week)
   completed: boolean("completed").notNull().default(false),
   studentId: integer("student_id"), // references students.id
+  coopGroupId: integer("coop_group_id"), // references coop_groups.id (for co-op classes)
+  location: text("location"), // for co-op classes or field trips
+  meetingTime: text("meeting_time"), // "10:00 AM" for co-op classes
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -193,6 +218,24 @@ export const insertTaskSchema = createInsertSchema(tasks).pick({
   completedAt: true,
 });
 
+// Co-op schemas
+export const insertCoopGroupSchema = createInsertSchema(coopGroups).pick({
+  parentId: true,
+  name: true,
+  subject: true,
+  location: true,
+  meetingDay: true,
+  meetingTime: true,
+  description: true,
+  isActive: true,
+});
+
+export const insertCoopGroupMemberSchema = createInsertSchema(coopGroupMembers).pick({
+  groupId: true,
+  studentId: true,
+  role: true,
+});
+
 // Planner task schema for weekly planner interface
 export const insertPlannerTaskSchema = createInsertSchema(plannerTasks).pick({
   title: true,
@@ -203,6 +246,9 @@ export const insertPlannerTaskSchema = createInsertSchema(plannerTasks).pick({
   weekKey: true,
   completed: true,
   studentId: true,
+  coopGroupId: true,
+  location: true,
+  meetingTime: true,
 });
 
 // New curriculum schemas
@@ -278,6 +324,13 @@ export type InsertStudentCurriculum = z.infer<typeof insertStudentCurriculumSche
 
 export type LessonProgress = typeof lessonProgress.$inferSelect;
 export type InsertLessonProgress = z.infer<typeof insertLessonProgressSchema>;
+
+// Co-op types
+export type CoopGroup = typeof coopGroups.$inferSelect;
+export type InsertCoopGroup = z.infer<typeof insertCoopGroupSchema>;
+
+export type CoopGroupMember = typeof coopGroupMembers.$inferSelect;
+export type InsertCoopGroupMember = z.infer<typeof insertCoopGroupMemberSchema>;
 
 // Extended types for frontend
 export type StudentWithUser = Student & {
