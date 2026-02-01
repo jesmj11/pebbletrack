@@ -22,6 +22,21 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint for Railway
+  app.get('/health', (req, res) => {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      mode: process.env.DEMO_MODE === 'true' ? 'demo' : 'production',
+      env: process.env.NODE_ENV 
+    });
+  });
+
+  // Root endpoint
+  app.get('/', (req, res) => {
+    res.redirect('/static-dashboard');
+  });
+
   // Auth middleware
   await setupAuth(app);
 
