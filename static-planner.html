@@ -737,8 +737,16 @@
                         
                         // Remove from local array
                         students = students.filter(s => s.id != studentId); // Use != for type coercion
-                        // Remove associated tasks
-                        tasks = tasks.filter(t => t.studentId != studentId);
+                        // Remove associated tasks from weeklyTasks object
+                        Object.keys(weeklyTasks || {}).forEach(weekKey => {
+                            if (weeklyTasks[weekKey]) {
+                                Object.keys(weeklyTasks[weekKey]).forEach(cellKey => {
+                                    if (Array.isArray(weeklyTasks[weekKey][cellKey])) {
+                                        weeklyTasks[weekKey][cellKey] = weeklyTasks[weekKey][cellKey].filter(t => t.studentId != studentId);
+                                    }
+                                });
+                            }
+                        });
                         
                         alert(`Student "${student.fullName}" deleted successfully!`);
                     } else {
@@ -756,13 +764,22 @@
                 // Offline mode
                 console.log('Deleting in offline mode');
                 students = students.filter(s => s.id != studentId);
-                tasks = tasks.filter(t => t.studentId != studentId);
+                // Remove associated tasks from weeklyTasks object
+                Object.keys(weeklyTasks || {}).forEach(weekKey => {
+                    if (weeklyTasks[weekKey]) {
+                        Object.keys(weeklyTasks[weekKey]).forEach(cellKey => {
+                            if (Array.isArray(weeklyTasks[weekKey][cellKey])) {
+                                weeklyTasks[weekKey][cellKey] = weeklyTasks[weekKey][cellKey].filter(t => t.studentId != studentId);
+                            }
+                        });
+                    }
+                });
                 alert(`Student "${student.fullName}" deleted successfully (offline mode)!`);
             }
             
             // Update localStorage and UI
             localStorage.setItem('weekly_planner_students', JSON.stringify(students));
-            localStorage.setItem('weekly_planner_tasks', JSON.stringify(tasks));
+            localStorage.setItem('weekly_planner_tasks', JSON.stringify(weeklyTasks));
             updateStudentHeaders();
             renderTasks();
             
