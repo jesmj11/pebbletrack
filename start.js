@@ -54,7 +54,10 @@ const routeMap = {
 
   // BedrockELA Village Dashboard
   '/student-dashboard': 'student-dashboard.html',
-  '/village': 'student-dashboard.html'
+  '/village': 'student-dashboard.html',
+  
+  // Test route
+  '/test123': 'test123.html'
 };
 
 Object.entries(routeMap).forEach(([route, filename]) => {
