@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BedrockELA Village - Norwegian Mountain Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-image: url('./interactive-village-map.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .village-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            padding-top: 80px;
+        }
+        
+        .village-map {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            height: 70vh;
+            margin: 0 auto;
+            background: transparent;
+        }
+        
+        .building {
+            position: absolute;
+            background: transparent;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+            min-height: 80px;
+        }
+        
+        .building:hover {
+            transform: scale(1.2);
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+        
+        .building-icon {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            display: block;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.8));
+        }
+        
+        .building-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin: 2px 0;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.6);
+            padding: 2px 6px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .welcome-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 200;
+            max-width: 500px;
+        }
+        
+        .hide-welcome {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .hide-welcome:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🏔️ BedrockELA Village</div>
+            <div>Welcome to Norwegian Mountain Learning!</div>
+        </div>
+    </header>
+
+    <!-- Welcome Message -->
+    <div class="welcome-message" id="welcomeMessage">
+        <h1>🏔️ Welcome to Bedrock Village!</h1>
+        <p>Your beautiful Norwegian mountain learning adventure awaits!</p>
+        <p>Click on any building in the village to start exploring:</p>
+        <ul style="text-align: left; margin: 20px 0;">
+            <li>🏫 <strong>Red Schoolhouse</strong> - Reading Adventures</li>
+            <li>📚 <strong>Book Cabin</strong> - Library & Stories</li>
+            <li>🔥 <strong>Campfire Circle</strong> - Story Time</li>
+            <li>✍️ <strong>Writing House</strong> - Creative Writing</li>
+            <li>🐐 <strong>Billy's Cabin</strong> - Get Help from Your Guide</li>
+        </ul>
+        <button class="hide-welcome" onclick="hideWelcome()">Start Exploring! 🚀</button>
+    </div>
+
+    <!-- Village Container -->
+    <div class="village-container">
+        <div class="village-map">
+            
+            <!-- Red Schoolhouse (Upper Left) -->
+            <div class="building" 
+                 onclick="goToBuilding('reading')" 
+                 style="top: 15%; left: 10%; width: 120px; height: 100px;"
+                 title="Red Schoolhouse - Reading Adventures">
+                <span class="building-icon">🏫</span>
+                <div class="building-name">Reading School</div>
+            </div>
+
+            <!-- Book Cabin (Lower Left) -->
+            <div class="building" 
+                 onclick="goToBuilding('library')" 
+                 style="top: 65%; left: 18%; width: 100px; height: 80px;"
+                 title="Book Cabin - Library & Stories">
+                <span class="building-icon">📚</span>
+                <div class="building-name">Library</div>
+            </div>
+
+            <!-- Central Campfire -->
+            <div class="building" 
+                 onclick="goToBuilding('story-time')" 
+                 style="top: 58%; left: 48%; width: 80px; height: 60px;"
+                 title="Campfire Circle - Story Time">
+                <span class="building-icon">🔥</span>
+                <div class="building-name">Story Circle</div>
+            </div>
+
+            <!-- Traditional House (Center Right) -->
+            <div class="building" 
+                 onclick="goToBuilding('writing')" 
+                 style="top: 42%; left: 72%; width: 100px; height: 90px;"
+                 title="Writing Workshop House">
+                <span class="building-icon">✍️</span>
+                <div class="building-name">Writing House</div>
+            </div>
+
+            <!-- Windmill (Far Right) -->
+            <div class="building" 
+                 onclick="goToBuilding('windmill')" 
+                 style="top: 32%; left: 87%; width: 80px; height: 100px;"
+                 title="Windmill - Advanced Studies">
+                <span class="building-icon">🌪️</span>
+                <div class="building-name">Windmill</div>
+            </div>
+
+            <!-- Storage Barrels (Center) -->
+            <div class="building" 
+                 onclick="goToBuilding('tools')" 
+                 style="top: 48%; left: 38%; width: 90px; height: 60px;"
+                 title="Storage Area - Learning Tools">
+                <span class="building-icon">🎒</span>
+                <div class="building-name">Tool Shed</div>
+            </div>
+
+            <!-- Billy's Cabin (Right) -->
+            <div class="building" 
+                 onclick="goToBuilding('billy')" 
+                 style="top: 68%; left: 78%; width: 110px; height: 85px;"
+                 title="Billy's Cabin - Get Help & Encouragement">
+                <span class="building-icon">🐐</span>
+                <div class="building-name">Billy's Cabin</div>
+            </div>
+
+            <!-- Cultural Center (Upper Center) -->
+            <div class="building" 
+                 onclick="goToBuilding('culture')" 
+                 style="top: 28%; left: 58%; width: 95px; height: 80px;"
+                 title="Norwegian Cultural Center">
+                <span class="building-icon">🇳🇴</span>
+                <div class="building-name">Culture Hall</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function hideWelcome() {
+            document.getElementById('welcomeMessage').style.display = 'none';
+        }
+        
+        function goToBuilding(building) {
+            hideWelcome();
+            
+            // For now, show an alert - you can replace with actual navigation
+            const buildingNames = {
+                'reading': 'Reading School - Adventures in Literature',
+                'library': 'Library - Discover Amazing Stories',
+                'story-time': 'Story Circle - Gather Round the Fire',
+                'writing': 'Writing House - Create Your Own Tales',
+                'windmill': 'Windmill - Advanced Learning',
+                'tools': 'Tool Shed - Learning Games & Activities',
+                'billy': "Billy's Cabin - Get Help from Your Mountain Guide",
+                'culture': 'Culture Hall - Learn About Norway'
+            };
+            
+            alert(`Welcome to ${buildingNames[building]}!\n\n🚧 Coming Soon: This will take you to amazing learning adventures!`);
+        }
+        
+        // Auto-hide welcome message after 15 seconds
+        setTimeout(() => {
+            const welcome = document.getElementById('welcomeMessage');
+            if (welcome && welcome.style.display !== 'none') {
+                welcome.style.opacity = '0.8';
+            }
+        }, 15000);
+    </script>
+</body>
+</html>

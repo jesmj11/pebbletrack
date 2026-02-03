@@ -51,6 +51,10 @@ const routeMap = {
   // Friendly aliases
   '/dashboard': 'static-dashboard.html',
   '/planner': 'static-planner.html'
+
+  // BedrockELA Village Dashboard
+  "/student-dashboard": "student-dashboard.html",
+  "/village": "student-dashboard.html",
 };
 
 Object.entries(routeMap).forEach(([route, filename]) => {
