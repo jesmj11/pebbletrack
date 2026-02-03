@@ -471,4 +471,4 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`💚 Health Check: /health`);
   console.log(`🎯 Demo Mode: ENABLED`);
   console.log(`🚀 Ready for Railway deployment!`);
-});
+});// Force rebuild Tue Feb  3 03:23:24 AM UTC 2026
